@@ -1,5 +1,4 @@
-#include "../include/arena.h"
-#include <stdint.h>
+#include "../include/tree_arena.h"
 
 // Initialize and empty arena
 void arena_init(Arena *arena, void *buffer, size_t buffer_length) {

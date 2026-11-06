@@ -1,11 +1,25 @@
-#ifndef ARENA_H
-#define ARENA_H
+#ifndef TREE_ARENA_H
+#define TREE_ARENA_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <string.h>
+#include <dirent.h>
 
-// Credit: https://www.tutorialpedia.org/blog/efficiently-traverse-directory-tree-with-opendir-readdir-and-closedir
+// TREE FUNCTIONALITY
+typedef struct Node {
+    char *name;
+    struct Node *parent;
+    struct Node *first_child;
+    struct Node *next_sibling;
+} Node;
+
+Node *tree_create(char *root_path);
+
+
+// ARENA FUNCTIONALITY
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))
 
 typedef unsigned char byte;
