@@ -6,10 +6,6 @@
 #include <dirent.h>
 #include <stdlib.h>
 
-typedef struct Dirent {
-    ino_t d_ino; // Inode number (unique identifier for the file)
-    char d_name[]; // Null-terminated filename (variable-length array)
-    // Optional: unsigned char d_type;  // File type (POSIX extension)
-} Dirent;
+void dirs_list_all(const char *file_path);
 
 #endif
