@@ -9,9 +9,12 @@ int main(void) {
     const char *target_dirs[] = {"TestDirs/TargetDir"};
     size_t target_dir_len = sizeof(target_dirs) / sizeof(target_dirs[0]);
 
-    for (size_t i = 0; i < source_dirs_len; i++) {
-        dirs_list_all(source_dirs[i]);
-    }
+    // for (size_t i = 0; i < source_dirs_len; i++) {
+    //     dirs_list_all(source_dirs[i]);
+    // }
+
+    const char *small_ex_dir = "TestDirs/SmallDir";
+    directory_traverse(small_ex_dir, 4);
 
     return 0;
 }
@@ -37,7 +40,6 @@ int dirs_list_all(const char *file_path) {
         }
         printf("%s\n", entry->d_name);  // Print the filename
     }
-    printf("\n\n\n");
 
     // Check if `readdir()` failed
     if (errno != 0) {
@@ -51,5 +53,82 @@ int dirs_list_all(const char *file_path) {
         exit(EXIT_FAILURE);
     }
 
+    printf("\n\n\n");
     return EXIT_SUCCESS;
+}
+
+void directory_traverse(const char *file_path, int indent) {
+    DIR *dirp = opendir(file_path);
+    if (dirp == NULL) {
+        perror("`opendir failed");
+        // Continue traversal even if one directory fails
+        // (Might want to change this behavior later on)
+        return;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dirp)) != NULL) {
+        // Skip "." and ".."
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        // Skip symlinks to avoid infinite loops
+        if (entry->d_type == DT_LNK) {
+            continue;
+        }
+
+        // Indent for readability (shows hierarchy)
+        for (int i = 0; i < indent; i++) printf("  ");
+        printf("%s", entry->d_name);
+
+        // Check if entry is a directory
+        int is_dir = 0;
+        if (entry->d_type == DT_DIR) {
+            is_dir = 1;
+        }
+        else if (entry->d_type == DT_UNKNOWN) {
+            // Fallback: use lstat() to check if it's a directory (and not a symlink)
+            char *full_path;
+            if (asprintf(&full_path, "%s/%s", file_path, entry->d_name) == -1) {
+                perror("asprintf failed");
+                continue;
+            }
+
+            struct stat statbuf;
+            if (lstat(full_path, &statbuf) == -1) {
+                perror("lstat failed");
+                free(full_path);
+                continue;
+            }
+
+            if (S_ISDIR(statbuf.st_mode) && !S_ISLNK(statbuf.st_mode)) {
+                is_dir = 1;
+            }
+            free(full_path);
+        }
+
+        if (is_dir) {
+            // Mark directories with a trailing slash
+            printf("/\n");
+            // Build subdirectory path and recurse
+            char *subdir_path;
+            if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
+                perror("asprintf failed");
+                continue;
+            }
+            // Now we recurse
+            directory_traverse(subdir_path, indent + 1);
+            free(subdir_path);
+        }
+        else {
+            printf("\n");
+        }
+    }
+
+    if (errno != 0) {
+        perror("`readdir` failed");
+    }
+
+    closedir(dirp);
 }
