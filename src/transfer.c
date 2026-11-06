@@ -16,18 +16,18 @@ int main(void) {
     return 0;
 }
 
-void dirs_list_all(const char *file_path) {
-    printf("Opening file: '%s'\n", file_path);
+int dirs_list_all(const char *file_path) {
+    printf("Opening directory: '%s'\n", file_path);
     DIR *dirp = opendir(file_path);
     if (dirp == NULL) {
         perror("`open_directory failed");
         exit(EXIT_FAILURE);
     }
     else {
-        printf("File: '%s' successfully opened\n", file_path);
+        printf("Directory: '%s' successfully opened\n", file_path);
     }
 
-    struct dirent *entry;
+    struct dirent *entry; // "Directory entry"
     printf("Files found in directory '%s':\n", file_path);
     while ((entry = readdir(dirp)) != NULL) {
         // Skip "." (current dir) and ".." (parent dir)
@@ -38,4 +38,18 @@ void dirs_list_all(const char *file_path) {
         printf("%s\n", entry->d_name);  // Print the filename
     }
     printf("\n\n\n");
+
+    // Check if `readdir()` failed
+    if (errno != 0) {
+        perror("`readdir` failed");
+        closedir(dirp);
+        exit(EXIT_FAILURE);
+    }
+
+    if (closedir(dirp) == -1) {
+        perror("`closedir` failed");
+        exit(EXIT_FAILURE);
+    }
+
+    return EXIT_SUCCESS;
 }

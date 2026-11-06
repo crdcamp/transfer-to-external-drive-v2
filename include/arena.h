@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-
+// Credit: https://www.tutorialpedia.org/blog/efficiently-traverse-directory-tree-with-opendir-readdir-and-closedir
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))
 
 typedef unsigned char byte;
