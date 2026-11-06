@@ -9,6 +9,7 @@ void arena_init(Arena *arena, void *buffer, size_t buffer_length) {
     arena->current_offset = 0;
 }
 
+// Very self explainable
 bool is_power_of_two(uintptr_t x) {
     // Fancy bitwise operations
     return (x & (x-1)) == 0;
@@ -33,7 +34,7 @@ uintptr_t align_forward(uintptr_t ptr, size_t align) {
     return p;
 }
 
-//
+// Allocate memory to the arena while ensuring memory alignment
 void *arena_alloc_align(Arena *arena, size_t size, size_t align) {
     // Set an offset to an aligned memory location
     uintptr_t curr_ptr = (uintptr_t)arena->buffer + arena->current_offset;
