@@ -1,5 +1,6 @@
 #include "../include/transfer.h"
 #include "../include/arena.h"
+#include "../include/tree.h"
 
 int main(void) {
     // Define an array of 3 source directories
@@ -26,6 +27,14 @@ int main(void) {
 
     arena_init(&ex_arena, ex_arena_buffer, ex_arena_buffer_length);
     arena_alloc_align(&ex_arena, sizeof(ex_arena_buffer), DEFAULT_ALIGNMENT);
+
+    // Now we need to rewrite the `directory_traverse` function to actually return something
+    // Probably gonna want to do this from the ground up
+    // First thing we need to focus on for this new function, is that we want to somehow store
+    // the directory structure into a tree
+
+    // We'll begin by making a tree by hand
+    tree_create_test(small_ex_dir);
 
     return 0;
 }
