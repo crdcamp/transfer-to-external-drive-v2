@@ -17,7 +17,7 @@ typedef struct Node {
 } Node;
 
 Node *tree_create(char *root_path);
-
+void tree_print(Node *root, int depth);
 
 // ARENA FUNCTIONALITY
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))

@@ -1,5 +1,15 @@
 #include "../include/tree_arena.h"
 
+void tree_print(Node *n, int depth) {
+    if (n == NULL) return;
+
+    printf("%*s%s/\n", depth * 2, "", n->name);
+
+    for (const Node *c = n->first_child; c != NULL; c = c->next_sibling) {
+        tree_print(c, depth + 1);
+    }
+}
+
 // TODO: Convert this to an arena allocation
 Node *new_node(char *name) {
     Node *new_node = malloc(sizeof(Node));
@@ -21,6 +31,7 @@ Node *tree_create(char *root_path) {
     Node *root = new_node(root_path);
     // Define the root node's name
     root->name = root_path;
+    printf("Parent name: %s\n", root->name);
     // Since it's the root, it's parent is NULL
     root->parent = NULL;
 
@@ -28,7 +39,6 @@ Node *tree_create(char *root_path) {
     // All we need right now are the directories. No need to worry
     // about file names until a bit later. The actual copy function should
     // handle that
-    printf("Opening directory: `%s`\n", root_path);
     DIR *dirp = opendir(root_path); // Directory stream
     if (dirp == NULL) {
         printf("Failed opening directory: %s\n", root_path);
@@ -63,12 +73,14 @@ Node *tree_create(char *root_path) {
         if (is_dir) {
             // Create a new node for child and assign
             Node *child = new_node(entry->d_name);
+            printf("Child name: %s\n\n", child->name);
             // Assign the parent to child
             child->parent = root;
             // Assign the child to parent
             root->first_child = child;
             char *subdir_path;
             if (asprintf(&subdir_path, "%s/%s", root_path, entry->d_name) == -1) {
+                printf("asprint error for subdir path concate: '%s' and '%s'\n", root_path, entry->d_name);
                 perror("asprintf failed");
                 continue;
             }

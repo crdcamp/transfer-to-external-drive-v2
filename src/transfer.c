@@ -30,8 +30,9 @@ int main(void) {
     // the directory structure into a tree
 
     // We'll begin by making a tree by hand
-    char *small_ex_dir = "TestDirs/SmallDir";
+    char *small_ex_dir = "SmallDir";
     Node *root = tree_create(small_ex_dir);
+    tree_print(root, 0);
 
     return 0;
 }
