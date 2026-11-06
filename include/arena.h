@@ -1,9 +1,10 @@
+#ifndef ARENA_H
+#define ARENA_H
+
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
 
-#ifndef ARENA_H
-#define ARENA_H
 
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))
 
