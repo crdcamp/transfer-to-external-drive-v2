@@ -1,7 +1,7 @@
 #CFLAGS = -Wall -Wunused-parameter -Wpadded -Wextra
 
 main:
-	cc $(CFLAGS) src/transfer.c src/arena.c -o src/transfer
+	cc src/transfer.c src/arena.c -o src/transfer
 
 run:
 	./src/transfer
