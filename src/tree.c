@@ -26,16 +26,9 @@ Node *new_node(char *name) {
 }
 
 // Start by just making the tree... THEN try to add it to an arena
-Node *tree_create(char *root_path) {
+Node *tree_create(char *root_path, Node *child) {
     // Define the root
-    Node *root = new_node(root_path);
-
-    // If the current node's parent is not null (ie, not the first iteration)
-    // assign the parent's name to the current node's name
-    if (root->parent != NULL) {
-        root->name = root->parent->name;
-    }
-
+    Node *root = new_node(child->name);
 
     // Define the root node's name
     root->name = root_path;
@@ -100,7 +93,7 @@ Node *tree_create(char *root_path) {
             }
             // Now... how do we handle the next sibling?
             // Likely an if statement..... but how????
-            tree_create(subdir_path);
+            tree_create(subdir_path, child);
         }
     }
 
