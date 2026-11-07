@@ -29,9 +29,16 @@ Node *new_node(char *name) {
 Node *tree_create(char *root_path) {
     // Define the root
     Node *root = new_node(root_path);
+
+    // If the current node's parent is not null (ie, not the first iteration)
+    // assign the parent's name to the current node's name
+    if (root->parent != NULL) {
+        root->name = root->parent->name;
+    }
+
+
     // Define the root node's name
     root->name = root_path;
-    printf("Parent name: %s\n", root->name);
     // Since it's the root, it's parent is NULL
     root->parent = NULL;
 
@@ -72,12 +79,19 @@ Node *tree_create(char *root_path) {
 
         if (is_dir) {
             // Create a new node for child and assign
+            printf("Parent name: %s\n", root->name);
+
             Node *child = new_node(entry->d_name);
             printf("Child name: %s\n\n", child->name);
+
             // Assign the parent to child
             child->parent = root;
+
             // Assign the child to parent
             root->first_child = child;
+
+            // We need to replace this with some kind of linkage to assemble
+            // a full file path to pass to the recursion
             char *subdir_path;
             if (asprintf(&subdir_path, "%s/%s", root_path, entry->d_name) == -1) {
                 printf("asprint error for subdir path concate: '%s' and '%s'\n", root_path, entry->d_name);
