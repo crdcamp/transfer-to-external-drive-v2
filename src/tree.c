@@ -42,6 +42,7 @@ void tree_fill(Node *node, char *file_path) {
 
     // Iterate through the directory while looking for subdirectories
     struct dirent *entry; // "Directory entry"
+    Node *last_child = NULL;
     while ((entry = readdir(dirp)) != NULL) {
         // Skip "." and ".."
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
@@ -71,8 +72,12 @@ void tree_fill(Node *node, char *file_path) {
             // Assign the parent to child
             child->parent = node;
 
-            // Assign the child to parent
-            node->first_child = child;
+            if (last_child == NULL) {
+                node->first_child = child;       // first child: the parent points at it
+            } else {
+                last_child->next_sibling = child; // otherwise: the previous child points at it
+            }
+            last_child = child;                   // this child is now the last one
 
             // TODO: GET RID OF ASPRINTF AT SOME POINT. IT USES MALLOC AND WILL CAUSE COMPLICATIONS
             // We need to replace this with some kind of linkage to assemble
@@ -85,6 +90,7 @@ void tree_fill(Node *node, char *file_path) {
             }
             // Now... how do we handle the next sibling?
             // Likely an if statement..... but how????
+
 
             tree_fill(child, subdir_path);
         }

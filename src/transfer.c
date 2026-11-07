@@ -3,6 +3,8 @@
 int main(void) {
     // For MUCH LATER use
     Arena ex_arena;
+    // We're just gonna start with an excessive amount of memory allocation
+    // However, I have a feeling this should be done within the `tree_fill` function
     byte ex_arena_buffer[1024];
     size_t ex_arena_buffer_length = sizeof(ex_arena_buffer) / sizeof(ex_arena_buffer[0]);
 
