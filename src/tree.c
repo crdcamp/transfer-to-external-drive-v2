@@ -28,15 +28,6 @@ Node *new_node(char *name) {
 
 // Start by just making the tree... THEN try to add it to an arena
 void tree_fill(Node *node, char *file_path) {
-    // If the node's parent is null, that means we're at the root
-    // Therefore, we assign the full file path to it
-    // TODO: Switch the logic here so that you're not checking twice
-    // every iteration after the root node
-    if (node->parent == NULL) node = new_node(file_path);
-
-    // Otherwise, we assign the parent node's child's name to the new node
-    else node = new_node(node->parent->first_child->name);
-
     // TODO: Make this file handling its own function (maybe)
     // All we need right now are the directories. No need to worry
     // about file names until a bit later. The actual copy function should
