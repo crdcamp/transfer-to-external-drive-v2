@@ -16,7 +16,8 @@ typedef struct Node {
     struct Node *next_sibling;
 } Node;
 
-Node *tree_create(char *root_path, Node *child);
+Node *new_node(char *name);
+void tree_fill(Node *node, char *file_path);
 void tree_print(Node *root, int depth);
 
 // ARENA FUNCTIONALITY

@@ -1,4 +1,5 @@
 #include "../include/tree_arena.h"
+#include <string.h>
 
 void tree_print(Node *n, int depth) {
     if (n == NULL) return;
@@ -10,7 +11,7 @@ void tree_print(Node *n, int depth) {
     }
 }
 
-// TODO: Convert this to an arena allocation
+// TODO: Convert this to an arena allocation (gonna be a huge pain in the butt)
 Node *new_node(char *name) {
     Node *new_node = malloc(sizeof(Node));
     if (new_node == NULL) {
@@ -26,25 +27,26 @@ Node *new_node(char *name) {
 }
 
 // Start by just making the tree... THEN try to add it to an arena
-Node *tree_create(char *root_path, Node *child) {
-    // Define the root
-    Node *root = new_node(child->name);
+void tree_fill(Node *node, char *file_path) {
+    // If the node's parent is null, that means we're at the root
+    // Therefore, we assign the full file path to it
+    // TODO: Switch the logic here so that you're not checking twice
+    // every iteration after the root node
+    if (node->parent == NULL) node = new_node(file_path);
 
-    // Define the root node's name
-    root->name = root_path;
-    // Since it's the root, it's parent is NULL
-    root->parent = NULL;
+    // Otherwise, we assign the parent node's child's name to the new node
+    else node = new_node(node->parent->first_child->name);
 
     // TODO: Make this file handling its own function (maybe)
     // All we need right now are the directories. No need to worry
     // about file names until a bit later. The actual copy function should
     // handle that
-    DIR *dirp = opendir(root_path); // Directory stream
+    DIR *dirp = opendir(file_path); // Directory stream
     if (dirp == NULL) {
-        printf("Failed opening directory: %s\n", root_path);
+        printf("Failed opening directory: %s\n", file_path);
         perror("`opendir` failed");
-        // Return NULL if you fail to open a directory
-        return NULL;
+        // Return if you fail to open a directory
+        return;
     }
 
     // Iterate through the directory while looking for subdirectories
@@ -72,30 +74,30 @@ Node *tree_create(char *root_path, Node *child) {
 
         if (is_dir) {
             // Create a new node for child and assign
-            printf("Parent name: %s\n", root->name);
-
-            Node *child = new_node(entry->d_name);
-            printf("Child name: %s\n\n", child->name);
+            // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA
+            Node *child = new_node(strdup(entry->d_name));
 
             // Assign the parent to child
-            child->parent = root;
+            child->parent = node;
 
             // Assign the child to parent
-            root->first_child = child;
+            node->first_child = child;
 
+            // TODO: GET RID OF ASPRINTF AT SOME POINT. IT USES MALLOC AND WILL CAUSE COMPLICATIONS
             // We need to replace this with some kind of linkage to assemble
             // a full file path to pass to the recursion
             char *subdir_path;
-            if (asprintf(&subdir_path, "%s/%s", root_path, entry->d_name) == -1) {
-                printf("asprint error for subdir path concate: '%s' and '%s'\n", root_path, entry->d_name);
+            if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
+                printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
                 perror("asprintf failed");
                 continue;
             }
             // Now... how do we handle the next sibling?
             // Likely an if statement..... but how????
-            tree_create(subdir_path, child);
+
+            //closedir(dirp);
+
+            tree_fill(child, subdir_path);
         }
     }
-
-    return root;
 }

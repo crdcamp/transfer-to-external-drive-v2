@@ -31,7 +31,8 @@ int main(void) {
 
     // We'll begin by making a tree by hand
     char *small_ex_dir = "SmallDir";
-    Node *root = tree_create(small_ex_dir);
+    Node *root = new_node(small_ex_dir);
+    tree_fill(root, small_ex_dir);
     tree_print(root, 0);
 
     return 0;
