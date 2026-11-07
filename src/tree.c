@@ -95,9 +95,8 @@ void tree_fill(Node *node, char *file_path) {
             // Now... how do we handle the next sibling?
             // Likely an if statement..... but how????
 
-            //closedir(dirp);
-
             tree_fill(child, subdir_path);
         }
     }
+    closedir(dirp);
 }
