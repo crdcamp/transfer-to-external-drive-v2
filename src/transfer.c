@@ -1,5 +1,6 @@
 #include "../include/tree_arena.h"
-#include <string>
+#include <cstring>
+#include <string.h>
 
 // Should we make a function that finds the longest file path
 // amongst the input and output directories?
@@ -7,7 +8,8 @@
 // That way, we can have the small arena be the exact length we
 // need it to be and avoid wasting additional memory (albeit
 // a very small amount, but the whole point of this project is
-// a focus on performance)
+// a strong focus on performance)
+// ^A BETTER IDEA FOR THIS IS ADDRESSED IN `tree_fill` IN `tree.c`
 
 // How would this function work?
 // Well, we're passing arrays of file paths as sources, but that
@@ -34,24 +36,25 @@
 
 // Bill also gives an example of TEMPORARY ARENA MEMORY FUNCTIONS
 // that are definitely perfect for this use case. We'll work on that
-// after messing around here for a bit
+// after messing around with some more basic implementations first
+// Or, we might not need a temporary arena if we can resize the arena
+// later on
 
-// USE TSODING'S EXAMPLE TO FIGURE THIS OUT:
+// USING TSODING'S EXAMPLE TO FIGURE THIS OUT:
 // https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
-char *strdup_arena_testing(Arena *arena, char *string_to_copy) {
-    size_t string_len = strlen(string_to_copy)+1;
-    printf("Size of string: %zu byte(s)\n", string_len);
+void *strdup_arena_testing(Arena *arena, char *string_to_copy) {
+    // Initialize an empty string builder and the string's length
+    StringBuilder string_builder = {0};
 
-    // Now we allocate the size needed for the string
-    arena_alloc_align(arena, string_len, DEFAULT_ALIGNMENT);
+    // Assign the string to the `items` field
+    strcpy(string_builder.items, string_to_copy);
 
-    // Now how do we actually put the string in the arena?
-    // Well, the buffer that was allocated contains just a bunch of
-    // random data. We need to figure out how to store the string data
-    // within that random data
+    // Assign the length (count) of the string
+    string_builder.count = strlen(string_to_copy)+1;
 
+    // Find the full size of the string builder and keep it
+    // as metadata for when assigning it to the arena
 
-    // After that, how do we retrieve it?
 }
 
 void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {
@@ -62,21 +65,25 @@ int main(void) {
     // For MUCH LATER use
     Arena ex_arena = {0};
     // We're just gonna start with an excessive amount of memory allocation
-    // However, I have a feeling this should be done within the `tree_fill` function
+    // We'll worry about narrowing down the memory usage after a basic
+    // implementation has been achieved
+    // INITIALIZE A WAY-TOO-BIG ARENA
     byte ex_arena_buffer[1024];
     size_t ex_arena_buffer_length = sizeof(ex_arena_buffer) / sizeof(ex_arena_buffer[0]);
-
     arena_init(&ex_arena, ex_arena_buffer, ex_arena_buffer_length);
-    arena_alloc_align(&ex_arena, sizeof(ex_arena_buffer), DEFAULT_ALIGNMENT);
 
-
+    // DEFINE A TESTING DIRECTORY
     char *small_ex_dir = "SmallDir";
+
+    // INITIALIZE TREE STRUCTURE TO BE STORED IN ARENA
     Node *root = new_node(small_ex_dir);
     if (root == NULL) return 1;
 
+    // CREATE A TREE THAT ACTS AS METADATA FOR THE DIRECTORY STRUCTURE
     tree_fill(root, small_ex_dir);
     tree_print(root, 0);
 
+    // Now we're just messing around and figuring out next steps
     strdup_arena_testing(&ex_arena, "Meow hello hi how are you?");
 
     return 0;

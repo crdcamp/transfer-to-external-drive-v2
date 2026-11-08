@@ -35,10 +35,9 @@ void tree_fill(Node *node, char *file_path) {
 
     // In short, we're creating a sort of "metadata" of the directory structure
     // that's mapped to a tree that we'll need to traverse again when copying
-
-    // Whether or not this second traversal should be handled within this function
-    // (or another function that calls this one with edits) is a problem for
-    // much later
+    // (Actually, in hindsight, this should also probably be part of this function)
+    // A problem for later though, as regardless we'd likely need to call a helper
+    // function to achieve this
 
     // POSSIBLE FUTURE ADJUSTMENT: You could calculate the size of the tree as you
     // create it and return a struct containing the tree and its size in bytes
