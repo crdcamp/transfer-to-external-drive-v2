@@ -1,11 +1,8 @@
 #ifndef TREE_ARENA_H
 #define TREE_ARENA_H
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <assert.h>
-#include <stdbool.h>
 #include <dirent.h>
 
 // TREE FUNCTIONALITY
