@@ -1,4 +1,5 @@
 #include "../include/tree_arena.h"
+#include <string>
 
 // Should we make a function that finds the longest file path
 // amongst the input and output directories?
@@ -35,9 +36,22 @@
 // that are definitely perfect for this use case. We'll work on that
 // after messing around here for a bit
 
-void strdup_arena_testing(Arena *arena, char *string_to_copy) {
-    size_t string_len = strlen(string_to_copy);
+// USE TSODING'S EXAMPLE TO FIGURE THIS OUT:
+// https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
+char *strdup_arena_testing(Arena *arena, char *string_to_copy) {
+    size_t string_len = strlen(string_to_copy)+1;
     printf("Size of string: %zu byte(s)\n", string_len);
+
+    // Now we allocate the size needed for the string
+    arena_alloc_align(arena, string_len, DEFAULT_ALIGNMENT);
+
+    // Now how do we actually put the string in the arena?
+    // Well, the buffer that was allocated contains just a bunch of
+    // random data. We need to figure out how to store the string data
+    // within that random data
+
+
+    // After that, how do we retrieve it?
 }
 
 void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {
@@ -46,7 +60,7 @@ void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {
 
 int main(void) {
     // For MUCH LATER use
-    Arena ex_arena;
+    Arena ex_arena = {0};
     // We're just gonna start with an excessive amount of memory allocation
     // However, I have a feeling this should be done within the `tree_fill` function
     byte ex_arena_buffer[1024];
