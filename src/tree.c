@@ -28,11 +28,18 @@ Node *new_node(char *name) {
 
 // Start by just making the tree... THEN try to add it to an arena
 void tree_fill(Node *node, char *file_path) {
-    // TODO: Make this file handling its own function (maybe - likely unnecessary)
-    // All we need right now are the directories. No need to worry
-    // about file names until a bit later. The actual copy function should handle that
-    // Essentially, we're crating a sort of "metadata" of the directory structure
-    // that's mapped to a tree structure (since directory structures are trees)
+    // All we need from this function is a tree that directly mirrors the
+    // tree structure of the directories. Since the files within the directories
+    // will be found by passing the tree to another function, we don't need to
+    // assemble the file paths yet.
+
+    // In short, we're creating a sort of "metadata" of the directory structure
+    // that's mapped to a tree that we'll need to traverse again when copying
+
+    // Whether or not this second traversal should be handled within this function
+    // (or another function that calls this one with edits) is a problem for
+    // much later
+
     DIR *dirp = opendir(file_path); // Directory stream
     if (dirp == NULL) {
         printf("Failed opening directory: %s\n", file_path);
@@ -69,7 +76,8 @@ void tree_fill(Node *node, char *file_path) {
 
         if (is_dir) {
             // Create a new node for child and assign
-            // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA
+            // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA. REQUIRES MALLOC AND FREE,
+            // DEFEATS THE PURPOSE OF THE ARENA
             Node *child = new_node(strdup(entry->d_name));
 
             // Assign the child's parent
@@ -84,12 +92,19 @@ void tree_fill(Node *node, char *file_path) {
             } else {
                 previous_child->next_sibling = child;
             }
+            // The current child will now be the previous child for the next
+            // recursive case
             previous_child = child;
 
             // TODO: GET RID OF ASPRINTF AT SOME POINT. IT USES MALLOC AND WILL CAUSE COMPLICATIONS
-            // We need to replace this with some kind of linkage to assemble
-            // a full file path to pass to the recursion
-            // Should this require another recursion? Most likely
+
+            // It's likely we need to implement the arena before replacing `asprintf`. The same goes for `strdup`
+            // We can avoid `malloc` and `free` this way. However, that begs the question of whether or not
+            // we should store and free these string values in a separate arena.
+
+            // Regardless, it seems like you'll need to create your own versions of `asprintf` and `strdup`
+            // in order to make this happen. Given that these values will be freed immediately after
+            // their usage, we could just keep this all to a single arena. Let's just see what happens for now
 
             char *subdir_path;
             if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
@@ -97,10 +112,6 @@ void tree_fill(Node *node, char *file_path) {
                 perror("asprintf failed");
                 continue;
             }
-            // Now... how do we handle the next sibling?
-            // Likely an if statement..... but how????
-
-
             tree_fill(child, subdir_path);
         }
     }
