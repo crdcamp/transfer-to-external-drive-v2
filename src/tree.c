@@ -28,10 +28,11 @@ Node *new_node(char *name) {
 
 // Start by just making the tree... THEN try to add it to an arena
 void tree_fill(Node *node, char *file_path) {
-    // TODO: Make this file handling its own function (maybe)
+    // TODO: Make this file handling its own function (maybe - likely unnecessary)
     // All we need right now are the directories. No need to worry
-    // about file names until a bit later. The actual copy function should
-    // handle that
+    // about file names until a bit later. The actual copy function should handle that
+    // Essentially, we're crating a sort of "metadata" of the directory structure
+    // that's mapped to a tree structure (since directory structures are trees)
     DIR *dirp = opendir(file_path); // Directory stream
     if (dirp == NULL) {
         printf("Failed opening directory: %s\n", file_path);
@@ -40,11 +41,11 @@ void tree_fill(Node *node, char *file_path) {
         return;
     }
 
-    // Iterate through the directory while looking for subdirectories
+    // Recurse each directory while looking for subdirectories
     struct dirent *entry; // "Directory entry"
-    Node *last_child = NULL;
+    Node *previous_child = NULL;
     while ((entry = readdir(dirp)) != NULL) {
-        // Skip "." and ".."
+        // Skip "." and ".." (used for dictating the current or previous directory respectively)
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
@@ -52,16 +53,18 @@ void tree_fill(Node *node, char *file_path) {
         if (entry->d_type == DT_LNK) {
             continue;
         }
-
         // Check if entry is a directory
-        int is_dir = 0;
+        bool is_dir = false;
         if (entry->d_type == DT_DIR) {
-            is_dir = 1;
+            is_dir = true;
         }
         // I'm not gonna bother with all the fallbacks included
         // in the follow-along code here. Will implement later
+        // ... or... maybe not. They seem a bit excessive
+        // TO DO: CHANGE THIS TO BOOL:
+        // `int` is 4 bytes while `bool` is 1 byte
         else {
-            is_dir = 0;
+            is_dir = false;
         }
 
         if (is_dir) {
@@ -69,19 +72,25 @@ void tree_fill(Node *node, char *file_path) {
             // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA
             Node *child = new_node(strdup(entry->d_name));
 
-            // Assign the parent to child
+            // Assign the child's parent
             child->parent = node;
 
-            if (last_child == NULL) {
-                node->first_child = child;       // first child: the parent points at it
+            // If the parent DOES NOT have a child from previous recursions,
+            // then this is their first child
+            if (previous_child == NULL) {
+                node->first_child = child;
+            // If the parent DOES have a child from previous recursions,
+            // then the new child is the next sibling
             } else {
-                last_child->next_sibling = child; // otherwise: the previous child points at it
+                previous_child->next_sibling = child;
             }
-            last_child = child;                   // this child is now the last one
+            previous_child = child;
 
             // TODO: GET RID OF ASPRINTF AT SOME POINT. IT USES MALLOC AND WILL CAUSE COMPLICATIONS
             // We need to replace this with some kind of linkage to assemble
             // a full file path to pass to the recursion
+            // Should this require another recursion? Most likely
+
             char *subdir_path;
             if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
                 printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
