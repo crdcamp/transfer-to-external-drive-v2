@@ -40,6 +40,17 @@ void tree_fill(Node *node, char *file_path) {
     // (or another function that calls this one with edits) is a problem for
     // much later
 
+    // POSSIBLE FUTURE ADJUSTMENT: You could calculate the size of the tree as you
+    // create it and return a struct containing the tree and its size in bytes
+
+    // OR, EVEN BETTER: This could also involve creating and allocating to an arena
+    // at the end of the function (assuming you calculate the size of the tree with each
+    // recursive step), rather than initializing an arena beforehand.
+    // This would also remove the need for the struct recommended above
+    // However, this is likely a final requirement, as this results in a need
+    // for an arena resizing function: the part of the arena you have very little
+    // understanding of
+
     DIR *dirp = opendir(file_path); // Directory stream
     if (dirp == NULL) {
         printf("Failed opening directory: %s\n", file_path);
