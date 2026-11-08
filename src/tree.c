@@ -106,6 +106,10 @@ void tree_fill(Node *node, char *file_path) {
             // in order to make this happen. Given that these values will be freed immediately after
             // their usage, we could just keep this all to a single arena. Let's just see what happens for now
 
+            // Update: I think it'd be best to split the tree and smaller allocations into two separate arenas
+            // The smaller one can be used for functions like `asprintf` and `strdup`.
+            // were gonna begin with some basic testing in a separate file called `testing.c`
+
             char *subdir_path;
             if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
                 printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
