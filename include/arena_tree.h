@@ -24,6 +24,7 @@ typedef struct {
 
 typedef struct {
     char *string;
+    size_t string_size;
     void *string_ptr; // Where the string begins in the arena's memory
 } Arena_String;
 
@@ -35,7 +36,7 @@ void *arena_alloc_align(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_store(Arena *arena, char *string, size_t string_size);
 Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_size);
-void arena_string_reset(Arena *arena, void *string_ptr);
+void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);
 

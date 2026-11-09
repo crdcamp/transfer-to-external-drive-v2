@@ -72,14 +72,16 @@ void *arena_string_store(Arena *arena, char *string, size_t string_size) {
 }
 
 // Same as `strdup` only it uses an arena instead of `malloc`
-// `string_size` argument accounts for null characters
+// Could potentially change this to just return `(char *)string_ptr`
+// and cast as `(void *)` when passing is to the string removal function
+// ...will test later for now I gotta move on
 Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
-    string_size+=1;
     void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
     memcpy(string_ptr, string, string_size);
 
     Arena_String arena_string = {0};
     arena_string.string = (char *)string_ptr;
+    arena_string.string_size = string_size;
     arena_string.string_ptr = string_ptr;
 
     return arena_string;
@@ -91,12 +93,18 @@ Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_si
 // I'll address this issue in the future, but for now we leave it as is
 // A mid-arena memory change might be pretty inefficient anyway. Will require
 // some research and likely a lot of tangents
-// void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
-//     // Set the
-//     arena->current_offset = arena->previous_offset;
-// }
+void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
+    size_t start = (size_t)((byte *)string_ptr - arena->buffer);
 
-void arena_free(Arena *arena) {
+    // Only the most recent allocation can be rolled back
+    assert(start == arena->previous_offset);
+    assert(start + string_size == arena->current_offset);
+
+    arena->current_offset = start;
+    arena->previous_offset = start; // stale, but safe; don't reset twice in a row
+}
+
+void arena_reset(Arena *arena) {
     arena->current_offset = 0;
     arena->previous_offset = 0;
 }

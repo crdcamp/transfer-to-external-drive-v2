@@ -86,10 +86,20 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             // Create a new node for child and assign
             // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA. REQUIRES MALLOC AND FREE,
             // DEFEATS THE PURPOSE OF THE ARENA
-            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name, strlen(entry->d_name));
+            printf("CURRENT OFFSET BEFORE STRDUP: %zu\n", arena->current_offset);
+            printf("PREVIOUS OFFSET BEFORE STRDUP: %zu\n", arena->previous_offset);
+
+            size_t child_name_size = strlen(entry->d_name) + 1;
+            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name, child_name_size);
+
+            printf("CURRENT OFFSET AFTER STRDUP: %zu\n", arena->current_offset);
+            printf("PREVIOUS OFFSET AFTER STRDUP: %zu\n", arena->previous_offset);
+
             Node *child = new_node(child_arena_string.string);
-            printf("CHILD NAME: %s\n", child->name);
-            // FREE THE ARENA STRING DUPLICATE!!!!!!!
+            arena_string_reset(arena, child_arena_string.string_ptr, child_name_size);
+
+            printf("CURRENT OFFSET AFTER RESET: %zu\n", arena->current_offset);
+            printf("PREVIOUS OFFSET AFTER RESET: %zu\n", arena->previous_offset);
 
             // Assign the child's parent
             child->parent = node;
