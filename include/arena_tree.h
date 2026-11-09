@@ -22,11 +22,6 @@ typedef struct {
     size_t buffer_length;
 } Arena;
 
-typedef struct {
-    char *string;
-    void *string_ptr; // Where the string begins in the arena's memory
-} Arena_String;
-
 // Initialization and allocation
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);
 bool is_power_of_two(uintptr_t x);
@@ -34,7 +29,7 @@ uintptr_t align_forward(uintptr_t ptr, size_t align);
 void *arena_alloc_align(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_store(Arena *arena, char *string, size_t string_size);
-Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_size);
+void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);

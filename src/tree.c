@@ -84,10 +84,14 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
 
         if (is_dir) {
             // Create a new node for child and assign
-            size_t child_name_size = strlen(entry->d_name) + 1;
-            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name, child_name_size);
-            Node *child = new_node(child_arena_string.string);
-            arena_string_reset(arena, child_arena_string.string_ptr, child_name_size);
+            size_t child_name_ptr_size = strlen(entry->d_name)+1;
+            void *child_name_ptr = arena_string_duplicate(arena, entry->d_name, child_name_ptr_size);
+            if (child_name_ptr == NULL) {
+                fprintf(stderr, "Arena full: couldn't store name '%s'\n", entry->d_name);
+                closedir(dirp);
+                exit(EXIT_FAILURE);
+            }
+            Node *child = new_node((char *)child_name_ptr);
 
             // Assign the child's parent
             child->parent = node;
