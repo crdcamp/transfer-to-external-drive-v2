@@ -34,17 +34,9 @@ typedef struct {
     size_t buffer_length;
 } Arena;
 
-// From Tsoding: https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
-// String Builder is any structure that has at least three fields: items, count, and capacity.
-// - `items` MUST be a pointer to char and it points to the beginning of the buffer that stores the string.
-// - `count` MUST be size_t and it indicates the size of the string.
-// - `capacity` MUST be size_t and it indicates how much memory was already allocated for the String Builder.
-// String Builder in a sense is just a Dynamic Array of characters
-// TODO: maybe arena.h should ship its own StringBuilder type?
 typedef struct {
-    size_t string_start; // Where the string begins in the arena's memory (this parameter might be unnecessary)
-    size_t string_end; // Where the string ends in the arena's memory
-    uintptr_t string_ptr; // A pointer to where the string begins in the arena's memory
+    void *string_ptr; // A pointer to where the string begins in the arena's memory
+    size_t string_size; // The size of the string in bytes
 } ArenaString;
 
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);

@@ -1,4 +1,5 @@
 #include "../include/tree_arena.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -42,21 +43,18 @@
 
 // USING TSODING'S EXAMPLE TO FIGURE THIS OUT:
 // https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
-ArenaString strdup_arena_testing(Arena *arena, char *string_to_copy) {
+ArenaString string_store_testing(Arena *arena, char *string_to_copy) {
     // Initiate an ArenaString struct
     ArenaString arena_string = {0};
 
-    // Determine the size in bytes of the string
-    size_t string_size = strlen(string_to_copy)+1;
+    // Determine the size in bytes of the string and assign it to the arena_string struct
+    arena_string.string_size = strlen(string_to_copy)+1;
 
-    // Allocate the string size to the arena
-    void *string_ptr = arena_alloc_align(arena, strlen(string_to_copy)+1, DEFAULT_ALIGNMENT);
+    // Allocate the string size to the arena and assign the resulting pointer to the arena_string struct
+    arena_string.string_ptr = arena_alloc_align(arena, arena_string.string_size, DEFAULT_ALIGNMENT);
 
-    // Determine where the string begins in the arena's memory (given the pointer, might be unnecessary)
-    arena_string.string_start = arena->previous_offset;
-
-    // Determine where the string ends in the arena's memory
-    arena_string.string_start = arena->current_offset;
+    // Using memcpy, assign the string to the arena
+    memcpy(arena->buffer, arena_string.string_ptr, arena_string.string_size);
 
     return arena_string;
 }
@@ -87,8 +85,10 @@ int main(void) {
     tree_fill(root, small_ex_dir);
     tree_print(root, 0);
 
-    // TESTING: Duplicate a string using the arena instead of `malloc` or `strdup`
-    ArenaString string_pointer = strdup_arena_testing(&ex_arena, "Meow hello hi how are you?");
+    // TESTING: Store and then retrieve a string from the arena
+    ArenaString arena_string = string_store_testing(&ex_arena, "Meow hello hi how are you?");
+
+    // Now, how do we actually retrieve this from the arena?
 
     return 0;
 }
