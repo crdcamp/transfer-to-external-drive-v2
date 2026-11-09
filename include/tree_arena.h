@@ -35,9 +35,8 @@ typedef struct {
 } Arena;
 
 typedef struct {
+    size_t string_size;
     void *string_ptr; // Where the string begins in the arena's memory
-    size_t string_size; // The size of the string in bytes
-    size_t string_offset; // Where the string begins in the arena's memory
 } Arena_String;
 
 // Initialization and allocation
@@ -48,7 +47,8 @@ void *arena_alloc_align(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_store(Arena *arena, char *string);
 char *arena_string_retrieve(Arena *arena, void *string_ptr);
-void arena_string_free(Arena *arena, void *string_ptr);
+Arena_String arena_string_duplicate(Arena *arena, char *string);
+void arena_string_reset(Arena *arena, void *string_ptr);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);
 

@@ -1,4 +1,5 @@
 #include "../include/tree_arena.h"
+#include <string.h>
 
 // Initialize and empty arena
 void arena_init(Arena *arena, void *buffer, size_t buffer_length) {
@@ -78,6 +79,22 @@ char *arena_string_retrieve(Arena *arena, void *string_ptr) {
     }
 
     return (char *) string_ptr;
+}
+
+// ALWAYS make sure to FREE the duplicated string RIGHT AFTER
+// USING THIS. I haven't implemented more fancy arena stuff
+// to handle reallocations from anywhere but the current offset
+// of the arena
+Arena_String arena_string_duplicate(Arena *arena, char *string) {
+    size_t string_size = strlen(string)+1;
+    void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    memcpy(string_ptr, string, string_size);
+
+    Arena_String arena_string = {0};
+    arena_string.string_size = string_size;
+    arena_string.string_ptr = string_ptr;
+
+    return arena_string;
 }
 
 void arena_free(Arena *arena) {
