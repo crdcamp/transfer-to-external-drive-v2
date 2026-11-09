@@ -15,7 +15,7 @@ bool is_power_of_two(uintptr_t x) {
     return (x & (x-1)) == 0;
 }
 
-// Align a pointer forward to an aligned memory address
+// Move a pointer forward to an aligned memory address
 uintptr_t align_forward(uintptr_t ptr, size_t align) {
     uintptr_t p, a, modulo;
 
@@ -35,7 +35,7 @@ uintptr_t align_forward(uintptr_t ptr, size_t align) {
 }
 
 // Allocate memory to the arena while ensuring memory alignment
-void *arena_alloc_align(Arena *arena, size_t size, size_t align) {
+void *arena_allocate(Arena *arena, size_t size, size_t align) {
     // Set an offset to an aligned memory location
     uintptr_t curr_ptr = (uintptr_t)arena->buffer + arena->current_offset;
     uintptr_t offset = align_forward(curr_ptr, align);
@@ -57,11 +57,10 @@ void *arena_alloc_align(Arena *arena, size_t size, size_t align) {
     return NULL;
 }
 
-// Allocates a null-terminated string to the arena
-// and returns a pointer to the resulting string
+// Allocates a null-terminated string to the arena and returns a pointer to the resulting string
 void *arena_string_store(Arena *arena, char *string, size_t string_size) {
     // Allocate the string's size in bytes to the arena
-    void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    void *string_ptr = arena_allocate(arena, string_size, DEFAULT_ALIGNMENT);
     if (string_ptr == NULL) {
         return NULL;
     }
@@ -72,29 +71,25 @@ void *arena_string_store(Arena *arena, char *string, size_t string_size) {
 }
 
 // Same as `strdup` only it uses an arena instead of `malloc`
-
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
-    void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    void *string_ptr = arena_allocate(arena, string_size, DEFAULT_ALIGNMENT);
     if (string_ptr == NULL) return NULL;
     memcpy(string_ptr, string, string_size);
+
     return string_ptr;
 }
 
 // Reset the offsets for a given string
-// ONLY USE THIS IMMEDIATELY AFTER ALLOCATING AND USING A STRING
-// Otherwise, the arena's memory will be completely broken
-// I'll address this issue in the future, but for now we leave it as is
-// A mid-arena memory change might be pretty inefficient anyway. Will require
-// some research and likely a lot of tangents
+// Still questioning whether this will be useful later on...
+// Also, this was AI generated, so might wanna revisit it just in case
+// cause it looks like it could be a bit more readable
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
     size_t start = (size_t)((byte *)string_ptr - arena->buffer);
-
-    // Only the most recent allocation can be rolled back
     assert(start == arena->previous_offset);
     assert(start + string_size == arena->current_offset);
 
     arena->current_offset = start;
-    arena->previous_offset = start; // stale, but safe; don't reset twice in a row
+    arena->previous_offset = start;
 }
 
 void arena_reset(Arena *arena) {

@@ -1,19 +1,19 @@
 #include "../include/arena_tree.h"
 
 int main(void) {
-    // Initiate an empty arena
-    Arena arena = {0};
-    // We're just gonna start with an excessive amount of memory allocation
+    // We're just gonna start with a random amount of memory allocation
     // We'll worry about narrowing down the memory usage after a basic
     // implementation has been achieved
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[1024]; // Ensure buffer is aligned
+    Arena arena = {0};
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[1024]; // Ensure buffer is aligned on creation
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
     arena_init(&arena, arena_buffer, arena_buffer_length);
 
-    // Define a testing directory
-    char *small_ex_dir = "SmallDir";
+    // We're just testing for now
+    char *small_ex_dir = "TestDirs/SmallDir";
 
     // Initialize the root for the tree structure to be stored in the arena
+    // (The tree arena storage has not been implemented yet)
     Node *root = new_node(small_ex_dir);
     if (root == NULL) return 1;
 
