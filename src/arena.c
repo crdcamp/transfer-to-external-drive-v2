@@ -1,4 +1,4 @@
-#include "../include/tree_arena.h"
+#include "../include/arena_tree.h"
 #include <string.h>
 
 // Initialize and empty arena
@@ -72,15 +72,6 @@ void *arena_string_store(Arena *arena, char *string) {
     return string_ptr;
 }
 
-// Retrieves a null-terminated string from the arena
-char *arena_string_retrieve(Arena *arena, void *string_ptr) {
-    if (string_ptr == NULL) {
-        return NULL;
-    }
-
-    return (char *) string_ptr;
-}
-
 // ALWAYS make sure to FREE the duplicated string RIGHT AFTER
 // USING THIS. I haven't implemented more fancy arena stuff
 // to handle reallocations from anywhere but the current offset
@@ -95,6 +86,15 @@ Arena_String arena_string_duplicate(Arena *arena, char *string) {
     arena_string.string_ptr = string_ptr;
 
     return arena_string;
+}
+
+// Retrieves a null-terminated string from the arena
+char *arena_string_retrieve(Arena *arena, void *string_ptr) {
+    if (string_ptr == NULL) {
+        return NULL;
+    }
+
+    return (char *) string_ptr;
 }
 
 void arena_free(Arena *arena) {

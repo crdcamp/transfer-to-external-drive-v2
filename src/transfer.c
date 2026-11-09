@@ -1,4 +1,4 @@
-#include "../include/tree_arena.h"
+#include "../include/arena_tree.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -22,7 +22,7 @@ int main(void) {
     if (root == NULL) return 1;
 
     // Create a directory tree to be stored in the arena
-    tree_fill(root, small_ex_dir);
+    tree_fill(&arena, root, small_ex_dir);
     tree_print(root, 0);
 
     void *string_ptr = arena_string_store(&arena, "Hello there, Mr.Meow");

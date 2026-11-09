@@ -1,4 +1,4 @@
-#include "../include/tree_arena.h"
+#include "../include/arena_tree.h"
 #include <string.h>
 
 void tree_print(Node *n, int depth) {
@@ -27,7 +27,7 @@ Node *new_node(char *name) {
 }
 
 // Start by just making the tree... THEN try to add it to an arena
-void tree_fill(Node *node, char *file_path) {
+void tree_fill(Arena *arena, Node *node, char *file_path) {
     // All we need from this function is a tree that directly mirrors the
     // tree structure of the directories. Since the files within the directories
     // will be found by passing the tree to another function, we don't need to
@@ -86,7 +86,9 @@ void tree_fill(Node *node, char *file_path) {
             // Create a new node for child and assign
             // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA. REQUIRES MALLOC AND FREE,
             // DEFEATS THE PURPOSE OF THE ARENA
-            Node *child = new_node(strdup(entry->d_name));
+            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name);
+            Node *child = new_node(arena_string_retrieve(arena, child_arena_string.string_ptr));
+            // FREE THE ARENA STRING DUPLICATE!!!!!!!
 
             // Assign the child's parent
             child->parent = node;
@@ -124,7 +126,7 @@ void tree_fill(Node *node, char *file_path) {
                 perror("asprintf failed");
                 continue;
             }
-            tree_fill(child, subdir_path);
+            tree_fill(arena, child, subdir_path);
         }
     }
     closedir(dirp);

@@ -1,5 +1,5 @@
-#ifndef TREE_ARENA_H
-#define TREE_ARENA_H
+#ifndef arena_tree_H
+#define arena_tree_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -9,18 +9,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <dirent.h>
-
-// TREE FUNCTIONALITY
-typedef struct Node {
-    char *name;
-    struct Node *parent;
-    struct Node *first_child;
-    struct Node *next_sibling;
-} Node;
-
-Node *new_node(char *name);
-void tree_fill(Node *node, char *file_path);
-void tree_print(Node *root, int depth); // Needs some fixing
 
 // ARENA FUNCTIONALITY
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))
@@ -51,5 +39,17 @@ Arena_String arena_string_duplicate(Arena *arena, char *string);
 void arena_string_reset(Arena *arena, void *string_ptr);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);
+
+// TREE FUNCTIONALITY
+typedef struct Node {
+    char *name;
+    struct Node *parent;
+    struct Node *first_child;
+    struct Node *next_sibling;
+} Node;
+
+Node *new_node(char *name);
+void tree_fill(Arena *arena, Node *node, char *file_path);
+void tree_print(Node *root, int depth); // Needs some fixing
 
 #endif
