@@ -1,5 +1,4 @@
 #include "../include/tree_arena.h"
-#include <cstring>
 #include <stdint.h>
 #include <string.h>
 
@@ -50,11 +49,14 @@ ArenaString strdup_arena_testing(Arena *arena, char *string_to_copy) {
     // Determine the size in bytes of the string
     size_t string_size = strlen(string_to_copy)+1;
 
-    // Assign the string size to the struct
-    arena_string.size = string_size;
+    // Allocate the string size to the arena
+    void *string_ptr = arena_alloc_align(arena, strlen(string_to_copy)+1, DEFAULT_ALIGNMENT);
 
-    // Allocate memory to the arena and return a pointer to where the memory begins
-    arena_string.string_offset = (uintptr_t) arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    // Determine where the string begins in the arena's memory (given the pointer, might be unnecessary)
+    arena_string.string_start = arena->previous_offset;
+
+    // Determine where the string ends in the arena's memory
+    arena_string.string_start = arena->current_offset;
 
     return arena_string;
 }
@@ -64,7 +66,7 @@ void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {
 }
 
 int main(void) {
-    // For MUCH LATER use
+    // Initiate an empty arena
     Arena ex_arena = {0};
     // We're just gonna start with an excessive amount of memory allocation
     // We'll worry about narrowing down the memory usage after a basic
@@ -74,19 +76,19 @@ int main(void) {
     size_t ex_arena_buffer_length = sizeof(ex_arena_buffer) / sizeof(ex_arena_buffer[0]);
     arena_init(&ex_arena, ex_arena_buffer, ex_arena_buffer_length);
 
-    // DEFINE A TESTING DIRECTORY
+    // Define the testing directory
     char *small_ex_dir = "SmallDir";
 
-    // INITIALIZE TREE STRUCTURE TO BE STORED IN ARENA
+    // Initialize the root for the tree structure to be stored in the arena
     Node *root = new_node(small_ex_dir);
     if (root == NULL) return 1;
 
-    // CREATE A TREE THAT ACTS AS METADATA FOR THE DIRECTORY STRUCTURE
+    // Create a directory tree to be stored in the arena
     tree_fill(root, small_ex_dir);
     tree_print(root, 0);
 
-    // Now we're just messing around and figuring out next steps
-    strdup_arena_testing(&ex_arena, "Meow hello hi how are you?");
+    // TESTING: Duplicate a string using the arena instead of `malloc` or `strdup`
+    ArenaString string_pointer = strdup_arena_testing(&ex_arena, "Meow hello hi how are you?");
 
     return 0;
 }

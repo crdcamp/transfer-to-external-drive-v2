@@ -2,6 +2,7 @@
 #define TREE_ARENA_H
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -41,9 +42,9 @@ typedef struct {
 // String Builder in a sense is just a Dynamic Array of characters
 // TODO: maybe arena.h should ship its own StringBuilder type?
 typedef struct {
-    char *string; // Obviously, the string itself
-    size_t size; // The size in bytes of the string
-    uintptr_t string_offset; // A pointer to where the string begins in the arena
+    size_t string_start; // Where the string begins in the arena's memory (this parameter might be unnecessary)
+    size_t string_end; // Where the string ends in the arena's memory
+    uintptr_t string_ptr; // A pointer to where the string begins in the arena's memory
 } ArenaString;
 
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);
