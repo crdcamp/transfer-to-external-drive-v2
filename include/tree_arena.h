@@ -37,7 +37,8 @@ typedef struct {
 typedef struct {
     void *string_ptr; // Where the string begins in the arena's memory
     size_t string_size; // The size of the string in bytes
-} ArenaString;
+    size_t string_offset; // Where the string begins in the arena's memory
+} Arena_String;
 
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);
 bool is_power_of_two(uintptr_t x);

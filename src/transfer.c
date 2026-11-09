@@ -1,5 +1,4 @@
 #include "../include/tree_arena.h"
-#include <cstring>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -44,12 +43,14 @@
 
 // USING TSODING'S EXAMPLE TO FIGURE THIS OUT:
 // https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
-ArenaString string_store_testing(Arena *arena, char *string_to_copy) {
-    // Initiate an ArenaString struct
-    ArenaString arena_string = {0};
+Arena_String string_store_testing(Arena *arena, char *string_to_copy) {
+    // Initiate an Arena_String struct
+    Arena_String arena_string = {0};
 
     // Determine the string's size
     size_t string_size = strlen(string_to_copy)+1;
+
+    size_t string_offset = arena->current_offset;
 
     // Determine where in the arena the string will start
     void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
@@ -62,9 +63,22 @@ ArenaString string_store_testing(Arena *arena, char *string_to_copy) {
 
     // Assign the string's metadata to the `arena_string` struct
     arena_string.string_ptr = string_ptr;
+    arena_string.string_offset = string_offset;
     arena_string.string_size = string_size;
 
     return arena_string;
+}
+
+void string_retrieve_testing(Arena *arena, Arena_String arena_string) {
+    // Get the string's metadata
+    size_t string_size = arena_string.string_size;
+    size_t string_offset = arena_string.string_offset;
+
+    // Access the string's start location in the arena
+    for (size_t i = string_offset; i < string_offset + string_size; i++) {
+        printf("%c", arena->buffer[i]);
+    }
+    printf("\n");
 }
 
 int main(void) {
@@ -90,14 +104,11 @@ int main(void) {
     tree_print(root, 0);
 
     // TESTING: Store and then retrieve a string from the arena
-    ArenaString arena_string = string_store_testing(&ex_arena, "Meow hello hi how are you?");
+    Arena_String arena_string = string_store_testing(&ex_arena, "Meow hello hi how are you?");
 
-    // Now, how do we actually retrieve this from the arena?
-    // We need to access the `buffer` field of the Arena struct
-    // We can do this by indexing based on the start and end of the
-    for (size_t i = arena_string.string_start; i < arena_string.string_size; i++) {
-        printf("%c", (char)ex_arena.buffer[i]);
-    }
+    printf("\n\n");
+    // ADD ERROR HANDLING FOR ARENA_STRING
+    string_retrieve_testing(&ex_arena, arena_string);
 
     return 0;
 }
