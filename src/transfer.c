@@ -1,11 +1,9 @@
 #include "../include/arena_tree.h"
 
 int main(void) {
-    // We're just gonna start with a random amount of memory allocation
-    // We'll worry about narrowing down the memory usage after a basic
-    // implementation has been achieved
+    // Gonna give a large amount of memory for testing. Will dynamically adjust later
     Arena arena = {0};
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[1024]; // Ensure buffer is aligned on creation
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[131072]; // Ensure buffer is aligned on creation
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
     arena_init(&arena, arena_buffer, arena_buffer_length);
 
