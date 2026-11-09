@@ -86,7 +86,7 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             // Create a new node for child and assign
             // TO DO: FIND ALTERNATIVE TO STRDUP WHEN CONVERTING TO ARENA. REQUIRES MALLOC AND FREE,
             // DEFEATS THE PURPOSE OF THE ARENA
-            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name, strlen(entry->d_name));
+            Arena_String child_arena_string = arena_string_duplicate(arena, entry->d_name, strlen(entry->d_name)+1);
             Node *child = new_node(child_arena_string.string);
             printf("CHILD NAME: %s\n", child->name);
             // FREE THE ARENA STRING DUPLICATE!!!!!!!
