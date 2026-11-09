@@ -73,12 +73,8 @@ void string_retrieve_testing(Arena *arena, Arena_String arena_string) {
     // Get the string's metadata
     size_t string_size = arena_string.string_size;
     size_t string_offset = arena_string.string_offset;
-
-    // Access the string's start location in the arena
-    for (size_t i = string_offset; i < string_offset + string_size; i++) {
-        printf("%c", arena->buffer[i]);
-    }
-    printf("\n");
+    char *string_pointer = (char *)arena_string.string_ptr;
+    printf("Retrieval result: %s\n", string_pointer);
 }
 
 int main(void) {
