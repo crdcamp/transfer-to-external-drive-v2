@@ -1,5 +1,6 @@
 #include "../include/tree_arena.h"
 #include <cstring>
+#include <stdint.h>
 #include <string.h>
 
 // Should we make a function that finds the longest file path
@@ -43,11 +44,17 @@
 // USING TSODING'S EXAMPLE TO FIGURE THIS OUT:
 // https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
 void *strdup_arena_testing(Arena *arena, char *string_to_copy) {
-    // Determine the byte size of the string
+    // Initiate an ArenaString struct
+    ArenaString arena_string = {0};
+
+    // Determine the size in bytes of the string
     size_t string_size = strlen(string_to_copy)+1;
 
-    arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    // Assign the string size to the struct
+    arena_string.size = string_size;
 
+    // Allocate memory to the arena and return a pointer to where the memory begins
+    arena_string.string_offset = (uintptr_t) arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
 }
 
 void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {

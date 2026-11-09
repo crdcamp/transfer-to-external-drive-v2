@@ -1,6 +1,7 @@
 #ifndef TREE_ARENA_H
 #define TREE_ARENA_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -31,6 +32,19 @@ typedef struct {
     size_t current_offset;
     size_t buffer_length;
 } Arena;
+
+// From Tsoding: https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
+// String Builder is any structure that has at least three fields: items, count, and capacity.
+// - `items` MUST be a pointer to char and it points to the beginning of the buffer that stores the string.
+// - `count` MUST be size_t and it indicates the size of the string.
+// - `capacity` MUST be size_t and it indicates how much memory was already allocated for the String Builder.
+// String Builder in a sense is just a Dynamic Array of characters
+// TODO: maybe arena.h should ship its own StringBuilder type?
+typedef struct {
+    char *string; // Obviously, the string itself
+    size_t size; // The size in bytes of the string
+    uintptr_t string_offset; // A pointer to where the string begins in the arena
+} ArenaString;
 
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);
 bool is_power_of_two(uintptr_t x);
