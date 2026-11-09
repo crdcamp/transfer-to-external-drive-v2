@@ -56,6 +56,30 @@ void *arena_alloc_align(Arena *arena, size_t size, size_t align) {
     return NULL;
 }
 
+// Allocates a null-terminated string to the arena
+// and returns a pointer to the resulting string
+void *arena_string_store(Arena *arena, char *string) {
+    size_t string_size = strlen(string)+1;
+    // Allocate the string's size in bytes to the arena
+    void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    if (string_ptr == NULL) {
+        return NULL;
+    }
+    // Copy the string's data to the arena
+    memcpy(string_ptr, string, string_size);
+
+    return string_ptr;
+}
+
+// Retrieves a null-terminated string from the arena
+char *arena_string_retrieve(Arena *arena, void *string_ptr) {
+    if (string_ptr == NULL) {
+        return NULL;
+    }
+
+    return (char *) string_ptr;
+}
+
 void arena_free(Arena *arena) {
     arena->current_offset = 0;
     arena->previous_offset = 0;

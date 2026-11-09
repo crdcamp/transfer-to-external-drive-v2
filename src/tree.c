@@ -78,8 +78,6 @@ void tree_fill(Node *node, char *file_path) {
         // I'm not gonna bother with all the fallbacks included
         // in the follow-along code here. Will implement later
         // ... or... maybe not. They seem a bit excessive
-        // TO DO: CHANGE THIS TO BOOL:
-        // `int` is 4 bytes while `bool` is 1 byte
         else {
             is_dir = false;
         }
