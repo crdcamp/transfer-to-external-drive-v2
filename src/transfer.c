@@ -48,22 +48,23 @@ ArenaString string_store_testing(Arena *arena, char *string_to_copy) {
     // Initiate an ArenaString struct
     ArenaString arena_string = {0};
 
-    // Assign the string to the struct
-    strcpy(arena_string.string, string_to_copy);
-
-    // Determine the size in bytes of the string and assign it to the arena_string struct
+    // Determine the string's size
     size_t string_size = strlen(string_to_copy)+1;
 
-    void *arena_current_offset = arena_alloc_align(arena, arena_string.string_size, DEFAULT_ALIGNMENT);
+    // Determine where in the arena the string will start
+    void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
+    if (string_ptr == NULL) {
+        return arena_string;
+    }
 
-    // Using memcpy, assign the string to the arena's byte buffer
-    memcpy(arena->buffer[(uintptr_t)arena->previous_offset], arena_string.string, string_size);
+    // Copy the string into the arena's byte buffer
+    memcpy(string_ptr, string_to_copy, string_size);
+
+    // Assign the string's metadata to the `arena_string` struct
+    arena_string.string_ptr = string_ptr;
+    arena_string.string_size = string_size;
 
     return arena_string;
-}
-
-void asprintf_arena_testing(Arena *arena, char *strings_to_concatenate) {
-    return;
 }
 
 int main(void) {
