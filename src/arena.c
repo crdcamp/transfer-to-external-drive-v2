@@ -81,7 +81,6 @@ Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_si
 
     Arena_String arena_string = {0};
     arena_string.string = (char *)string_ptr;
-    arena_string.string_size = string_size;
     arena_string.string_ptr = string_ptr;
 
     return arena_string;

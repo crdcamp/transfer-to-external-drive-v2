@@ -24,7 +24,6 @@ typedef struct {
 
 typedef struct {
     char *string;
-    size_t string_size;
     void *string_ptr; // Where the string begins in the arena's memory
 } Arena_String;
 
