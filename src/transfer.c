@@ -43,17 +43,10 @@
 // USING TSODING'S EXAMPLE TO FIGURE THIS OUT:
 // https://github.com/tsoding/arena/blob/master/examples/001_basic_usage/main.c
 void *strdup_arena_testing(Arena *arena, char *string_to_copy) {
-    // Initialize an empty string builder and the string's length
-    StringBuilder string_builder = {0};
+    // Determine the byte size of the string
+    size_t string_size = strlen(string_to_copy)+1;
 
-    // Assign the string to the `items` field
-    strcpy(string_builder.items, string_to_copy);
-
-    // Assign the length (count) of the string
-    string_builder.count = strlen(string_to_copy)+1;
-
-    // Find the full size of the string builder and keep it
-    // as metadata for when assigning it to the arena
+    arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
 
 }
 
