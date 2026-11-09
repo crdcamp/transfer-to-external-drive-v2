@@ -9,8 +9,11 @@
 * `tree.c`- `tree_fill` function: Implement file paths into the tree structure
   * Once that's done- try to make it it's own function
 * `tree.c`- `tree_fill` function: Add arena expansion during recursion when the arena runs out of space
-* File copying and pasting: Need to decide between linking and a dynamic array for listing the files
-  * I sorta like the idea of a dynamic array, but I often run into problems with them. Maybe the arena will alleviate the ownership issues I encounter with `malloc` and I don't need to worry too much about it
+* **File handling for directories:** Need to decide between linking and a dynamic array for listing the files
+  * Create and use an `arena_dynamic_array` function. Saves memory and avoids the complications over a linked list, and also ensures that the data is stored together in it's own memory block. Linked lists are completely out of the question.
+  * Moreover, the order doesn't matter at all when creating the files, yet they will already be in order regardless upon creation. There's absolutely **no reason to use a linked list** here.
+* **Final requirement:** Minimize the program's memory footprint beginning with addressing unnecessary padding caused by poorly formulated structs.
 
 ## Misc Requirements
 * You really gotta settle on the semantic difference between `size` and `length`
+* Look into reserving "address space" in an arena, rather than "physical memory space". This isn't necessary for the project, but worth looking into for future implementations.
