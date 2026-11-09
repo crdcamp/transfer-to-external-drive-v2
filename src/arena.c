@@ -59,8 +59,7 @@ void *arena_alloc_align(Arena *arena, size_t size, size_t align) {
 
 // Allocates a null-terminated string to the arena
 // and returns a pointer to the resulting string
-void *arena_string_store(Arena *arena, char *string) {
-    size_t string_size = strlen(string)+1;
+void *arena_string_store(Arena *arena, char *string, size_t string_size) {
     // Allocate the string's size in bytes to the arena
     void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
     if (string_ptr == NULL) {
@@ -77,8 +76,7 @@ void *arena_string_store(Arena *arena, char *string) {
 // to handle reallocations from anywhere but the current offset
 // of the arena
 // I HAVE A STRONG FEELING THIS CAN BE SIMPLIFIED
-Arena_String arena_string_duplicate(Arena *arena, char *string) {
-    size_t string_size = strlen(string)+1;
+Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
     memcpy(string_ptr, string, string_size);
 
@@ -95,9 +93,10 @@ Arena_String arena_string_duplicate(Arena *arena, char *string) {
 // I'll address this issue in the future, but for now we leave it as is
 // A mid-arena memory change might be pretty inefficient anyway. Will require
 // some research and likely a lot of tangents
-void arena_string_reset(Arena *arena, void *string_ptr) {
-    arena->current_offset = arena->previous_offset;
-}
+// void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
+//     // Set the
+//     arena->current_offset = arena->previous_offset;
+// }
 
 void arena_free(Arena *arena) {
     arena->current_offset = 0;
