@@ -69,12 +69,10 @@ Arena_String string_store_testing(Arena *arena, char *string_to_copy) {
     return arena_string;
 }
 
-void string_retrieve_testing(Arena *arena, Arena_String arena_string) {
-    // Get the string's metadata
-    size_t string_size = arena_string.string_size;
-    size_t string_offset = arena_string.string_offset;
-    char *string_pointer = (char *)arena_string.string_ptr;
-    printf("Retrieval result: %s\n", string_pointer);
+char *string_retrieve_testing(Arena *arena, Arena_String arena_string) {
+    char *string_result = (char *)arena_string.string_ptr;
+
+    return string_result;
 }
 
 int main(void) {
@@ -104,7 +102,8 @@ int main(void) {
 
     printf("\n\n");
     // ADD ERROR HANDLING FOR ARENA_STRING
-    string_retrieve_testing(&ex_arena, arena_string);
+    char *result = string_retrieve_testing(&ex_arena, arena_string);
+    printf("Result: %s\n", result);
 
     return 0;
 }
