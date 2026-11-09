@@ -35,7 +35,7 @@ typedef struct {
 } Arena;
 
 typedef struct {
-    void *string_ptr; // A pointer to where the string begins in the arena's memory
+    char *string; // The actual string data
     size_t string_size; // The size of the string in bytes
 } ArenaString;
 

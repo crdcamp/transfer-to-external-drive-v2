@@ -1,4 +1,5 @@
 #include "../include/tree_arena.h"
+#include <cstring>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -47,14 +48,16 @@ ArenaString string_store_testing(Arena *arena, char *string_to_copy) {
     // Initiate an ArenaString struct
     ArenaString arena_string = {0};
 
+    // Assign the string to the struct
+    strcpy(arena_string.string, string_to_copy);
+
     // Determine the size in bytes of the string and assign it to the arena_string struct
-    arena_string.string_size = strlen(string_to_copy)+1;
+    size_t string_size = strlen(string_to_copy)+1;
 
-    // Allocate the string size to the arena and assign the resulting pointer to the arena_string struct
-    arena_string.string_ptr = arena_alloc_align(arena, arena_string.string_size, DEFAULT_ALIGNMENT);
+    void *arena_current_offset = arena_alloc_align(arena, arena_string.string_size, DEFAULT_ALIGNMENT);
 
-    // Using memcpy, assign the string to the arena
-    memcpy(arena->buffer, arena_string.string_ptr, arena_string.string_size);
+    // Using memcpy, assign the string to the arena's byte buffer
+    memcpy(arena->buffer[(uintptr_t)arena->previous_offset], arena_string.string, string_size);
 
     return arena_string;
 }
@@ -89,6 +92,11 @@ int main(void) {
     ArenaString arena_string = string_store_testing(&ex_arena, "Meow hello hi how are you?");
 
     // Now, how do we actually retrieve this from the arena?
+    // We need to access the `buffer` field of the Arena struct
+    // We can do this by indexing based on the start and end of the
+    for (size_t i = arena_string.string_start; i < arena_string.string_size; i++) {
+        printf("%c", (char)ex_arena.buffer[i]);
+    }
 
     return 0;
 }
