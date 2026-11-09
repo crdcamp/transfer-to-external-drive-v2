@@ -71,12 +71,10 @@ void *arena_string_store(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-// ALWAYS make sure to FREE the duplicated string RIGHT AFTER
-// USING THIS. I haven't implemented more fancy arena stuff
-// to handle reallocations from anywhere but the current offset
-// of the arena
-// I HAVE A STRONG FEELING THIS CAN BE SIMPLIFIED
+// Same as `strdup` only it uses an arena instead of `malloc`
+// `string_size` argument accounts for null characters
 Arena_String arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
+    string_size+=1;
     void *string_ptr = arena_alloc_align(arena, string_size, DEFAULT_ALIGNMENT);
     memcpy(string_ptr, string, string_size);
 
