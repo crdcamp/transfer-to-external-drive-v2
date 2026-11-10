@@ -67,15 +67,23 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-// DOUBLE CHECK IF THIS HAS A NULL TERMINATOR
-void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size, size_t strings_len) {
-    void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
+// Compute the size in bytes of a array of strings chars
+// Includes null terminator
+size_t arena_string_array_size(char **string_array, size_t strings_len) {
+    size_t string_array_size = 1;
+    for (size_t i = 0; i < strings_len; i++) {
+         string_array_size += strlen(string_array[i]);
+    }
 
-    strcpy(strings_ptr, strings[0]);
-    printf("Original strcpy: %s\n", (char *)strings_ptr);
-    for (size_t i = 1; i < strings_len; i++) {
-        strcat(strings_ptr, strings[i]);
-        printf("strcat %zu result: %s\n", i, (char *)strings_ptr);
+    return string_array_size;
+}
+
+void *arena_string_dynamic_array(Arena *arena, char **string_array, size_t strings_size, size_t string_len) {
+    // Allocate memory for the dynamic array
+    void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
+    strcpy(strings_ptr, string_array[0]);
+    for (size_t i = 1; i < string_len; i++) {
+        strcat(strings_ptr, string_array[i]);
     }
 
     return strings_ptr;
