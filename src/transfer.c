@@ -2,6 +2,8 @@
 
 int main(void) {
     Arena arena = {0};
+    // Not sure if "scratch" is the right terminology here
+    // regardless, this is meant for temporary allocations
     Arena scratch_arena = {0};
 
     // `_Alignas` ensures the buffer is aligned on creation

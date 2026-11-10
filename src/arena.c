@@ -1,4 +1,5 @@
 #include "../include/arena_tree.h"
+#include <stddef.h>
 #include <string.h>
 
 // Initialize and empty arena
@@ -66,23 +67,20 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-// This is a *very messy* rough draft. We're just getting ideas out there for now
-// What a mf mess. You completely forgot the use the allocated arena memory here btw
-// When you return, make sure to address that first. Use memcpy retard. You have to
-// allocate and assign the memory before you can use the resulting string
-// Also dont' forget to use a scratch arena when calling this function
-// THIS ONE DOESN'T NEED A SIZE PARAMETER. CALCULATE THE TOTAL SIZE WITHIN THE FUNCTION
-void *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delimiter) {
-    size_t total_size = sizeof(delimiter) + strlen(string_1) + strlen(string_2)+1;
-    void *string_ptr = arena_allocate(arena, total_size, DEFAULT_ALIGNMENT);
+void arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size) {
+    // Allocate memory for the total size of the strings
+    // Do we need to add 1 to the size for the null character here?
+    void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
 
-
+    // Iterate through the strings while using memcpy to assign them to
+    // the arena
+    void *ptr = strings_ptr;
+    for (int i = 0; i < strings_size; i++) {
+        memcpy(ptr, strings[i], strlen(strings[i]));
+        ptr = ptr + strlen(strings[i]);
+    }
 }
 
-// Reset the offsets for a given string
-// Still questioning whether this will be useful later on...
-// Also, this was AI generated, so might wanna revisit it just in case
-// cause it looks like it could be a bit more readable
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
     size_t start = (size_t)((byte *)string_ptr - arena->buffer);
     assert(start == arena->previous_offset);

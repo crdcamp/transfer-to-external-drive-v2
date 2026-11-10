@@ -29,7 +29,7 @@ uintptr_t align_forward(uintptr_t ptr, size_t align);
 void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
-void *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delim);
+void arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size);
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);
