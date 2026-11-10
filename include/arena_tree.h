@@ -30,7 +30,7 @@ void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_store(Arena *arena, char *string, size_t string_size);
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
-void *arena_string_delimiter_concat(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size);
+char *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size);
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);

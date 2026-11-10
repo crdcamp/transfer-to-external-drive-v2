@@ -107,7 +107,6 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             // using the `?` thingy. This should probably be a set amount of bytes
             // as a first implementation to keep things simple
             char *subdir_path = NULL;
-            arena_concatenate_directories(arena, subdir_path, file_path, entry->d_name);
             if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
                 printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
                 perror("asprintf failed");

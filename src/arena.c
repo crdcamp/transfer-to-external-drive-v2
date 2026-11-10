@@ -79,10 +79,27 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-void *arena_string_delimiter_concat(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size) {
-    size_t string_1_size = sizeof(string_1)+1;
-    size_t string_2_size = sizeof(string_2)+1;
+// This is a *very messy* rough draft. We're just getting ideas out there for now
+char *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size) {
+    void *string_ptr = arena_allocate(arena,total_size, DEFAULT_ALIGNMENT);
+    if (string_ptr == NULL) return NULL;
 
+    char result_string[total_size];
+
+    int i = 0;
+    while (string_1[i] != '\0') {
+        result_string[i] = string_1[i];
+        i+=1;
+    }
+    while (string_2[i] != '\0') {
+        result_string[i] = string_2[i];
+        i+=1;
+    }
+
+    char *result_string_2;
+    strcpy(result_string_2, result_string);
+
+    return result_string_2;
 }
 
 // Reset the offsets for a given string

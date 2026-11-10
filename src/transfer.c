@@ -31,7 +31,8 @@ int main(void) {
 
     size_t total_size = ex_str_1_size + ex_str_2_size + delim_size + 1;
 
-    void *arena_str_ptr = arena_string_delimiter_concat(&arena, ex_string_1, ex_string_2, delimiter, total_size);
+    char *arena_str = arena_concat_file_paths(&arena, ex_string_1, ex_string_2, delimiter, total_size);
+    printf("%s\n", arena_str);
 
     return 0;
 }
