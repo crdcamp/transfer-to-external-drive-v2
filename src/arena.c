@@ -67,7 +67,7 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-void arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size) {
+void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size) {
     // Allocate memory for the total size of the strings
     // Do we need to add 1 to the size for the null character here?
     void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
@@ -77,8 +77,10 @@ void arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_siz
     void *ptr = strings_ptr;
     for (int i = 0; i < strings_size; i++) {
         memcpy(ptr, strings[i], strlen(strings[i]));
-        ptr = ptr + strlen(strings[i]);
+        ptr += strlen(strings[i]);
     }
+
+    return strings_ptr;
 }
 
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
