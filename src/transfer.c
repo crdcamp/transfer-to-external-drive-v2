@@ -6,7 +6,7 @@ int main(void) {
 
     // `_Alignas` ensures the buffer is aligned on creation
     _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[131072];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[1024]; // Max of 1024 chars for a file path (plenty of space)
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[256]; // Max of 256 chars should be enough space for very long file path
 
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
     size_t arena_temp_buffer_length = sizeof(arena_temp_buffer) / sizeof(arena_temp_buffer[0]);
@@ -26,13 +26,10 @@ int main(void) {
     tree_fill(&arena, root, small_ex_dir);
     tree_print(root, 0);
 
-
     char *strings[] = {"meow", "/", "beepboopbop", "/", "bingbangpow"};
-    // This should be unsigned int, not size_t
-    size_t count = sizeof(strings) / sizeof(strings[0]);
-    size_t string_size = arena_string_dynamic_array_size(strings, strings_len);
-    void *result = arena_string_dynamic_array(&arena_temp, strings, string_size, strings_len);
-    printf("%s\n", (char *)result);
+    size_t element_count = sizeof(strings) / sizeof(strings[0]);
+    char *result = arena_string_concat(&arena_temp, strings, element_count);
+    printf("%s\n", result);
 
     return 0;
 }

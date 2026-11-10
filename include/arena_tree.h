@@ -29,8 +29,8 @@ uintptr_t align_forward(uintptr_t ptr, size_t align);
 void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
-size_t arena_string_dynamic_array_size(char **string_array, size_t strings_len);
-void *arena_string_dynamic_array(Arena *arena, char **string_array, size_t string_array_size, size_t string_array_len);
+size_t arena_string_concat_size(char **string_array, size_t strings_len);
+char *arena_string_concat(Arena *arena, char **string_array, size_t element_count);
 void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
 // Reset the arena's offsets to 0
 void arena_reset(Arena *arena);
