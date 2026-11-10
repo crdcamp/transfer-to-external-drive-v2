@@ -17,14 +17,13 @@ int main(void) {
     // We're just testing a smaller file structure for now
     char *source_dir = "TestDirs/SmallDir";
 
-    // Initialize the root_source for the tree structure to be stored in the arena
-    // (The tree arena storage has not been implemented yet)
-    Node *root_source = new_node(&arena, source_dir);
-    if (root_source == NULL) return 1;
+    // Initialize the root_source_dir for the tree structure to be stored in the arena
+    Node *root_source_dir = new_node(&arena, source_dir);
+    if (root_source_dir == NULL) return 1;
 
     // Create a directory tree to be stored in the arena
-    tree_fill(&arena, &arena_temp, root_source, source_dir);
-    tree_print(root_source, 0);
+    tree_fill(&arena, &arena_temp, root_source_dir, source_dir);
+    tree_print(root_source_dir, 0);
     arena_reset(&arena_temp);
 
     return 0;

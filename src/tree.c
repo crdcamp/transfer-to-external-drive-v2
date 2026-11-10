@@ -10,6 +10,11 @@ void tree_print(Node *n, int depth) {
     }
 }
 
+char **list_files(Arena *arena, Arena arena_temp, char *file_path) {
+    return NULL;
+}
+
+// Allocate a new node for the tree and assign it to an arena
 Node *new_node(Arena *arena, char *name) {
     Node *new_node = arena_allocate(arena, sizeof(Node), DEFAULT_ALIGNMENT);
     if (new_node == NULL) {
@@ -17,6 +22,7 @@ Node *new_node(Arena *arena, char *name) {
     }
 
     new_node->name = name;
+    new_node->files = NULL;
     new_node->parent = NULL;
     new_node->first_child = NULL;
     new_node->next_sibling = NULL;

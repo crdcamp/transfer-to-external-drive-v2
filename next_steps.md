@@ -1,6 +1,7 @@
 # Next Steps
+- [ ] `arena.c`: Create and a dynamic arena allocator.
+- [ ] Implement the dynamic allocator into the main and temporary arena.
 - [ ] Add `char **file_paths` to the `Node` struct and use `arena_string_concat` to add file paths to the struct (this is an initial idea and could be a completely incorrect implementation for this). **Do some extensive planning before committing to this approach**.
-- [ ] `arena.c`: Think now it's a good time to create and implement a dynamic arena allocator into `tree_fill`. However, I think the arena extension code should definitely be outside of `arena_allocate`, since sometimes you're not gonna want to extend the arena's memory.
 - [ ] `tree.c` - `tree_fill`: Add file name with spaces handling
 - [ ] **File handling for directories:** Need to decide between linking and a dynamic array for listing the files
 - [ ] Moreover, the order doesn't matter at all when creating the files, yet they will already be in order regardless upon creation. There's absolutely **no reason to use a linked list** here.

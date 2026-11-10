@@ -30,20 +30,22 @@ void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
 char *arena_string_concat(Arena *arena, char **string_array, size_t element_count);
-// Resetting and deleting
+// Resetting offsets to 0
 void arena_reset(Arena *arena);
 
 
 ///// TREE /////
 typedef struct Node {
-    char *name;
-    struct Node *parent;
-    struct Node *first_child;
-    struct Node *next_sibling;
+    char *name; // The name of the directory
+    char **files; // An array of the file names in the directory
+    struct Node *parent; // The current directory's parent
+    struct Node *first_child; // The current directory's subdirectory
+    struct Node *next_sibling; // The current directory's next subdirectory
 } Node;
 
+char **list_files(Arena *arena, Arena arena_temp, char *file_path);
 Node *new_node(Arena *arena, char *name);
 void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path);
-void tree_print(Node *root, int depth); // Needs some fixing
+void tree_print(Node *root, int depth);
 
 #endif
