@@ -29,8 +29,8 @@ int main(void) {
 
     char *strings[] = {"meow", "/", "beepboopbop", "/", "bingbangpow"};
     // This should be unsigned int, not size_t
-    size_t strings_len = sizeof(strings) / sizeof(strings[0]);
-    size_t string_size = arena_string_array_size(strings, strings_len);
+    size_t count = sizeof(strings) / sizeof(strings[0]);
+    size_t string_size = arena_string_dynamic_array_size(strings, strings_len);
     void *result = arena_string_dynamic_array(&arena_temp, strings, string_size, strings_len);
     printf("%s\n", (char *)result);
 

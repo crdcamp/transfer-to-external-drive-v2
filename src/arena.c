@@ -68,8 +68,9 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
 }
 
 // Compute the size in bytes of the chars in an array of strings
-// Includes null terminator
-size_t arena_string_array_size(char **string_array, size_t strings_len) {
+// Includes null terminator in calculation
+// Pass the result to `arena_string_dynamic_array`
+size_t arena_string_dynamic_array_size(char **string_array, size_t strings_len) {
     size_t string_array_size = 1;
     for (size_t i = 0; i < strings_len; i++) {
          string_array_size += strlen(string_array[i]);
@@ -78,11 +79,23 @@ size_t arena_string_array_size(char **string_array, size_t strings_len) {
     return string_array_size;
 }
 
-void *arena_string_dynamic_array(Arena *arena, char **string_array, size_t strings_size, size_t string_len) {
+// Insert a dynamic array of strings into the arena
+// NOTE: Apparently `strcat` is insecure, but you won't be worried
+// about any form of security in your projects for some time
+// MISLEADING NAME AND RETURN TYPE. FIX THAT EVENTUALLY
+void *arena_string_dynamic_array(Arena *arena, char **string_array, size_t string_array_size, size_t string_array_len) {
+    // TODO: Need to add checks for empty strings being passed
+    if (string_array == 0) {
+        return NULL;
+    }
+    // TODO: Calculate the size in this function instead of passing it as a parameter
+    // TODO: Change `array_size` to `count`
     // Allocate memory for the dynamic array
-    void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
+    void *strings_ptr = arena_allocate(arena, string_array_size, DEFAULT_ALIGNMENT);
+    if (strings_ptr == NULL) return NULL;
+
     strcpy(strings_ptr, string_array[0]);
-    for (size_t i = 1; i < string_len; i++) {
+    for (size_t i = 1; i < string_array_len; i++) {
         strcat(strings_ptr, string_array[i]);
     }
 

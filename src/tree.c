@@ -84,11 +84,19 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             }
             // The current child is now be the previous child for the next recursive case
             previous_child = child;
-            char *subdir_path = NULL;
-            if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
-                printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
-                perror("asprintf failed");
-                continue;
+
+            // Concatenate the full file path for the next recursion
+            char *subdir_array[3] = {file_path, "/", entry->d_name};
+            size_t subdir_array_len = sizeof(subdir_array) / sizeof(subdir_array[0]);
+            size_t subdir_array_size = arena_string_dynamic_array_size(subdir_array, subdir_array_len);
+            char *subdir_path =
+            // TODO: Don't forget to add a null check for `subdir_path`
+
+            // char *subdir_path = NULL;
+            // if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
+            //     printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
+            //     perror("asprintf failed");
+            //     continue;
             }
             tree_fill(arena, child, subdir_path);
         }
