@@ -67,7 +67,7 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-// Compute the size in bytes of a array of strings chars
+// Compute the size in bytes of the chars in an array of strings
 // Includes null terminator
 size_t arena_string_array_size(char **string_array, size_t strings_len) {
     size_t string_array_size = 1;
@@ -102,3 +102,7 @@ void arena_reset(Arena *arena) {
     arena->current_offset = 0;
     arena->previous_offset = 0;
 }
+
+//void arena_delete(Arena *arena)
+// Set the current and previous offset to null
+// Set the byte buffer to null
