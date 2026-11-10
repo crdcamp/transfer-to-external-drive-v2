@@ -42,7 +42,7 @@ typedef struct Node {
     struct Node *next_sibling;
 } Node;
 
-Node *new_node(char *name);
+Node *new_node(Arena *arena, char *name);
 void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path);
 void tree_print(Node *root, int depth); // Needs some fixing
 

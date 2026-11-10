@@ -19,7 +19,7 @@ int main(void) {
 
     // Initialize the root_source for the tree structure to be stored in the arena
     // (The tree arena storage has not been implemented yet)
-    Node *root_source = new_node(source_dir);
+    Node *root_source = new_node(&arena, source_dir);
     if (root_source == NULL) return 1;
 
     // Create a directory tree to be stored in the arena

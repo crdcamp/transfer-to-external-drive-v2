@@ -10,10 +10,8 @@ void tree_print(Node *n, int depth) {
     }
 }
 
-// TODO: Convert this to an arena allocation (gonna be a huge pain in the butt)
-// Update: Actually... this should be pretty easy... (famous last words)
-Node *new_node(char *name) {
-    Node *new_node = malloc(sizeof(Node));
+Node *new_node(Arena *arena, char *name) {
+    Node *new_node = arena_allocate(arena, sizeof(Node), DEFAULT_ALIGNMENT);
     if (new_node == NULL) {
         return NULL;
     }
@@ -68,7 +66,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
-            Node *child = new_node((char *)child_name_ptr);
+            Node *child = new_node(arena, (char *)child_name_ptr);
 
             // Child's parent will always be the node from the previous recursion
             child->parent = node;
