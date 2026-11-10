@@ -79,6 +79,12 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
+void *arena_string_delimiter_concat(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size) {
+    size_t string_1_size = sizeof(string_1)+1;
+    size_t string_2_size = sizeof(string_2)+1;
+
+}
+
 // Reset the offsets for a given string
 // Still questioning whether this will be useful later on...
 // Also, this was AI generated, so might wanna revisit it just in case

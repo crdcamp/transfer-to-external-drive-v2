@@ -19,5 +19,19 @@ int main(void) {
     tree_fill(&arena, root, small_ex_dir);
     tree_print(root, 0);
 
+
+
+    char *ex_string_1 = "meow";
+    char *ex_string_2 = "beepboop";
+    char delimiter = '/';
+
+    size_t ex_str_1_size = strlen(ex_string_1);
+    size_t ex_str_2_size = strlen(ex_string_2);
+    size_t delim_size = sizeof(delimiter);
+
+    size_t total_size = ex_str_1_size + ex_str_2_size + delim_size + 1;
+
+    void *arena_str_ptr = arena_string_delimiter_concat(&arena, ex_string_1, ex_string_2, delimiter, total_size);
+
     return 0;
 }
