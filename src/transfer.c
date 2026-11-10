@@ -36,7 +36,7 @@ int main(void) {
         strings_size += strlen(strings[i]);
     }
 
-    void *result = arena_dynamic_string_array_test(&arena_scratch, strings, strings_size);
+    void *result = arena_dynamic_string_array_test(&arena_scratch, strings, strings_size, strings_len);
     printf("%s\n", (char *)result);
 
     return 0;

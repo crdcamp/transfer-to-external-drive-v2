@@ -67,16 +67,17 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-void *arena_dynamic_string_array_test(Arena *arena, char **strings, size_t strings_size) {
-    void *strings_cp = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
-    strcpy(strings_cp, strings[0]);
-    printf("First assignment result: %s\n", (char *)strings_cp);
-    strcat(strings_cp, strings[1]);
-    printf("Second assignment result: %s\n", (char *)strings_cp);
-    strcat(strings_cp, strings[2]);
-    printf("Third assignment result: %s\n", (char *)strings_cp);
+void *arena_dynamic_string_array_test(Arena *arena, char **strings, size_t strings_size, size_t strings_len) {
+    char *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
 
-    return strings_cp;
+    strcpy(strings_ptr, strings[0]);
+    printf("Original strcpy: %s\n", strings_ptr);
+    for (size_t i = 1; i < strings_len; i++) {
+        strcat(strings_ptr, strings[i]);
+        printf("strcat %zu result: %s\n", i, strings_ptr);
+    }
+
+    return strings_ptr;
 }
 
 void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size) {

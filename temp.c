@@ -3,7 +3,7 @@
 #include <string.h>
 
 int main(void) {
-    char *strings[] = {"meow", "beep", "boop"};
+    char *strings[] = {"meow", "beep", "shebangyo"};
     size_t strings_len = sizeof(strings)/sizeof(strings[0]);
     size_t strings_size = 1;
     char *strings_cp = NULL;
