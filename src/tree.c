@@ -11,7 +11,7 @@ void tree_print(Node *n, int depth) {
 }
 
 // TODO: Convert this to an arena allocation (gonna be a huge pain in the butt)
-// Update: Nevermind. Should be pretty easy actually...
+// Update: Actually... this should be pretty easy... (famous last words)
 Node *new_node(char *name) {
     Node *new_node = malloc(sizeof(Node));
     if (new_node == NULL) {
@@ -28,7 +28,7 @@ Node *new_node(char *name) {
 
 // TO DO: Implement file structure into the tree as well
 // TO DO: Add arena expansion when it runs out of space
-void tree_fill(Arena *arena, Node *node, char *file_path) {
+void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     // Define a directory pointer to access metadata on directories
     DIR *dirp = opendir(file_path);
     if (dirp == NULL) {
@@ -85,20 +85,16 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             // The current child is now be the previous child for the next recursive case
             previous_child = child;
 
-            // Concatenate the full file path for the next recursion
-            // char *subdir_array[3] = {file_path, "/", entry->d_name};
-            // size_t subdir_array_len = sizeof(subdir_array) / sizeof(subdir_array[0]);
-            // size_t subdir_array_size = arena_string_concat_size(subdir_array, subdir_array_len);
-            // char *subdir_path =
-            // TODO: Don't forget to add a null check for `subdir_path`
-
-            char *subdir_path = NULL;
-            if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
-                printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
-                perror("asprintf failed");
-                continue;
+            // Concatenate the full file path with the child directory's name to pass to the next recursion
+            char *subdir_array[3] = {file_path, "/", entry->d_name};
+            size_t subdir_array_element_count = sizeof(subdir_array) / sizeof(subdir_array[0]);
+            char *subdir_path = arena_string_concat(arena_temp, subdir_array, subdir_array_element_count);
+            if (subdir_path == NULL) {
+                printf("Error allocating for subdir path '%s'\n", subdir_path);
+                closedir(dirp);
+                exit(EXIT_FAILURE);
             }
-            tree_fill(arena, child, subdir_path);
+            tree_fill(arena, arena_temp, child, subdir_path);
         }
     }
     closedir(dirp);

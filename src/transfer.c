@@ -23,13 +23,9 @@ int main(void) {
     if (root == NULL) return 1;
 
     // Create a directory tree to be stored in the arena
-    tree_fill(&arena, root, small_ex_dir);
+    tree_fill(&arena, &arena_temp, root, small_ex_dir);
     tree_print(root, 0);
-
-    char *strings[] = {"meow", "/", "beepboopbop", "/", "bingbangpow"};
-    size_t element_count = sizeof(strings) / sizeof(strings[0]);
-    char *result = arena_string_concat(&arena_temp, strings, element_count);
-    printf("%s\n", result);
+    arena_reset(&arena_temp);
 
     return 0;
 }

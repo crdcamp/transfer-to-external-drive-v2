@@ -67,22 +67,7 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-// Compute the size in bytes of the chars in an array of strings
-// Includes null terminator in calculation
-// Pass the result to `arena_string_concat`
-size_t arena_string_concat_size(char **strings, size_t strings_len) {
-    size_t strings_size = 1;
-    for (size_t i = 0; i < strings_len; i++) {
-         strings_size += strlen(strings[i]);
-    }
-
-    return strings_size;
-}
-
-// Insert a dynamic array of strings into the arena
-// NOTE: Apparently `strcat` is insecure, but you won't be worried
-// about any form of security in your projects for some time
-// MISLEADING NAME AND RETURN TYPE. FIX THAT EVENTUALLY
+// Given an array of strings, concatenate them together and store the result in the arena
 char *arena_string_concat(Arena *arena, char **strings, size_t element_count) {
     // Calculate the space needed for the concatenated string
     size_t string_len = 1; // Account for null
@@ -108,20 +93,8 @@ char *arena_string_concat(Arena *arena, char **strings, size_t element_count) {
     return arena_string;
 }
 
-void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size) {
-    size_t start = (size_t)((byte *)string_ptr - arena->buffer);
-    assert(start == arena->previous_offset);
-    assert(start + string_size == arena->current_offset);
-
-    arena->current_offset = start;
-    arena->previous_offset = start;
-}
-
+// Reset the arena's offsets
 void arena_reset(Arena *arena) {
     arena->current_offset = 0;
     arena->previous_offset = 0;
 }
-
-//void arena_delete(Arena *arena)
-// Set the current and previous offset to null
-// Set the byte buffer to null

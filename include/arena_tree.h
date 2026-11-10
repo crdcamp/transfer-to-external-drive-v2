@@ -29,10 +29,8 @@ uintptr_t align_forward(uintptr_t ptr, size_t align);
 void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
-size_t arena_string_concat_size(char **string_array, size_t strings_len);
 char *arena_string_concat(Arena *arena, char **string_array, size_t element_count);
-void arena_string_reset(Arena *arena, void *string_ptr, size_t string_size);
-// Reset the arena's offsets to 0
+// Resetting and deleting
 void arena_reset(Arena *arena);
 
 
@@ -45,7 +43,7 @@ typedef struct Node {
 } Node;
 
 Node *new_node(char *name);
-void tree_fill(Arena *arena, Node *node, char *file_path);
+void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path);
 void tree_print(Node *root, int depth); // Needs some fixing
 
 #endif
