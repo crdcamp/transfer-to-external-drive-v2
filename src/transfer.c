@@ -29,9 +29,8 @@ int main(void) {
     tree_print(root, 0);
 
 
-    char *strings[] = {"ab", "bc", "cd"};
-    //char *strings[] = {"meow", "/", "beepboop"};
-    size_t strings_size = 1;
+    char *strings[] = {"meow", "/", "beepboop"};
+    size_t strings_size = 1; // Account for NULL terminator
     size_t strings_len = sizeof(strings) / sizeof(strings[0]);
     for (size_t i = 0; i < strings_len; i++) {
         strings_size += strlen(strings[i]);

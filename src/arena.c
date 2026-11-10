@@ -74,6 +74,8 @@ void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_si
 
     // Iterate through the strings while using memcpy to assign them to
     // the arena
+    // BEFORE CONTINUING: MAKE A SEPARATE TEST FILE TO TEST YOUR
+    // POINTER ARITHMETIC HERE
     void *ptr = strings_ptr;
     for (int i = 0; i < strings_size; i++) {
         memcpy(ptr, strings[i], strlen(strings[i]));
