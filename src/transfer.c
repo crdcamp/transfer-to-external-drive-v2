@@ -29,14 +29,14 @@ int main(void) {
     tree_print(root, 0);
 
 
-    char *strings[] = {"meow", "/", "beepboop"};
+    char *strings[] = {"meow", "/", "beepboopbop", "/", "bingbangpow"};
     size_t strings_size = 1; // Account for NULL terminator
     size_t strings_len = sizeof(strings) / sizeof(strings[0]);
     for (size_t i = 0; i < strings_len; i++) {
         strings_size += strlen(strings[i]);
     }
 
-    void *result = arena_dynamic_string_array(&arena_scratch, strings, strings_size);
+    void *result = arena_dynamic_string_array_test(&arena_scratch, strings, strings_size);
     printf("%s\n", (char *)result);
 
     return 0;
