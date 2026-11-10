@@ -67,32 +67,15 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     return string_ptr;
 }
 
-void *arena_dynamic_string_array_test(Arena *arena, char **strings, size_t strings_size, size_t strings_len) {
-    char *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
-
-    strcpy(strings_ptr, strings[0]);
-    printf("Original strcpy: %s\n", strings_ptr);
-    for (size_t i = 1; i < strings_len; i++) {
-        strcat(strings_ptr, strings[i]);
-        printf("strcat %zu result: %s\n", i, strings_ptr);
-    }
-
-    return strings_ptr;
-}
-
-void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size) {
-    // Allocate memory for the total size of the strings
-    // Do we need to add 1 to the size for the null character here?
+// DOUBLE CHECK IF THIS HAS A NULL TERMINATOR
+void *arena_dynamic_string_array(Arena *arena, char **strings, size_t strings_size, size_t strings_len) {
     void *strings_ptr = arena_allocate(arena, strings_size, DEFAULT_ALIGNMENT);
 
-    // Iterate through the strings while using memcpy to assign them to
-    // the arena
-    // BEFORE CONTINUING: MAKE A SEPARATE TEST FILE TO TEST YOUR
-    // POINTER ARITHMETIC HERE
-    void *ptr = strings_ptr;
-    for (int i = 0; i < strings_size; i++) {
-        memcpy(ptr, strings[i], strlen(strings[i]));
-        ptr += strlen(strings[i]);
+    strcpy(strings_ptr, strings[0]);
+    printf("Original strcpy: %s\n", (char *)strings_ptr);
+    for (size_t i = 1; i < strings_len; i++) {
+        strcat(strings_ptr, strings[i]);
+        printf("strcat %zu result: %s\n", i, (char *)strings_ptr);
     }
 
     return strings_ptr;
