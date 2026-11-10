@@ -57,19 +57,6 @@ void *arena_allocate(Arena *arena, size_t size, size_t align) {
     return NULL;
 }
 
-// Allocates a null-terminated string to the arena and returns a pointer to the resulting string
-void *arena_string_store(Arena *arena, char *string, size_t string_size) {
-    // Allocate the string's size in bytes to the arena
-    void *string_ptr = arena_allocate(arena, string_size, DEFAULT_ALIGNMENT);
-    if (string_ptr == NULL) {
-        return NULL;
-    }
-    // Copy the string's data to the arena
-    memcpy(string_ptr, string, string_size);
-
-    return string_ptr;
-}
-
 // Same as `strdup` only it uses an arena instead of `malloc`
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     void *string_ptr = arena_allocate(arena, string_size, DEFAULT_ALIGNMENT);
@@ -80,26 +67,16 @@ void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
 }
 
 // This is a *very messy* rough draft. We're just getting ideas out there for now
-char *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delim, size_t total_size) {
-    void *string_ptr = arena_allocate(arena,total_size, DEFAULT_ALIGNMENT);
-    if (string_ptr == NULL) return NULL;
+// What a mf mess. You completely forgot the use the allocated arena memory here btw
+// When you return, make sure to address that first. Use memcpy retard. You have to
+// allocate and assign the memory before you can use the resulting string
+// Also dont' forget to use a scratch arena when calling this function
+// THIS ONE DOESN'T NEED A SIZE PARAMETER. CALCULATE THE TOTAL SIZE WITHIN THE FUNCTION
+void *arena_concat_file_paths(Arena *arena, char *string_1, char *string_2, char delimiter) {
+    size_t total_size = sizeof(delimiter) + strlen(string_1) + strlen(string_2)+1;
+    void *string_ptr = arena_allocate(arena, total_size, DEFAULT_ALIGNMENT);
 
-    char result_string[total_size];
 
-    int i = 0;
-    while (string_1[i] != '\0') {
-        result_string[i] = string_1[i];
-        i+=1;
-    }
-    while (string_2[i] != '\0') {
-        result_string[i] = string_2[i];
-        i+=1;
-    }
-
-    char *result_string_2;
-    strcpy(result_string_2, result_string);
-
-    return result_string_2;
 }
 
 // Reset the offsets for a given string

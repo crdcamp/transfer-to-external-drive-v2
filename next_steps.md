@@ -1,6 +1,7 @@
 # Next Steps
-- [ ] Create and use an `arena_dynamic_array` function. Saves memory and avoids the complications over a linked list, and also ensures that the data is stored together in it's own memory block. Linked lists are completely out of the question.
+- [ ] Create a scratch arena
 - [ ] `tree.c`- line 112: Replace `asprintf` with an arena implementation.
+- [ ] Create and use an `arena_dynamic_array` function. Saves memory and avoids the complications over a linked list, and also ensures that the data is stored together in it's own memory block. Linked lists are completely out of the question.
 - [ ] `tree.c`- `new_node` function: Convert `malloc` to an arena allocation
 - [ ] `arena.c`: Think now it's a good time to create and implement a dynamic arena allocator into `tree_fill`
 - [ ] `tree.c` - `tree_fill`: Add file name with spaces handling

@@ -25,14 +25,5 @@ int main(void) {
     char *ex_string_2 = "beepboop";
     char delimiter = '/';
 
-    size_t ex_str_1_size = strlen(ex_string_1);
-    size_t ex_str_2_size = strlen(ex_string_2);
-    size_t delim_size = sizeof(delimiter);
-
-    size_t total_size = ex_str_1_size + ex_str_2_size + delim_size + 1;
-
-    char *arena_str = arena_concat_file_paths(&arena, ex_string_1, ex_string_2, delimiter, total_size);
-    printf("%s\n", arena_str);
-
     return 0;
 }

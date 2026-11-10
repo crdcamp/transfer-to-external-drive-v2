@@ -84,28 +84,6 @@ void tree_fill(Arena *arena, Node *node, char *file_path) {
             }
             // The current child is now be the previous child for the next recursive case
             previous_child = child;
-
-            // TODO: GET RID OF ASPRINTF. IT USES MALLOC AND WILL CAUSE COMPLICATIONS
-            // So, how do begin?
-            // Do we use `arena_string_duplicate`?, or do we make a new function for this?
-            // First, we definitely need the size of the path... yet that can't be found
-            // until the strings are assembled together
-            // So, let's think of a function prototype
-            // We need the arena, the destination to assign the concatenated string,
-            // and two arguments for both strings to concatenate
-
-            // POST ATTEMPT THOUGHTS:
-            // There's gotta be a better way to do this. I need a function that can pass
-            // any number of strings and concatenate them with any desired delimiter
-            // Not only would that be useful later on, it would also be useful literally
-            // any time I need to concatenate strings with a delimiter
-            // But.... how the hell do I do it?
-            // Unfortunately (because I don't feel like learning this at the moment),
-            // Your only option is a dynamic array arena allocator. Tsoding's code
-            // would be a good start
-            // Actually... you can likely implement a general dynamic arena allocation
-            // using the `?` thingy. This should probably be a set amount of bytes
-            // as a first implementation to keep things simple
             char *subdir_path = NULL;
             if (asprintf(&subdir_path, "%s/%s", file_path, entry->d_name) == -1) {
                 printf("asprint error for subdir path concate: '%s' and '%s'\n", file_path, entry->d_name);
