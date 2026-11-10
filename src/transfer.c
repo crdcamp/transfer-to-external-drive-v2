@@ -6,7 +6,7 @@ int main(void) {
 
     // `_Alignas` ensures the buffer is aligned on creation
     _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[131072];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[256]; // Max of 256 chars should be enough space for very long file path
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[256]; // Max of 256 chars should be plenty of space for even the longest of file paths
 
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
     size_t arena_temp_buffer_length = sizeof(arena_temp_buffer) / sizeof(arena_temp_buffer[0]);
@@ -14,17 +14,17 @@ int main(void) {
     arena_init(&arena, arena_buffer, arena_buffer_length);
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
-    // We're just testing for now
-    char *small_ex_dir = "TestDirs/SmallDir";
+    // We're just testing a smaller file structure for now
+    char *source_dir = "TestDirs/SmallDir";
 
-    // Initialize the root for the tree structure to be stored in the arena
+    // Initialize the root_source for the tree structure to be stored in the arena
     // (The tree arena storage has not been implemented yet)
-    Node *root = new_node(small_ex_dir);
-    if (root == NULL) return 1;
+    Node *root_source = new_node(source_dir);
+    if (root_source == NULL) return 1;
 
     // Create a directory tree to be stored in the arena
-    tree_fill(&arena, &arena_temp, root, small_ex_dir);
-    tree_print(root, 0);
+    tree_fill(&arena, &arena_temp, root_source, source_dir);
+    tree_print(root_source, 0);
     arena_reset(&arena_temp);
 
     return 0;
