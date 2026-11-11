@@ -58,8 +58,6 @@ void *arena_allocate(Arena *arena, size_t size, size_t align) {
     return NULL;
 }
 
-void *arena_resize();
-
 // Same as `strdup` only it uses an arena instead of `malloc`
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size) {
     void *string_ptr = arena_allocate(arena, string_size, DEFAULT_ALIGNMENT);
@@ -79,7 +77,9 @@ char *arena_string_concat(Arena *arena, char **strings, size_t element_count) {
 
     // Allocate the needed space for the concatenated string
     char *arena_string = arena_allocate(arena, string_len, DEFAULT_ALIGNMENT);
-    if (arena_string == NULL) return NULL;
+    if (arena_string == NULL) {
+        return NULL;
+    }
 
     // Assign the string's values to the arena
     char *current_ptr = arena_string;

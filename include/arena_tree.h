@@ -11,7 +11,7 @@
 #include <dirent.h>
 
 ///// ARENA /////
-#define DEFAULT_ALIGNMENT (2*sizeof(void *))
+#define DEFAULT_ALIGNMENT sizeof(void *)
 
 typedef unsigned char byte;
 
@@ -30,6 +30,9 @@ void *arena_allocate(Arena *arena, size_t size, size_t align);
 // Storage and retrieval
 void *arena_string_duplicate(Arena *arena, char *string, size_t string_size);
 char *arena_string_concat(Arena *arena, char **string_array, size_t element_count);
+// Checkpoint handling
+size_t arena_checkpoint(Arena *arena);
+void arena_rewind(Arena *arena, size_t checkpoint);
 // Resetting offsets to 0
 void arena_reset(Arena *arena);
 
@@ -37,7 +40,6 @@ void arena_reset(Arena *arena);
 ///// TREE /////
 typedef struct Node {
     char *name; // The name of the directory
-    char **files; // An array of the file names in the directory
     struct Node *parent; // The current directory's parent
     struct Node *first_child; // The current directory's subdirectory
     struct Node *next_sibling; // The current directory's next subdirectory

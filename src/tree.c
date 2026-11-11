@@ -1,5 +1,6 @@
 #include "../include/arena_tree.h"
 
+// TODO: Add file prints to tree_print
 void tree_print(Node *n, int depth) {
     if (n == NULL) return;
 
@@ -11,6 +12,7 @@ void tree_print(Node *n, int depth) {
 }
 
 char **list_files(Arena *arena, Arena arena_temp, char *file_path) {
+    printf("`list_files` function not implemented yet\n");
     return NULL;
 }
 
@@ -22,7 +24,6 @@ Node *new_node(Arena *arena, char *name) {
     }
 
     new_node->name = name;
-    new_node->files = NULL;
     new_node->parent = NULL;
     new_node->first_child = NULL;
     new_node->next_sibling = NULL;
@@ -30,8 +31,15 @@ Node *new_node(Arena *arena, char *name) {
     return new_node;
 }
 
-// TO DO: Implement file structure into the tree as well
-// TO DO: Add arena expansion when it runs out of space
+size_t arena_checkpoint(Arena *arena) {
+    return arena->current_offset;
+}
+
+void arena_rewind(Arena *arena, size_t checkpoint) {
+    arena->current_offset = checkpoint;
+    arena->previous_offset = checkpoint;
+}
+
 void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     // Define a directory pointer to access metadata on directories
     DIR *dirp = opendir(file_path);
@@ -73,6 +81,11 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
                 exit(EXIT_FAILURE);
             }
             Node *child = new_node(arena, (char *)child_name_ptr);
+            if (child == NULL) {
+                fprintf(stderr, "Arena full: couldn't allocate node for '%s'\n", entry->d_name);
+                closedir(dirp);
+                exit(EXIT_FAILURE);
+            }
 
             // Child's parent will always be the node from the previous recursion
             child->parent = node;
@@ -89,16 +102,24 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
             // The current child is now be the previous child for the next recursive case
             previous_child = child;
 
+            // Set an arena checkpoint to enable resetting the arena between recursive calls
+            size_t checkpoint = arena_checkpoint(arena_temp);
+
             // Concatenate the full file path with the child directory's name to pass to the next recursion
             char *subdir_array[3] = {file_path, "/", entry->d_name};
             size_t subdir_array_element_count = sizeof(subdir_array) / sizeof(subdir_array[0]);
             char *subdir_path = arena_string_concat(arena_temp, subdir_array, subdir_array_element_count);
             if (subdir_path == NULL) {
-                printf("Error allocating for subdir path '%s'\n", subdir_path);
+                fprintf(stderr, "Temp arena full at: %s\n", file_path);
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
+            // REMOVE THIS PRINT STATEMENT WHEN DONE
+            printf("%s\n", subdir_path);
             tree_fill(arena, arena_temp, child, subdir_path);
+
+            // Rewind the arena to reset it between recursive calls
+            arena_rewind(arena_temp, checkpoint);
         }
     }
     closedir(dirp);

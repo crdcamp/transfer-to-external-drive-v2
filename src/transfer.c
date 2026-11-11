@@ -1,3 +1,5 @@
+#include <limits.h>
+
 #include "../include/arena_tree.h"
 
 int main(void) {
@@ -6,7 +8,7 @@ int main(void) {
 
     // `_Alignas` ensures the buffer is aligned on creation
     _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[131072];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[256]; // Max of 256 chars should be plenty of space for even the longest of file paths
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[PATH_MAX * 64];
 
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
     size_t arena_temp_buffer_length = sizeof(arena_temp_buffer) / sizeof(arena_temp_buffer[0]);
@@ -15,7 +17,8 @@ int main(void) {
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
     // We're just testing a smaller file structure for now
-    char *source_dir = "TestDirs/SmallDir";
+    // TODO: Add a check for if the directory exists
+    char *source_dir = "TestDirs/Code";
 
     // Initialize the root_source_dir for the tree structure to be stored in the arena
     Node *root_source_dir = new_node(&arena, source_dir);
