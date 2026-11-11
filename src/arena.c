@@ -6,7 +6,6 @@
 void arena_init(Arena *arena, void *buffer, size_t buffer_length) {
     arena->buffer = buffer;
     arena->buffer_length = buffer_length;
-    arena->previous_offset = 0;
     arena->current_offset = 0;
 }
 
@@ -46,8 +45,6 @@ void *arena_allocate(Arena *arena, size_t size, size_t align) {
     if (offset+size <= arena->buffer_length) {
         // Set a pointer to where the new allocation begins
         void *ptr = &arena->buffer[offset];
-        // Set the previous offset to the new relative offset
-        arena->previous_offset = offset;
         // Set the current offset to the end of the newly allocated memory
         arena->current_offset = offset+size;
 
@@ -96,7 +93,3 @@ char *arena_string_concat(Arena *arena, char **strings, size_t element_count) {
 }
 
 // Reset the arena's offsets
-void arena_reset(Arena *arena) {
-    arena->current_offset = 0;
-    arena->previous_offset = 0;
-}

@@ -11,11 +11,6 @@ void tree_print(Node *n, int depth) {
     }
 }
 
-char **list_files(Arena *arena, Arena arena_temp, char *file_path) {
-    printf("`list_files` function not implemented yet\n");
-    return NULL;
-}
-
 // Allocate a new node for the tree and assign it to an arena
 Node *new_node(Arena *arena, char *name) {
     Node *new_node = arena_allocate(arena, sizeof(Node), DEFAULT_ALIGNMENT);
@@ -37,7 +32,6 @@ size_t arena_checkpoint(Arena *arena) {
 
 void arena_rewind(Arena *arena, size_t checkpoint) {
     arena->current_offset = checkpoint;
-    arena->previous_offset = checkpoint;
 }
 
 void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
@@ -80,6 +74,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
+
             Node *child = new_node(arena, (char *)child_name_ptr);
             if (child == NULL) {
                 fprintf(stderr, "Arena full: couldn't allocate node for '%s'\n", entry->d_name);
@@ -99,6 +94,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
             } else {
                 previous_child->next_sibling = child;
             }
+
             // The current child is now be the previous child for the next recursive case
             previous_child = child;
 
@@ -114,8 +110,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
-            // REMOVE THIS PRINT STATEMENT WHEN DONE
-            printf("%s\n", subdir_path);
+            //printf("%s\n", subdir_path);
             tree_fill(arena, arena_temp, child, subdir_path);
 
             // Rewind the arena to reset it between recursive calls

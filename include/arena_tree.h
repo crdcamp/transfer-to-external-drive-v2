@@ -17,7 +17,6 @@ typedef unsigned char byte;
 
 typedef struct {
     byte *buffer;
-    size_t previous_offset;
     size_t current_offset;
     size_t buffer_length;
 } Arena;
@@ -34,8 +33,6 @@ char *arena_string_concat(Arena *arena, char **string_array, size_t element_coun
 size_t arena_checkpoint(Arena *arena);
 void arena_rewind(Arena *arena, size_t checkpoint);
 // Resetting offsets to 0
-void arena_reset(Arena *arena);
-
 
 ///// TREE /////
 typedef struct Node {
@@ -45,7 +42,6 @@ typedef struct Node {
     struct Node *next_sibling; // The current directory's next subdirectory
 } Node;
 
-char **list_files(Arena *arena, Arena arena_temp, char *file_path);
 Node *new_node(Arena *arena, char *name);
 void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path);
 void tree_print(Node *root, int depth);

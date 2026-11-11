@@ -26,8 +26,7 @@ int main(void) {
 
     // Create a directory tree to be stored in the arena
     tree_fill(&arena, &arena_temp, root_source_dir, source_dir);
-    tree_print(root_source_dir, 0);
-    arena_reset(&arena_temp);
+    //tree_print(root_source_dir, 0);
 
     return 0;
 }
