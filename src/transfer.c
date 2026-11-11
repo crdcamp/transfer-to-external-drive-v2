@@ -3,38 +3,47 @@
 #include "../include/arena_tree.h"
 
 void list_directories(char *file_path);
+void print_arena_info(Arena *arena);
 
 int main(void) {
-    Arena arena = {0};
+    Arena arena_source = {0};
+    Arena arena_target = {0};
     Arena arena_temp = {0};
 
+    // Define buffer size for the source and target arenas
+    size_t arena_main_buffer_size = 262144;
     // `_Alignas` ensures the buffer is aligned on creation
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[262144];
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_source_buffer[arena_main_buffer_size];
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_target_buffer[arena_main_buffer_size];
     _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[PATH_MAX * 64];
 
-    size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
+    // Define buffer lengths for all arenas
+    size_t arena_source_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
+    size_t arena_target_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
     size_t arena_temp_buffer_length = sizeof(arena_temp_buffer) / sizeof(arena_temp_buffer[0]);
 
-    arena_init(&arena, arena_buffer, arena_buffer_length);
+    // Initialize all arenas
+    arena_init(&arena_source, arena_source_buffer, arena_source_buffer_length);
+    arena_init(&arena_target, arena_target_buffer, arena_source_buffer_length);
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
-    // We're just testing a smaller file structure for now
-    char *dir_source = "TestDirs/Code";
-    char *dir_target = "TestDirs/Target";
+    // TODO: Convert source directory to an array of directories (for much later)
+    char *dir_source = "TestDirs/SmallDir";
+    char *dir_target = "TestDirs/TargetSmallDirCopy"; // Testing with identical directories as a start
 
-    // Initialize the root_dir_source for the tree structure to be stored in the arena
-    Node *root_dir_source = new_node(&arena, dir_source);
+    // Initialize the source and target directory trees
+    Node *root_dir_source = new_node(&arena_source, dir_source);
     if (root_dir_source == NULL) return 1;
+    Node *root_dir_target = new_node(&arena_target, dir_target);
+    if (root_dir_target == NULL) return 1;
 
-    // Create a directory tree to be stored in the arena
-    tree_fill(&arena, &arena_temp, root_dir_source, dir_source);
-    printf("Main arena memory used: %zu/%zu bytes (%.2f%%)\n",
-           arena.current_offset,
-           arena.buffer_length,
-           100.0 * (double)arena.current_offset / (double)arena.buffer_length);
-    //tree_print(root_dir_source, 0);
+    // Fill trees for the source and target directories
+    tree_fill(&arena_source, &arena_temp, root_dir_source, dir_source);
+    tree_fill(&arena_target, &arena_temp, root_dir_target, dir_target);
+    tree_print(root_dir_source, 0);
+    tree_print(root_dir_target, 0);
 
-    list_directories("TestDirs/SmallDir/SmallSubDir");
+    //list_directories("TestDirs/SmallDir/SmallSubDir");
 
     return 0;
 }
@@ -56,4 +65,13 @@ void list_directories(char *file_path) {
             printf("File: '%s\n", entry->d_name);
         }
     }
+}
+
+void print_arena_info(Arena *arena) {
+    printf("Main arena_source memory used: %zu/%zu bytes (%.2f%%)\n",
+           arena->current_offset,
+           arena->buffer_length,
+           100.0 * (double)arena->current_offset / (double)arena->buffer_length);
+
+    return;
 }
