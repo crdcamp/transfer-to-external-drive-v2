@@ -26,7 +26,10 @@ int main(void) {
 
     // Create a directory tree to be stored in the arena
     tree_fill(&arena, &arena_temp, root_source_dir, source_dir);
-    printf("Current offset: %zu\n", arena.current_offset);
+    printf("Main arena memory used: %zu/%zu bytes (%.2f%%)\n",
+           arena.current_offset,
+           arena.buffer_length,
+           100.0 * (double)arena.current_offset / (double)arena.buffer_length);
     //tree_print(root_source_dir, 0);
 
     return 0;
