@@ -17,20 +17,20 @@ int main(void) {
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
     // We're just testing a smaller file structure for now
-    // TODO: Add a check for if the directory exists
-    char *source_dir = "TestDirs/Code";
+    char *dir_source = "TestDirs/Code";
+    char *dir_target = "TestDirs/Target";
 
-    // Initialize the root_source_dir for the tree structure to be stored in the arena
-    Node *root_source_dir = new_node(&arena, source_dir);
-    if (root_source_dir == NULL) return 1;
+    // Initialize the root_dir_source for the tree structure to be stored in the arena
+    Node *root_dir_source = new_node(&arena, dir_source);
+    if (root_dir_source == NULL) return 1;
 
     // Create a directory tree to be stored in the arena
-    tree_fill(&arena, &arena_temp, root_source_dir, source_dir);
+    tree_fill(&arena, &arena_temp, root_dir_source, dir_source);
     printf("Main arena memory used: %zu/%zu bytes (%.2f%%)\n",
            arena.current_offset,
            arena.buffer_length,
            100.0 * (double)arena.current_offset / (double)arena.buffer_length);
-    //tree_print(root_source_dir, 0);
+    //tree_print(root_dir_source, 0);
 
     return 0;
 }

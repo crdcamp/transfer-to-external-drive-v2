@@ -1,6 +1,7 @@
 # Next Steps
-- [ ] **File handling for directories:** List all the files in the source and target directory and compare them. **You do not need to insert file metadata into the `node` struct**. This can be handled by the file handling itself!
-- [ ] `tree.c` - `tree_fill`: Add space handling for file paths
+- [ ] `tree.c` - `tree_fill`: Add space handling for file paths.
+- [ ] **File handling:** Begin by making a simple function that lists all the files (excluding directories) within a directory. Then you can start thinking about using it in the `tree_fill` function.
+- [ ] Now you can start comparing the source and target directories. I have no idea where to start with this, but I know you'll figure it out.
 - [ ] `arena.c`: Create and implement a dynamic arena allocator to add chunks to the arena as needed.
 - [ ] **Final requirement:** Minimize the program's memory footprint beginning with addressing unnecessary padding caused by poorly formulated structs.
 - [x] `tree.c`- line 112: Replace `asprintf` with an arena implementation.
