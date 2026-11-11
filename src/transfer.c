@@ -7,7 +7,7 @@ int main(void) {
     Arena arena_temp = {0};
 
     // `_Alignas` ensures the buffer is aligned on creation
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[131072];
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_buffer[262144];
     _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[PATH_MAX * 64];
 
     size_t arena_buffer_length = sizeof(arena_buffer) / sizeof(arena_buffer[0]);
@@ -26,6 +26,7 @@ int main(void) {
 
     // Create a directory tree to be stored in the arena
     tree_fill(&arena, &arena_temp, root_source_dir, source_dir);
+    printf("Current offset: %zu\n", arena.current_offset);
     //tree_print(root_source_dir, 0);
 
     return 0;
