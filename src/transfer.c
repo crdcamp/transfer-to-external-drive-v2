@@ -40,8 +40,12 @@ int main(void) {
     // Fill trees for the source and target directories
     tree_fill(&arena_source, &arena_temp, root_dir_source, dir_source);
     tree_fill(&arena_target, &arena_temp, root_dir_target, dir_target);
+    printf("SOURCE DIRECTORY TREE:\n");
     tree_print(root_dir_source, 0);
+    printf("\n");
+    printf("TARGET DIRECTORY TREE:\n");
     tree_print(root_dir_target, 0);
+    printf("\n");
 
     //list_directories("TestDirs/SmallDir/SmallSubDir");
 

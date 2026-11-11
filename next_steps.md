@@ -1,5 +1,16 @@
 # Next Steps
 - [ ] Now you can start comparing the source and target directories. I have no idea where to start with this, but I know you'll figure it out.
+
+Let's start planning for the above step:
+
+This is evidently going to involve a `tree_compare` function. I believe this should intake two **primary** arguments (this wouldn't be all the arguments):
+* The source directories in the form of an array arenas
+* A single target directory
+
+This already runs into a problem though: How can we ensure we're comparing the source and target directories correctly? I think an initial and basic implementation should be to just compare the trees up until they are no longer the same. This would also involve skipping over all the matching directories in the source and target. Then, after that's taken care of, you want to overwrite the files/directories in the target directory that don't match those from the source directory.
+
+This is gonna be a pretty big ordeal, but just keep breaking it down into further steps when these requirements are met. In other words, **begin by comparing the trees and stopping when the target no longer matches the source**.
+
 - [ ] `arena.c`: Create and implement a dynamic arena allocator to add chunks to the arena as needed.
 - [ ] **Final requirement:** Minimize the program's memory footprint beginning with addressing unnecessary padding caused by poorly formulated structs.
 - [x] `tree.c`- line 112: Replace `asprintf` with an arena implementation.
