@@ -1,4 +1,5 @@
 # Next Steps
+- [ ] Make a function that lists the files in a given directory before going all in on its implementation
 - [ ] `tree.c` - `tree_fill`: Add space handling for file paths.
 - [ ] **File handling:** Begin by making a simple function that lists all the files (excluding directories) within a directory. Then you can start thinking about using it in the `tree_fill` function.
 - [ ] Now you can start comparing the source and target directories. I have no idea where to start with this, but I know you'll figure it out.

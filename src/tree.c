@@ -99,6 +99,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
             previous_child = child;
 
             // Set an arena checkpoint to enable resetting the arena between recursive calls
+            // (Saves a considerable amount of memory)
             size_t checkpoint = arena_checkpoint(arena_temp);
 
             // Concatenate the full file path with the child directory's name to pass to the next recursion

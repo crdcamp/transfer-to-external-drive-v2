@@ -2,6 +2,8 @@
 
 #include "../include/arena_tree.h"
 
+void list_directories(char *file_path);
+
 int main(void) {
     Arena arena = {0};
     Arena arena_temp = {0};
@@ -32,5 +34,26 @@ int main(void) {
            100.0 * (double)arena.current_offset / (double)arena.buffer_length);
     //tree_print(root_dir_source, 0);
 
+    list_directories("TestDirs/SmallDir/SmallSubDir");
+
     return 0;
+}
+
+void list_directories(char *file_path) {
+    DIR *dirp = opendir(file_path);
+    if (dirp == NULL) {
+        printf("Failed opening directory: %s\n", file_path);
+        perror("'opendir' failed");
+        return;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dirp)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        if (entry->d_type == DT_REG) {
+            printf("File: '%s\n", entry->d_name);
+        }
+    }
 }
