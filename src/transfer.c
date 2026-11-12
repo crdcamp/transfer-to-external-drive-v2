@@ -48,7 +48,8 @@ int main(void) {
     tree_print(root_dir_target, 0);
     printf("\n");
 
-    tree_compare(root_dir_source, root_dir_target);
+    bool result = tree_is_identical(root_dir_source->first_child, root_dir_target->first_child);
+    printf("Result: %d\n", result);
 
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "../include/arena_tree.h"
+#include <string.h>
 
 // TODO: Add file prints to tree_print
 void tree_print(Node *n, int depth) {
@@ -119,24 +120,21 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     closedir(dirp);
 }
 
-// You're going to need more parameters to account for all the nodes
-// in the `Node` structure bud.
-// Consider making the return type `bool`, but keep as `void` for now for testing
-bool tree_is_identical(Node *root_source, Node *root_target) {
-    // If both roots are NULL, then (obviously) the trees are identical
-    if ((root_source == NULL) && (root_target == NULL)) {
-        printf("You passed two null roots you silly goose\n");
+// Always pass the first child to this function, otherwise
+// it will always return false
+bool tree_is_identical(Node *source, Node *target) {
+    // Base case
+    if ((source == NULL) && (target == NULL)) {
         return true;
     }
 
-    if ((root_source == NULL) || (root_target == NULL)) {
+    if ((source == NULL) || (target == NULL)) {
         return false;
     }
 
-    if (tree_is_identical(root_source->parent, root_target->parent) &&
-        tree_is_identical(root_source->first_child, root_target->first_child) &&
-        tree_is_identical(root_source->next_sibling, root_target->next_sibling) &&
-        root_source->name == root_target->name) {
+    if (tree_is_identical(source->first_child, target->first_child) &&
+        tree_is_identical(source->next_sibling, target->next_sibling) &&
+        strcmp(source->name, target->name) == 0) {
             return true;
         }
     else {
