@@ -29,7 +29,7 @@ int main(void) {
 
     // TODO: Convert source directory to an array of directories (for much later)
     char *dir_source = "TestDirs/SmallDir";
-    char *dir_target = "TestDirs/TargetSmallDirCopy"; // Testing with identical directories as a start
+    char *dir_target = "TestDirs/TargetSmallDirDifferent"; // Testing with identical directories as a start
 
     // Initialize the source and target directory trees
     Node *root_dir_source = new_node(&arena_source, dir_source);
@@ -49,7 +49,7 @@ int main(void) {
     printf("\n");
 
     bool result = tree_is_identical(root_dir_source->first_child, root_dir_target->first_child);
-    printf("Result: %d\n", result);
+    printf("Tree comparison result: %d\n", result);
 
     return 0;
 }
@@ -59,6 +59,7 @@ int main(void) {
 // the tree directories... but let's just focus on comparing the
 // directories for now
 void list_directories(char *file_path) {
+    printf("Files in direcroty: %s\n", file_path);
     DIR *dirp = opendir(file_path);
     if (dirp == NULL) {
         printf("Failed opening directory: %s\n", file_path);
@@ -72,7 +73,7 @@ void list_directories(char *file_path) {
             continue;
         }
         if (entry->d_type == DT_REG) {
-            printf("File: '%s\n", entry->d_name);
+            printf("%s\n", entry->d_name);
         }
     }
 }

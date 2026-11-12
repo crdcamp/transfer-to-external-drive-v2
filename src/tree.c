@@ -120,18 +120,18 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     closedir(dirp);
 }
 
-// Always pass the first child to this function, otherwise
-// it will always return false
+// Always pass the first child to this function. Otherwise, it will always return false
+// TODO: Implement this directly into
 bool tree_is_identical(Node *source, Node *target) {
-    // Base case
+    // Base cases
     if ((source == NULL) && (target == NULL)) {
         return true;
     }
-
     if ((source == NULL) || (target == NULL)) {
         return false;
     }
 
+    // Compare the first child, next sibling, and names of both trees
     if (tree_is_identical(source->first_child, target->first_child) &&
         tree_is_identical(source->next_sibling, target->next_sibling) &&
         strcmp(source->name, target->name) == 0) {
@@ -140,4 +140,5 @@ bool tree_is_identical(Node *source, Node *target) {
     else {
         return false;
     }
+
 }
