@@ -47,7 +47,7 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     struct dirent *entry; // `dirent` = "directory entry"
     Node *previous_child = NULL;
     while ((entry = readdir(dirp)) != NULL) {
-        // Skip "." and ".." (used for dictating the current or previous directory respectively)
+        // Skip "." and ".." (used for dictating the current and previous directories)
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
@@ -99,7 +99,6 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
             previous_child = child;
 
             // Set an arena checkpoint to enable resetting the arena between recursive calls
-            // (Saves a considerable amount of memory)
             size_t checkpoint = arena_checkpoint(arena_temp);
 
             // Concatenate the full file path with the child directory's name to pass to the next recursion
@@ -111,12 +110,19 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
-            //printf("%s\n", subdir_path);
             tree_fill(arena, arena_temp, child, subdir_path);
 
-            // Rewind the arena to reset it between recursive calls
+            // Rewind the temporary arena to reset it between recursive calls
             arena_rewind(arena_temp, checkpoint);
         }
     }
     closedir(dirp);
+}
+
+void tree_compare(Node *root_source, Node *root_target) {
+    // If both roots are NULL, then (obviously) the trees are identical
+    if((root_source == NULL) && (root_target == NULL)) {
+        printf("You passed two null roots you silly goose\n");
+        return;
+    }
 }
