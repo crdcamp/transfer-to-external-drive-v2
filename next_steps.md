@@ -15,6 +15,7 @@ Moreover, the best end decision might be to just leave the function as a 1-1 com
 
 This is gonna be a pretty big ordeal, but just keep breaking it down into further steps when these requirements are met. In other words, **begin by comparing the trees and stopping when the target no longer matches the source**.
 
+- [ ] Use [sendfile](https://man7.org/linux/man-pages/man2/sendfile.2.html) for copying the files to the target directory.
 - [ ] **Final requirement:** Minimize the program's memory footprint beginning with addressing unnecessary padding caused by poorly formulated structs.
 - [x] `tree.c`- line 112: Replace `asprintf` with an arena implementation.
 - [x] `tree.c`- `new_node` function: Convert `malloc` to an arena allocation

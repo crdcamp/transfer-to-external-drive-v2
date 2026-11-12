@@ -119,10 +119,27 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
     closedir(dirp);
 }
 
-void tree_compare(Node *root_source, Node *root_target) {
+// You're going to need more parameters to account for all the nodes
+// in the `Node` structure bud.
+// Consider making the return type `bool`, but keep as `void` for now for testing
+bool tree_is_identical(Node *root_source, Node *root_target) {
     // If both roots are NULL, then (obviously) the trees are identical
-    if((root_source == NULL) && (root_target == NULL)) {
+    if ((root_source == NULL) && (root_target == NULL)) {
         printf("You passed two null roots you silly goose\n");
-        return;
+        return true;
+    }
+
+    if ((root_source == NULL) || (root_target == NULL)) {
+        return false;
+    }
+
+    if (tree_is_identical(root_source->parent, root_target->parent) &&
+        tree_is_identical(root_source->first_child, root_target->first_child) &&
+        tree_is_identical(root_source->next_sibling, root_target->next_sibling) &&
+        root_source->name == root_target->name) {
+            return true;
+        }
+    else {
+        return false;
     }
 }
