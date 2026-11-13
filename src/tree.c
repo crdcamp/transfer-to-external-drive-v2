@@ -142,6 +142,17 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
+void tree_get_directories(Node *node, Arena *arena_temp, char *base_path) {
+    if (node == NULL) return;
+
+    char *parts[3] = { base_path, "/", node->name };
+    char *full_path = arena_string_concat(arena_temp, parts, 3);
+    printf("%s\n", full_path);
+
+    tree_get_directories(node->first_child, arena_temp, full_path);   // children live inside this node
+    tree_get_directories(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
+}
+
 void tree_list_node_directories(char *file_path) {
     printf("Files in direcroty: %s\n", file_path);
     DIR *dirp = opendir(file_path);

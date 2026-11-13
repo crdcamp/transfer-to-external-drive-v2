@@ -50,6 +50,9 @@ void tree_print(Node *root, int depth); // Remove this when project is complete
 
 void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
-void copy_files(Node *node, Arena *arena_temp, char *base_path);
+void tree_get_directories(Node *node, Arena *arena_temp, char *base_path);
+
+void tree_copy_identical(Arena *arena_temp, Node source_node, char *source_base_path, Node target_node, char *target_node_path);
+void tree_copy_different();
 
 #endif

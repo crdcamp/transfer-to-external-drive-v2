@@ -69,11 +69,11 @@ int main(void) {
 
     printf("\nFull path results:\n");
     size_t source_dir_len = strlen(source_dir);
-    copy_files(source_root, &arena_temp, source_dir);
+    tree_get_directories(source_root, &arena_temp, source_dir);
     printf("\n");
 
     // printf("Target path links for %s\n", source_dir);
-    // copy_files(target_root);
+    // tree_get_directories(target_root);
     // printf("\n");
 
     // If the trees are identical, overwrite ONLY the files within each directory
@@ -85,27 +85,18 @@ int main(void) {
     return 0;
 }
 
- void copyfile_testing(char *source, char *target) {
-     copyfile(source, target, NULL, COPYFILE_DATA);
- }
+void copyfile_testing(char *source, char *target) {
+    copyfile(source, target, NULL, COPYFILE_DATA);
+}
 
- void copy_files(Node *node, Arena *arena_temp, char *base_path) {
-     if (node == NULL) return;
+// Now.... how do recreate the above function, only instead it accepts a source and
+// target file path?
+void tree_copy_identical(Arena *arena_temp, Node source_node, char *source_base_path, Node target_node, char *target_node_path) {
+    // I think we want to get the target files paths first
+    // Then, get the source file paths and copy the files using the target file paths
+    // Therefore, we likely want to recurse through the target directories/files, then recurse
 
-     char *parts[3] = { base_path, "/", node->name };
-     char *full_path = arena_string_concat(arena_temp, parts, 3);
-     printf("%s\n", full_path);
-
-     copy_files(node->first_child, arena_temp, full_path);   // children live inside this node
-     copy_files(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
- }
-
-
-// Rough draft function to be used later
-// Gonna need this when comparing the files while running through
-// the tree directories... but let's just focus on comparing the
-// directories for now
-
+}
 
 void print_arena_info(Arena *arena) {
     printf("Main arena_source memory used: %zu/%zu unsigned chars (%.2f%%)\n",
