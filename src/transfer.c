@@ -4,21 +4,11 @@
 void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
 
-// SO.... THIS successfully recurses through every directory and
-// subdirectory in base path
-// We are currently operating under the assumption that the directory
-// structure of the source and target are the same and that we're
-// simply overwriting all the files in the directory with `filecopy`
-
-// THE QUESTION IS.... How in the hell do we give `filecopy` a full file path?
-// Maybe we can draw some inspiration from `subdir` found in `tree.c`????
-// We also might need a way to externally store the full file path using
-// a helper function
-void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
+void copy_files(Node *node, Arena *arena_temp, char *base_path) {
     // Base case
     if (node == NULL) return;
 
-    if (node->next_sibling != NULL) {
+    if (node != NULL) {
         char *full_path_array[3];
 
         full_path_array[0] = base_path;
@@ -26,13 +16,13 @@ void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
         full_path_array[2] = arena_string_duplicate(arena_temp, node->name, strlen(node->name)+1);
 
         char *full_path = arena_string_concat(arena_temp, full_path_array, 3);
-        printf("Full path: %s\n", full_path);
+        printf("%s\n", full_path);
 
         base_path = full_path;
     }
 
-    tree_link_paths(node->first_child, arena_temp, base_path);
-    tree_link_paths(node->next_sibling, arena_temp, base_path);
+    copy_files(node->first_child, arena_temp, base_path);
+    copy_files(node->next_sibling, arena_temp, base_path);
 }
 
 int main(void) {
@@ -104,11 +94,11 @@ int main(void) {
 
     printf("\nFull path results:\n");
     size_t source_dir_len = strlen(source_dir);
-    tree_link_paths(source_root, &arena_temp, source_dir);
+    copy_files(source_root, &arena_temp, source_dir);
     printf("\n");
 
     // printf("Target path links for %s\n", source_dir);
-    // tree_link_paths(target_root);
+    // copy_files(target_root);
     // printf("\n");
 
     // If the trees are identical, overwrite ONLY the files within each directory
