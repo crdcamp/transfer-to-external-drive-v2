@@ -24,8 +24,8 @@ int main(void) {
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
     // TODO: Convert source directory to an array of directories (for much later)
-    char *source_dir = "TestDirs/SmallDir";
-    char *target_dir = "TestDirs/TargetSmallDirSame"; // Testing with identical directories as a start
+    char *source_dir = "TestDirs/TestSource";
+    char *target_dir = "TestDirs/TestTarget"; // Testing with identical directories as a start
 
     // Initialize the source and target directory trees
     Node *source_root = new_node(&arena_source, source_dir);
@@ -51,26 +51,8 @@ int main(void) {
     // printf("\n");
 
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
-    if (is_identical) printf("Trees are identical\n");
+    if (is_identical) printf("Trees are identical\n\n");
     else printf("Trees are not identical\n\n");
-
-    // Before we can compare the trees, we need to figure out a way to link together
-    // the file paths recursively
-    // Problem is, I don't want to be recursing through the trees a total of what might be
-    // like... 3-4 times. There's gotta be a better way....
-    // Oh well, let's just get started on this and see where it goes
-    // Actually (later), we can probably combine the file linking process with the tree
-    // comparison process and just end that when the trees no longer match
-
-    // First thing's first: we need a function for linking the file paths together
-    // maybe this doesn't require recursion, but it most likely does
-    printf("Testing directory: %s\n", source_dir);
-    tree_print(source_root, 0);
-
-    printf("\nFull path results:\n");
-    size_t source_dir_len = strlen(source_dir);
-    tree_get_directories(source_root, &arena_temp, source_dir);
-    printf("\n");
 
     // If the trees are identical, overwrite ONLY the files within each directory
     // If the trees are not identical, overwrite the ENTIRE tree

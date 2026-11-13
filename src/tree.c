@@ -177,9 +177,14 @@ void tree_list_node_directories(char *file_path) {
 // target file path?
 // DON'T FORGET to reset the arena between calls
 // DON'T FORGET to close the files between calls
-void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base_path, Node *target_node, char *target_node_path) {
+void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base_path, Node *target_node, char *target_base_path) {
     // I think we want to get the target files paths first
     // Then, get the source file paths and copy the files using the target file paths
     // Therefore, we likely want to recurse through the target directories/files, then recurse
 
+    // Recurse over target_node
+    printf("TARGET DIRECTORIES:\n");
+    tree_get_directories(target_node->first_child, arena_temp, target_base_path);
+    printf("\nSOURCE DIRECTORIES:\n");
+    tree_get_directories(source_node->first_child, arena_temp, source_base_path);
 }
