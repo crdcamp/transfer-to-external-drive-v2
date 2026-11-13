@@ -142,9 +142,22 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
-void tree_link_paths(Node *node) {
-    printf("File name:    %s\n", node->name);
-    printf("Child:        %s\n", node->first_child->name);
-    printf("Next sibling: %s\n", node->next_sibling->name);
-    printf("\n");
+void tree_list_node_directories(char *file_path) {
+    printf("Files in direcroty: %s\n", file_path);
+    DIR *dirp = opendir(file_path);
+    if (dirp == NULL) {
+        printf("Failed opening directory: %s\n", file_path);
+        perror("'opendir' failed");
+        return;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dirp)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+        if (entry->d_type == DT_REG) {
+            printf("%s\n", entry->d_name);
+        }
+    }
 }

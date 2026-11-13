@@ -3,6 +3,21 @@
 void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
 
+void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
+    // Base case
+    if (node == NULL) return;
+
+    char **full_path_array;
+    full_path_array[0] = arena_string_duplicate(arena_temp, base_path, strlen(base_path)+1);
+    full_path_array[1] = arena_string_duplicate(arena_temp, node->name, strlen(node->name)+1);
+    size_t full_path_array_size = sizeof(full_path_array) / sizeof(full_path_array[0]);
+
+    char *full_path = arena_string_concat(arena_temp, full_path_array, full_path_array_size);
+
+    tree_link_paths(node->first_child, arena_temp, base_path);
+    tree_link_paths(node->next_sibling, arena_temp, base_path);
+}
+
 int main(void) {
     Arena arena_source = {0};
     Arena arena_target = {0};
@@ -32,9 +47,15 @@ int main(void) {
 
     // Initialize the source and target directory trees
     Node *source_root = new_node(&arena_source, source_dir);
-    if (source_root == NULL) return 1;
+    if (source_root == NULL) {
+        printf("Error: `source_root` returned NULL on creation\n");
+        return 1;
+    }
     Node *target_root = new_node(&arena_target, target_dir);
-    if (target_root == NULL) return 1;
+    if (target_root == NULL) {
+        printf("Error: `target_root` returned NULL on creation\n");
+        return 1;
+    }
 
     // Fill trees for the source and target directories
     tree_fill(&arena_source, &arena_temp, source_root, source_dir);
@@ -49,7 +70,7 @@ int main(void) {
 
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
     if (is_identical) printf("Trees are identical\n");
-    else printf("Trees are not identical\n");
+    else printf("Trees are not identical\n\n");
 
     // Before we can compare the trees, we need to figure out a way to link together
     // the file paths recursively
@@ -61,7 +82,14 @@ int main(void) {
 
     // First thing's first: we need a function for linking the file paths together
     // maybe this doesn't require recursion, but it most likely does
-    tree_link_paths(source_root);
+    printf("Source path links for %s\n", source_dir);
+    size_t source_dir_len = strlen(source_dir);
+    tree_link_paths(source_root, &arena_temp, source_dir);
+    printf("\n");
+
+    // printf("Target path links for %s\n", source_dir);
+    // tree_link_paths(target_root);
+    // printf("\n");
 
     // If the trees are identical, overwrite ONLY the files within each directory
 
@@ -81,25 +109,7 @@ int main(void) {
 // Gonna need this when comparing the files while running through
 // the tree directories... but let's just focus on comparing the
 // directories for now
-void list_directories(char *file_path) {
-    printf("Files in direcroty: %s\n", file_path);
-    DIR *dirp = opendir(file_path);
-    if (dirp == NULL) {
-        printf("Failed opening directory: %s\n", file_path);
-        perror("'opendir' failed");
-        return;
-    }
 
-    struct dirent *entry;
-    while ((entry = readdir(dirp)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
-        if (entry->d_type == DT_REG) {
-            printf("%s\n", entry->d_name);
-        }
-    }
-}
 
 void print_arena_info(Arena *arena) {
     printf("Main arena_source memory used: %zu/%zu bytes (%.2f%%)\n",
