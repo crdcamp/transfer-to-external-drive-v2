@@ -3,10 +3,27 @@
 void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
 
+// SO.... THIS successfully recurses through every directory and
+// subdirectory in base path
+// We are currently operating under the assumption that the directory
+// structure of the source and target are the same and that we're
+// simply overwriting all the files in the directory with `filecopy`
+
+// THE QUESTION IS.... How in the hell do we give `filecopy` a full file path?
+// Maybe we can draw some inspiration from `subdir` found in `tree.c`????
+// We also might need a way to externally store the full file path using
+// a helper function
 void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
     // Base case
     if (node == NULL) return;
-    printf("Current node: %s\n", node->name);
+
+    char *full_path_array[2];
+    full_path_array[0] = base_path;
+    full_path_array[1] = arena_string_duplicate(arena_temp, node->name, strlen(node->name)+1);
+
+    char *full_path = arena_string_concat(arena_temp, full_path_array, 2);
+
+    base_path = full_path;
 
     tree_link_paths(node->first_child, arena_temp, base_path);
     tree_link_paths(node->next_sibling, arena_temp, base_path);
