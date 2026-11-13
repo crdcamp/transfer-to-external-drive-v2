@@ -7,14 +7,10 @@ void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
     // Base case
     if (node == NULL) return;
 
-    if (node->next_sibling != NULL) {
-        char *full_path_array[3];
-
-        full_path_array[0] = arena_string_duplicate(arena_temp, base_path, strlen(base_path)+1);
+    if (node->first_child != NULL) {
+        char *full_path_array[2] = {arena_string_duplicate(arena_temp, base_path, strlen(base_path)+1)};
         full_path_array[1] = "/";
-        full_path_array[2] = arena_string_duplicate(arena_temp, node->next_sibling->name, strlen(node->name)+1);
-
-        char *full_path = arena_string_concat(arena_temp, full_path_array, 3);
+        char *full_path = arena_string_concat(arena_temp, full_path_array, 2);
         printf("%s\n", full_path);
     }
 
