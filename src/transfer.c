@@ -27,28 +27,41 @@ int main(void) {
     arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
 
     // TODO: Convert source directory to an array of directories (for much later)
-    char *dir_source = "TestDirs/SmallDir";
-    char *dir_target = "TestDirs/TargetSmallDirDifferent"; // Testing with identical directories as a start
+    char *source_dir = "TestDirs/SmallDir";
+    char *target_dir = "TestDirs/TargetSmallDirSame"; // Testing with identical directories as a start
 
     // Initialize the source and target directory trees
-    Node *root_dir_source = new_node(&arena_source, dir_source);
-    if (root_dir_source == NULL) return 1;
-    Node *root_dir_target = new_node(&arena_target, dir_target);
-    if (root_dir_target == NULL) return 1;
+    Node *source_root = new_node(&arena_source, source_dir);
+    if (source_root == NULL) return 1;
+    Node *target_root = new_node(&arena_target, target_dir);
+    if (target_root == NULL) return 1;
 
     // Fill trees for the source and target directories
-    tree_fill(&arena_source, &arena_temp, root_dir_source, dir_source);
-    tree_fill(&arena_target, &arena_temp, root_dir_target, dir_target);
+    tree_fill(&arena_source, &arena_temp, source_root, source_dir);
+    tree_fill(&arena_target, &arena_temp, target_root, target_dir);
 
     printf("SOURCE DIRECTORY TREE:\n");
-    tree_print(root_dir_source, 0);
+    tree_print(source_root, 0);
     printf("\n");
     printf("TARGET DIRECTORY TREE:\n");
-    tree_print(root_dir_target, 0);
+    tree_print(target_root, 0);
     printf("\n");
 
-    bool result = tree_is_identical(root_dir_source->first_child, root_dir_target->first_child);
-    printf("Tree comparison result: %d\n", result);
+    bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
+    if (is_identical) printf("Trees are identical\n");
+    else printf("Trees are not identical\n");
+
+    // Before we can compare the trees, we need to figure out a way to link together
+    // the file paths recursively
+    // Problem is, I don't want to be recursing through the trees a total of what might be
+    // like... 3-4 times. There's gotta be a better way....
+    // Oh well, let's just get started on this and see where it goes
+    // Actually (later), we can probably combine the file linking process with the tree
+    // comparison process and just end that when the trees no longer match
+
+    // First thing's first: we need a function for linking the file paths together
+    // maybe this doesn't require recursion, but it most likely does
+    tree_link_paths(source_root);
 
     // If the trees are identical, overwrite ONLY the files within each directory
 

@@ -141,3 +141,10 @@ bool tree_is_identical(Node *source, Node *target) {
     }
 
 }
+
+void tree_link_paths(Node *node) {
+    printf("File name:    %s\n", node->name);
+    printf("Child:        %s\n", node->first_child->name);
+    printf("Next sibling: %s\n", node->next_sibling->name);
+    printf("\n");
+}
