@@ -3,8 +3,8 @@
 - [ ] Handle different trees and file copying.
 - [ ] Determine whether the file overwriting could be done with a more efficient approach.
 - [ ] Create and implement a `tree_create` function. **Don't forget** to leave the arena declarations outside of the function.
-- [ ] Loop through an array of source directories using the `tree_create` function.
-- [ ] Implement the `tree_create` function in a way that `main` can accept multiple source directories.
+- [ ] Implement the `tree_create` function in a way that `main` can accept an array of source directories.
+- [ ] Implement the identical/different trees functionality.
 - [ ] **Final requirement:** Minimize the program's memory footprint beginning byt addressing unnecessary padding caused by poorly formulated structs.
 - [x] `tree.c`- line 112: Replace `asprintf` with an arena implementation.
 - [x] `tree.c`- `new_node` function: Convert `malloc` to an arena allocation
