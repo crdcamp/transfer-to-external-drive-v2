@@ -1,5 +1,4 @@
 #include "../include/arena_tree.h"
-#include <string.h>
 
 // TODO: Add file prints to tree_print
 void tree_print(Node *n, int depth) {

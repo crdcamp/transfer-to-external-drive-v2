@@ -1,5 +1,3 @@
-#include <limits.h>
-
 #include "../include/arena_tree.h"
 
 void list_directories(char *file_path);
@@ -12,10 +10,11 @@ int main(void) {
 
     // Define buffer size for the source and target arenas
     size_t arena_main_buffer_size = 262144;
+    size_t arena_temp_buffer_size = PATH_MAX*64;
     // `_Alignas` ensures the buffer is aligned on creation
     _Alignas(DEFAULT_ALIGNMENT) byte arena_source_buffer[arena_main_buffer_size];
     _Alignas(DEFAULT_ALIGNMENT) byte arena_target_buffer[arena_main_buffer_size];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[PATH_MAX * 64];
+    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[arena_temp_buffer_size];
 
     // Define buffer lengths for all arenas
     size_t arena_source_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
@@ -51,8 +50,19 @@ int main(void) {
     bool result = tree_is_identical(root_dir_source->first_child, root_dir_target->first_child);
     printf("Tree comparison result: %d\n", result);
 
+    // If the trees are identical, overwrite ONLY the files within each directory
+
+    // If the trees are not identical, overwrite the ENTIRE tree
+
+    // We can think about more elegant solutions when these two requirements are met
+
     return 0;
 }
+
+ void copyfile_testing(char *source, char *target) {
+     copyfile(source, target, NULL, COPYFILE_DATA);
+ }
+
 
 // Rough draft function to be used later
 // Gonna need this when comparing the files while running through

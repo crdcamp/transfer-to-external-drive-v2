@@ -1,14 +1,15 @@
 #ifndef ARENA_TREE_H
 #define ARENA_TREE_H
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <dirent.h>
+#include <copyfile.h>
 
 ///// ARENA /////
 #define DEFAULT_ALIGNMENT sizeof(void *)
