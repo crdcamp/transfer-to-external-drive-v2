@@ -88,20 +88,3 @@ int main(void) {
 void copyfile_testing(char *source, char *target) {
     copyfile(source, target, NULL, COPYFILE_DATA);
 }
-
-// Now.... how do recreate the above function, only instead it accepts a source and
-// target file path?
-void tree_copy_identical(Arena *arena_temp, Node source_node, char *source_base_path, Node target_node, char *target_node_path) {
-    // I think we want to get the target files paths first
-    // Then, get the source file paths and copy the files using the target file paths
-    // Therefore, we likely want to recurse through the target directories/files, then recurse
-
-}
-
-void print_arena_info(Arena *arena) {
-    printf("Main arena_source memory used: %zu/%zu unsigned chars (%.2f%%)\n",
-           arena->current_offset,
-           arena->buffer_length,
-           100.0 * (double)arena->current_offset / (double)arena->buffer_length);
-    return;
-}

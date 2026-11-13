@@ -172,3 +172,12 @@ void tree_list_node_directories(char *file_path) {
         }
     }
 }
+
+// Now.... how do recreate the above function, only instead it accepts a source and
+// target file path?
+void tree_copy_identical(Arena *arena_temp, Node source_node, char *source_base_path, Node target_node, char *target_node_path) {
+    // I think we want to get the target files paths first
+    // Then, get the source file paths and copy the files using the target file paths
+    // Therefore, we likely want to recurse through the target directories/files, then recurse
+
+}
