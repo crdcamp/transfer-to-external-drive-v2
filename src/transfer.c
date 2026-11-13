@@ -1,29 +1,4 @@
 #include "../include/arena_tree.h"
-#include <string.h>
-
-void list_directories(char *file_path);
-void print_arena_info(Arena *arena);
-
-void copy_files(Node *node, Arena *arena_temp, char *base_path) {
-    // Base case
-    if (node == NULL) return;
-
-    if (node != NULL) {
-        char *full_path_array[3];
-
-        full_path_array[0] = base_path;
-        full_path_array[1] = "/";
-        full_path_array[2] = arena_string_duplicate(arena_temp, node->name, strlen(node->name)+1);
-
-        char *full_path = arena_string_concat(arena_temp, full_path_array, 3);
-        printf("%s\n", full_path);
-
-        base_path = full_path;
-    }
-
-    copy_files(node->first_child, arena_temp, base_path);
-    copy_files(node->next_sibling, arena_temp, base_path);
-}
 
 int main(void) {
     Arena arena_source = {0};
@@ -34,9 +9,9 @@ int main(void) {
     size_t arena_main_buffer_size = 262144;
     size_t arena_temp_buffer_size = PATH_MAX*64;
     // `_Alignas` ensures the buffer is aligned on creation
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_source_buffer[arena_main_buffer_size];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_target_buffer[arena_main_buffer_size];
-    _Alignas(DEFAULT_ALIGNMENT) byte arena_temp_buffer[arena_temp_buffer_size];
+    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_source_buffer[arena_main_buffer_size];
+    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_target_buffer[arena_main_buffer_size];
+    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_temp_buffer[arena_temp_buffer_size];
 
     // Define buffer lengths for all arenas
     size_t arena_source_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
@@ -114,6 +89,17 @@ int main(void) {
      copyfile(source, target, NULL, COPYFILE_DATA);
  }
 
+ void copy_files(Node *node, Arena *arena_temp, char *base_path) {
+     if (node == NULL) return;
+
+     char *parts[3] = { base_path, "/", node->name };
+     char *full_path = arena_string_concat(arena_temp, parts, 3);
+     printf("%s\n", full_path);
+
+     copy_files(node->first_child, arena_temp, full_path);   // children live inside this node
+     copy_files(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
+ }
+
 
 // Rough draft function to be used later
 // Gonna need this when comparing the files while running through
@@ -122,7 +108,7 @@ int main(void) {
 
 
 void print_arena_info(Arena *arena) {
-    printf("Main arena_source memory used: %zu/%zu bytes (%.2f%%)\n",
+    printf("Main arena_source memory used: %zu/%zu unsigned chars (%.2f%%)\n",
            arena->current_offset,
            arena->buffer_length,
            100.0 * (double)arena->current_offset / (double)arena->buffer_length);

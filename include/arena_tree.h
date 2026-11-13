@@ -11,13 +11,11 @@
 #include <dirent.h>
 #include <copyfile.h>
 
-///// ARENA /////
 #define DEFAULT_ALIGNMENT sizeof(void *)
 
-typedef unsigned char byte;
-
+///// ARENA /////
 typedef struct {
-    byte *buffer;
+    unsigned char *buffer;
     size_t current_offset;
     size_t buffer_length;
 } Arena;
@@ -49,5 +47,9 @@ bool tree_is_identical(Node *root_source, Node *root_target);
 void tree_list_node_directories(char *file_path);
 
 void tree_print(Node *root, int depth); // Remove this when project is complete
+
+void list_directories(char *file_path);
+void print_arena_info(Arena *arena);
+void copy_files(Node *node, Arena *arena_temp, char *base_path);
 
 #endif
