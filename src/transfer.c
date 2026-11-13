@@ -15,7 +15,7 @@ void tree_link_paths(Node *node, Arena *arena_temp, char *base_path) {
         full_path_array[2] = arena_string_duplicate(arena_temp, node->next_sibling->name, strlen(node->name)+1);
 
         char *full_path = arena_string_concat(arena_temp, full_path_array, 3);
-        printf("Full path result: %s\n", full_path);
+        printf("%s\n", full_path);
     }
 
     tree_link_paths(node->first_child, arena_temp, base_path);
@@ -65,12 +65,12 @@ int main(void) {
     tree_fill(&arena_source, &arena_temp, source_root, source_dir);
     tree_fill(&arena_target, &arena_temp, target_root, target_dir);
 
-    printf("SOURCE DIRECTORY TREE:\n");
-    tree_print(source_root, 0);
-    printf("\n");
-    printf("TARGET DIRECTORY TREE:\n");
-    tree_print(target_root, 0);
-    printf("\n");
+    // printf("SOURCE DIRECTORY TREE:\n");
+    // tree_print(source_root, 0);
+    // printf("\n");
+    // printf("TARGET DIRECTORY TREE:\n");
+    // tree_print(target_root, 0);
+    // printf("\n");
 
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
     if (is_identical) printf("Trees are identical\n");
@@ -86,7 +86,10 @@ int main(void) {
 
     // First thing's first: we need a function for linking the file paths together
     // maybe this doesn't require recursion, but it most likely does
-    printf("Source path links for %s\n", source_dir);
+    printf("Testing directory: %s\n", source_dir);
+    tree_print(source_root, 0);
+
+    printf("\nFull path results:\n");
     size_t source_dir_len = strlen(source_dir);
     tree_link_paths(source_root, &arena_temp, source_dir);
     printf("\n");
