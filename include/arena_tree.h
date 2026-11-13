@@ -52,7 +52,7 @@ void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
 void tree_get_directories(Node *node, Arena *arena_temp, char *base_path);
 
-void tree_copy_identical(Arena *arena_temp, Node source_node, char *source_base_path, Node target_node, char *target_node_path);
+void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base_path, Node *target_node, char *target_node_path);
 void tree_copy_different();
 
 #endif

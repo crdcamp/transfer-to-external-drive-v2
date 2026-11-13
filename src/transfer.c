@@ -72,15 +72,10 @@ int main(void) {
     tree_get_directories(source_root, &arena_temp, source_dir);
     printf("\n");
 
-    // printf("Target path links for %s\n", source_dir);
-    // tree_get_directories(target_root);
-    // printf("\n");
-
     // If the trees are identical, overwrite ONLY the files within each directory
-
     // If the trees are not identical, overwrite the ENTIRE tree
-
     // We can think about more elegant solutions when these two requirements are met
+    tree_copy_identical(&arena_temp, source_root, source_dir, target_root, target_dir);
 
     return 0;
 }
