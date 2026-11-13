@@ -149,6 +149,8 @@ void tree_get_filepaths(Node *node, Arena *arena_temp, char *base_path) {
     char *full_path = arena_string_concat(arena_temp, parts, 3);
     printf("%s\n", full_path);
 
+    // NOW ADD ACTUAL FILES AND ASSIGN THEM TO THE ARENA
+
     tree_get_filepaths(node->first_child, arena_temp, full_path);   // children live inside this node
     tree_get_filepaths(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
 }

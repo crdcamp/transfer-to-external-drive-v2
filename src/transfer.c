@@ -50,7 +50,23 @@ int main(void) {
     // If the trees are identical, overwrite ONLY the files within each directory
     // If the trees are not identical, overwrite the ENTIRE tree
     // We can think about more elegant solutions when these two requirements are met
-    tree_copy_identical(&arena_temp, source_root, source_dir, target_root, target_dir);
+
+    // I THINK THE PATH FORWARD SHOULD INVOLVE ALLOCATING VIRTUAL MEMORY SPACE
+    // INSTEAD OF MAKING AN ARENA FOR EACH DIRECTORY TREE, JUST PUT THEM ALL IN
+    // A BIG ARENA ASSIGNED AS VIRTUAL MEMORY SPACE (about 0.5mb)
+
+    // OR: ONE ARENA FOR THE TREE STRUCTURES, AND ANOTHER FOR ALL FILE PATHS
+
+    // There's probably a way more efficient way to do this, but it's currently beyond
+    // my skill and knowhow
+    Arena arena_file_paths = {0};
+
+    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_file_paths_buffer[arena_main_buffer_size];
+    size_t arena_file_paths_buffer_length = sizeof(arena_file_paths_buffer) / sizeof(arena_file_paths_buffer[0]);
+    arena_init(&arena_file_paths, arena_file_paths_buffer, arena_source_buffer_length);
+
+    tree_copy_identical(&arena_file_paths, source_root, source_dir, target_root, target_dir);
+
 
     return 0;
 }
