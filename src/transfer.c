@@ -103,6 +103,5 @@ void print_arena_info(Arena *arena) {
            arena->current_offset,
            arena->buffer_length,
            100.0 * (double)arena->current_offset / (double)arena->buffer_length);
-
     return;
 }
