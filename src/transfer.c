@@ -43,13 +43,6 @@ int main(void) {
     tree_fill(&arena_source, &arena_temp, source_root, source_dir);
     tree_fill(&arena_target, &arena_temp, target_root, target_dir);
 
-    // printf("SOURCE DIRECTORY TREE:\n");
-    // tree_print(source_root, 0);
-    // printf("\n");
-    // printf("TARGET DIRECTORY TREE:\n");
-    // tree_print(target_root, 0);
-    // printf("\n");
-
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
     if (is_identical) printf("Trees are identical\n\n");
     else printf("Trees are not identical\n\n");

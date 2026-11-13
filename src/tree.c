@@ -142,15 +142,15 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
-void tree_get_directories(Node *node, Arena *arena_temp, char *base_path) {
+void tree_get_filepaths(Node *node, Arena *arena_temp, char *base_path) {
     if (node == NULL) return;
 
     char *parts[3] = { base_path, "/", node->name };
     char *full_path = arena_string_concat(arena_temp, parts, 3);
     printf("%s\n", full_path);
 
-    tree_get_directories(node->first_child, arena_temp, full_path);   // children live inside this node
-    tree_get_directories(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
+    tree_get_filepaths(node->first_child, arena_temp, full_path);   // children live inside this node
+    tree_get_filepaths(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
 }
 
 void tree_list_node_directories(char *file_path) {
@@ -173,8 +173,14 @@ void tree_list_node_directories(char *file_path) {
     }
 }
 
-// Now.... how do recreate the above function, only instead it accepts a source and
-// target file path?
+// I BELIEVE THE LOGICAL NEXT STEP IS TO CONVERT `tree_get_filepaths`
+// SO THAT IT RETURNS A LIST OF ALL FILE PATHS OF WHICH ARE ASSIGNED
+// TO A DESIGNATED ARENA
+// THAT WOULD BE THE EASIEST WAY TO PROCEED, BUT ALMOST CERTAINLY NOT THE
+// BEST WAY TO PROCEED. BUT... at some point you just gotta get it done
+// You'll also want to consider using another large arena instead of using `temp_arena`
+// This is all getting a bit messy though... there has to be a better way
+
 // DON'T FORGET to reset the arena between calls
 // DON'T FORGET to close the files between calls
 void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base_path, Node *target_node, char *target_base_path) {
@@ -182,9 +188,9 @@ void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base
     // Then, get the source file paths and copy the files using the target file paths
     // Therefore, we likely want to recurse through the target directories/files, then recurse
 
-    // Recurse over target_node
     printf("TARGET DIRECTORIES:\n");
-    tree_get_directories(target_node->first_child, arena_temp, target_base_path);
+    tree_get_filepaths(target_node->first_child, arena_temp, target_base_path);
     printf("\nSOURCE DIRECTORIES:\n");
-    tree_get_directories(source_node->first_child, arena_temp, source_base_path);
+    tree_get_filepaths(source_node->first_child, arena_temp, source_base_path);
+    printf("\n");
 }
