@@ -47,14 +47,12 @@ Node *new_node(Arena *arena, char *name);
 void tree_fill(Arena *arena, Arena *arena_scratch, Node *node, char *file_path);
 bool tree_is_identical(Node *root_source, Node *root_target);
 void tree_list_node_directories(char *file_path);
-
-void tree_print(Node *root, int depth); // Remove this when project is complete
-
 void list_directories(char *file_path);
 void print_arena_info(Arena *arena);
 void tree_get_filepaths(Node *node, Arena *arena_scratch, char *base_path);
-
 void tree_copy_identical(Arena *arena, Arena *arena_scratch, Node *source_node, char *source_base_path, Node *target_node, char *target_base_path);
 //void tree_copy_different();
+
+void tree_print(Node *root, int depth); // Remove this when project is complete
 
 #endif

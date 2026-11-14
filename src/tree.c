@@ -142,7 +142,11 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
+// CHANGE THIS FUNCTION SO IT GETS AN ARRAY OF STRINGS OF ALL FILE PATHS
+// AND ASSIGNS THEM TO THE MAIN ARENA
 void tree_get_filepaths(Node *node, Arena *arena_scratch, char *base_path) {
+    char **filepaths = {};
+    int i = 0;
     for (Node *n = node; n != NULL; n = n->next_sibling) {
         size_t checkpoint = arena_checkpoint(arena_scratch);
 

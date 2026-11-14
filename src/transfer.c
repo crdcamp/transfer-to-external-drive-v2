@@ -43,10 +43,13 @@ int main(void) {
     tree_fill(&arena, &arena_scratch, source_root, source_dir);
     tree_fill(&arena, &arena_scratch, target_root, target_dir);
 
+    // (Temporary - will be implemented into related functions later) \
+    // Determine if trees are identical
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
     if (is_identical) printf("Trees are identical\n\n");
     else printf("Trees are not identical\n\n");
 
+    // (For now) assuming that the trees are identical, copy the
     tree_copy_identical(&arena, &arena_scratch, source_root, source_dir, target_root, target_dir);
 
     return 0;
