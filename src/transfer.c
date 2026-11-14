@@ -47,18 +47,7 @@ int main(void) {
     if (is_identical) printf("Trees are identical\n\n");
     else printf("Trees are not identical\n\n");
 
-    // If the trees are identical, overwrite ONLY the files within each directory
-    // If the trees are not identical, overwrite the ENTIRE tree
-    // We can think about more elegant solutions when these two requirements are met
-
-    // I THINK THE PATH FORWARD SHOULD INVOLVE ALLOCATING VIRTUAL MEMORY SPACE
-    // INSTEAD OF MAKING AN ARENA FOR EACH DIRECTORY TREE, JUST PUT THEM ALL IN
-    // A BIG ARENA ASSIGNED AS VIRTUAL MEMORY SPACE (about 0.5mb) USE `mmap`
-
-    // OR: ONE ARENA FOR THE TREE STRUCTURES, AND ANOTHER FOR ALL FILE PATHS
-
-    // There's probably a way more efficient way to do this, but it's currently beyond
-    // my skill and knowhow
+    tree_copy_identical(&arena, source_root, source_dir, target_root, target_dir);
 
     return 0;
 }
