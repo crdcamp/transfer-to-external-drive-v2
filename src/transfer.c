@@ -47,7 +47,7 @@ int main(void) {
     if (is_identical) printf("Trees are identical\n\n");
     else printf("Trees are not identical\n\n");
 
-    tree_copy_identical(&arena, source_root, source_dir, target_root, target_dir);
+    tree_copy_identical(&arena, &arena_scratch, source_root, source_dir, target_root, target_dir);
 
     return 0;
 }
