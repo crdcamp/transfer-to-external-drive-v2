@@ -4,7 +4,7 @@
 
 // Temporary function
 void print_arena_info(Arena *arena) {
-    printf("Main arena_source memory used: %zu/%zu unsigned chars (%.2f%%)\n",
+    printf("Main arena memory used: %zu/%zu unsigned chars (%.2f%%)\n",
            arena->current_offset,
            arena->buffer_length,
            100.0 * (double)arena->current_offset / (double)arena->buffer_length);
