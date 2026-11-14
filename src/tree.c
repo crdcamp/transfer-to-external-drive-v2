@@ -34,7 +34,7 @@ void arena_rewind(Arena *arena, size_t checkpoint) {
     arena->current_offset = checkpoint;
 }
 
-void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
+void tree_fill(Arena *arena, Arena *arena_scratch, Node *node, char *file_path) {
     // Define a directory pointer to access metadata on directories
     DIR *dirp = opendir(file_path);
     if (dirp == NULL) {
@@ -99,21 +99,21 @@ void tree_fill(Arena *arena, Arena *arena_temp, Node *node, char *file_path) {
             previous_child = child;
 
             // Set an arena checkpoint to enable resetting the arena between recursive calls
-            size_t checkpoint = arena_checkpoint(arena_temp);
+            size_t checkpoint = arena_checkpoint(arena_scratch);
 
             // Concatenate the full file path with the child directory's name to pass to the next recursion
             char *subdir_array[3] = {file_path, "/", entry->d_name};
             size_t subdir_array_element_count = sizeof(subdir_array) / sizeof(subdir_array[0]);
-            char *subdir_path = arena_string_concat(arena_temp, subdir_array, subdir_array_element_count);
+            char *subdir_path = arena_string_concat(arena_scratch, subdir_array, subdir_array_element_count);
             if (subdir_path == NULL) {
                 fprintf(stderr, "Temp arena full at: %s\n", file_path);
                 closedir(dirp);
                 exit(EXIT_FAILURE);
             }
-            tree_fill(arena, arena_temp, child, subdir_path);
+            tree_fill(arena, arena_scratch, child, subdir_path);
 
             // Rewind the temporary arena to reset it between recursive calls
-            arena_rewind(arena_temp, checkpoint);
+            arena_rewind(arena_scratch, checkpoint);
         }
     }
     closedir(dirp);
@@ -142,17 +142,17 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
-void tree_get_filepaths(Node *node, Arena *arena_temp, char *base_path) {
+void tree_get_filepaths(Node *node, Arena *arena_scratch, char *base_path) {
     if (node == NULL) return;
 
     char *parts[3] = { base_path, "/", node->name };
-    char *full_path = arena_string_concat(arena_temp, parts, 3);
+    char *full_path = arena_string_concat(arena_scratch, parts, 3);
     printf("%s\n", full_path);
 
     // NOW ADD ACTUAL FILES AND ASSIGN THEM TO THE ARENA
 
-    tree_get_filepaths(node->first_child, arena_temp, full_path);   // children live inside this node
-    tree_get_filepaths(node->next_sibling, arena_temp, base_path);  // siblings share the parent's path
+    tree_get_filepaths(node->first_child, arena_scratch, full_path);   // children live inside this node
+    tree_get_filepaths(node->next_sibling, arena_scratch, base_path);  // siblings share the parent's path
 }
 
 void tree_list_node_directories(char *file_path) {
@@ -185,14 +185,14 @@ void tree_list_node_directories(char *file_path) {
 
 // DON'T FORGET to reset the arena between calls
 // DON'T FORGET to close the files between calls
-void tree_copy_identical(Arena *arena_temp, Node *source_node, char *source_base_path, Node *target_node, char *target_base_path) {
+void tree_copy_identical(Arena *arena_scratch, Node *source_node, char *source_base_path, Node *target_node, char *target_base_path) {
     // I think we want to get the target files paths first
     // Then, get the source file paths and copy the files using the target file paths
     // Therefore, we likely want to recurse through the target directories/files, then recurse
 
     printf("TARGET DIRECTORIES:\n");
-    tree_get_filepaths(target_node->first_child, arena_temp, target_base_path);
+    tree_get_filepaths(target_node->first_child, arena_scratch, target_base_path);
     printf("\nSOURCE DIRECTORIES:\n");
-    tree_get_filepaths(source_node->first_child, arena_temp, source_base_path);
+    tree_get_filepaths(source_node->first_child, arena_scratch, source_base_path);
     printf("\n");
 }

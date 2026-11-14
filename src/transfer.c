@@ -1,27 +1,27 @@
 #include "../include/arena_tree.h"
 
 int main(void) {
-    Arena arena_source = {0};
-    Arena arena_target = {0};
-    Arena arena_temp = {0};
+    // Allocate about a half a megabyte of virtual memory
+    Arena arena_main = {0};
+    size_t size = 524288;
+    void *buf = mmap(NULL, size,
+                        PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANON,
+                        -1, 0);
+    if (buf == MAP_FAILED) { perror("mmap"); exit(EXIT_FAILURE); }
 
     // Define buffer size for the source and target arenas
-    size_t arena_main_buffer_size = 262144;
-    size_t arena_temp_buffer_size = PATH_MAX*64;
+    size_t arena_scratch_buffer_size = PATH_MAX*64;
     // `_Alignas` ensures the buffer is aligned on creation
-    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_source_buffer[arena_main_buffer_size];
-    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_target_buffer[arena_main_buffer_size];
-    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_temp_buffer[arena_temp_buffer_size];
+    _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_scratch_buffer[arena_scratch_buffer_size];
 
     // Define buffer lengths for all arenas
-    size_t arena_source_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
-    size_t arena_target_buffer_length = sizeof(arena_source_buffer) / sizeof(arena_source_buffer[0]);
-    size_t arena_temp_buffer_length = sizeof(arena_temp_buffer) / sizeof(arena_temp_buffer[0]);
+    Arena arena_scratch = {0};
+    size_t arena_scratch_buffer_length = sizeof(arena_scratch_buffer) / sizeof(arena_scratch_buffer[0]);
 
     // Initialize all arenas
-    arena_init(&arena_source, arena_source_buffer, arena_source_buffer_length);
-    arena_init(&arena_target, arena_target_buffer, arena_source_buffer_length);
-    arena_init(&arena_temp, arena_temp_buffer, arena_temp_buffer_length);
+    arena_init(&arena_main, buf, size); // Main arena
+    arena_init(&arena_scratch, arena_scratch_buffer, arena_scratch_buffer_length); // Scratch arena
 
     // TODO: Convert source directory to an array of directories (for much later)
     char *source_dir = "TestDirs/TestSource";
@@ -40,8 +40,8 @@ int main(void) {
     }
 
     // Fill trees for the source and target directories
-    tree_fill(&arena_source, &arena_temp, source_root, source_dir);
-    tree_fill(&arena_target, &arena_temp, target_root, target_dir);
+    tree_fill(&arena_source, &arena_scratch, source_root, source_dir);
+    tree_fill(&arena_target, &arena_scratch, target_root, target_dir);
 
     bool is_identical = tree_is_identical(source_root->first_child, target_root->first_child);
     if (is_identical) printf("Trees are identical\n\n");
