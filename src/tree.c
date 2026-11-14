@@ -143,16 +143,21 @@ bool tree_is_identical(Node *source, Node *target) {
 }
 
 void tree_get_filepaths(Node *node, Arena *arena_scratch, char *base_path) {
-    if (node == NULL) return;
+    for (Node *n = node; n != NULL; n = n->next_sibling) {
+        size_t checkpoint = arena_checkpoint(arena_scratch);
 
-    char *parts[3] = { base_path, "/", node->name };
-    char *full_path = arena_string_concat(arena_scratch, parts, 3);
-    printf("%s\n", full_path);
+        char *parts[3] = { base_path, "/", n->name };
+        char *full_path = arena_string_concat(arena_scratch, parts, 3);
+        if (full_path == NULL) {
+            fprintf(stderr, "Scratch arena full at: %s\n", base_path);
+            exit(EXIT_FAILURE);
+        }
+        printf("%s\n", full_path);
 
-    // NOW ADD ACTUAL FILES AND ASSIGN THEM TO THE ARENA
+        tree_get_filepaths(n->first_child, arena_scratch, full_path);
 
-    tree_get_filepaths(node->first_child, arena_scratch, full_path);   // children live inside this node
-    tree_get_filepaths(node->next_sibling, arena_scratch, base_path);  // siblings share the parent's path
+        arena_rewind(arena_scratch, checkpoint);
+    }
 }
 
 void tree_list_node_directories(char *file_path) {
@@ -189,6 +194,11 @@ void tree_copy_identical(Arena *arena, Arena *arena_scratch, Node *source_node, 
     // I think we want to get the target files paths first
     // Then, get the source file paths and copy the files using the target file paths
     // Therefore, we likely want to recurse through the target directories/files, then recurse
+
+    // Now that we haver a massive virtual memory arena, we can freely allocate file paths
+    // to it without much worry!
+
+    // Now, let's store all the file paths in the virtual memory arena
 
     printf("TARGET DIRECTORIES:\n");
     tree_get_filepaths(target_node->first_child, arena_scratch, target_base_path);
