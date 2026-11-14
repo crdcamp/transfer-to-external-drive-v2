@@ -34,6 +34,9 @@ void arena_rewind(Arena *arena, size_t checkpoint) {
     arena->current_offset = checkpoint;
 }
 
+// ASSIGN FILE PATHS TO ARENA IN THIS FUNCTION!!!!!
+// THAT MEANS IT SHOULD ALSO RETURN A POINTER TO WHERE THE ARRAY
+// OF FILE STRINGS BEGINS
 void tree_fill(Arena *arena, Arena *arena_scratch, Node *node, char *file_path) {
     // Define a directory pointer to access metadata on directories
     DIR *dirp = opendir(file_path);
@@ -142,8 +145,6 @@ bool tree_is_identical(Node *source, Node *target) {
 
 }
 
-// CHANGE THIS FUNCTION SO IT GETS AN ARRAY OF STRINGS OF ALL FILE PATHS
-// AND ASSIGNS THEM TO THE MAIN ARENA
 void tree_get_filepaths(Node *node, Arena *arena_scratch, char *base_path) {
     char **filepaths = {};
     int i = 0;
