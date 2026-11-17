@@ -41,8 +41,8 @@ void tree_fill(Arena *arena, Arena *arena_scratch, Node *node, char *file_path) 
     // Define a directory pointer to access metadata on directories
     DIR *dirp = opendir(file_path);
     if (dirp == NULL) {
-        printf("Failed opening directory: %s\n", file_path);
         perror("`opendir` failed");
+        exit(EXIT_FAILURE);
         return;
     }
 
