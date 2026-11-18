@@ -27,12 +27,12 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-void delete(const char *file_path) {
+void delete_file(const char *file_path) {
     if (remove(file_path) == 0) {
-        printf("File '%s' deleted\n", file_path);
+        printf("File '%s' delete_filed\n", file_path);
     }
     else {
-        printf("Error: Unable to delete file '%s'\n", file_path);
+        printf("Error: Unable to delete_file file '%s'\n", file_path);
     }
     return;
 }
@@ -44,7 +44,7 @@ int by_name(const FTSENT **a, const FTSENT **b) {
  /*
     Visit each depth level of the source and target directory paths
     to ensure the target directory mirrors the source directory.
-    The target directory is edited in-place and deletes/updates
+    The target directory is edited in-place and delete_files/updates
     files according to the source directory's file hierarchy structure.
     A scratch `Arena` must be provided for string operations.
 */
@@ -85,30 +85,30 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         // meaning that the rest will go above this one
 
         // If the target directory's current depth has more files than
-        // the source directory, delete the extraneous files
+        // the source directory, delete_file the extraneous files
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
-            struct _ftsent *next_file = target_ptr->fts_link;
-            printf("Next target file: %s\n", next_file->fts_name);
+            FTSENT *next_file = target_ptr->fts_link;
+            while (next_file != NULL) {
+                // If it's a file, just delete_file the file
+                if (next_file->fts_info == FTS_F) {
+                    size_t checkpoint = arena_checkpoint(arena_scratch); // Create a checkpoint for the scratch arena reset later
+                    char *full_path_array[3] = {next_file->fts_path, "/", next_file->fts_name};
+                    char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
 
-            // If it's a file, just delete the file
-            if (next_file->fts_info == FTS_F) {
-                // Concatenate `fts_path` and `fts_name`
-                size_t checkpoint = arena_checkpoint(arena_scratch);
-                char *full_path_array[3] = {next_file->fts_path, "/", next_file->fts_name};
-                char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+                    // delete_file the files
+                    printf("File %s is a file\n", next_file->fts_path);
+                    printf("Attempting to delete_file file: %s\n", full_path);
+                    delete_file(full_path);
 
-                // Delete the files
-                printf("File %s is a file\n", next_file->fts_path);
-                printf("Attempting to delete file: %s\n", next_file->fts_path);
-                delete(full_path);
-
-                arena_rewind(arena_scratch, checkpoint);
+                    arena_rewind(arena_scratch, checkpoint); // Reset the scratch arena
+                }
+                // If it's a directory, recursively delete_file the directory
+                else if (next_file->fts_info == FTS_D) {
+                    printf("File %s is a directory\n", target_ptr->fts_accpath);
+                }
+                // If it's a directory, recursively delete_file the director
+                next_file = next_file->fts_link;
             }
-            // If it's a directory, recursively delete the directory
-            if (next_file->fts_info == FTS_D) {
-                printf("File %s is a directory\n", target_ptr->fts_accpath);
-            }
-            // If it's a directory, recursively delete the director
         }
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
