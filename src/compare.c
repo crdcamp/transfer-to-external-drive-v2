@@ -1,6 +1,5 @@
 #include "../include/compare.h"
 #include "../include/arena.h"
-#include <cmath>
 
 void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
@@ -74,11 +73,9 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
     // printf("\n");
 
     // Iterate through the `source_children_list` and the `target_children_list` at the same time
-    int i = 1;
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL) {
-        printf("Iteration %i\n", i);
         printf("Current source file: %s\n", source_ptr->fts_name);
         printf("Current target file: %s\n", target_ptr->fts_name);
         printf("\n");
@@ -87,25 +84,25 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         // or one of the last conditions you should be checking for,
         // meaning that the rest will go above this one
 
-        // If the target directory continues past the source directory, let the user know
-        // Now, what should we actually do in this instance?
-        // Well, if the target directory continues past the source,
-        // that means those are files we no longer want.
-        // So... let's delete them!
-        // Step 1: Create a remove function
-        // Step 2: Use the remove function recursively on the extraneous directories
-        // Ensure that you're walking the rest of the `target_ptr` linked list, and
-        // not just the next item in the linked list
+        // If the target directory's current depth has more files than
+        // the source directory, delete the extraneous files
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
-            printf("Target directory is larger than source! Next target directory: %s\n", target_ptr->fts_link->fts_name);
-            break;
+            struct _ftsent *next_file = target_ptr->fts_link;
+            printf("Next target file: %s\n", next_file->fts_name);
+            // If it's a file, just delete the file
+            if (next_file->fts_info == FTS_F) {
+                printf("File %s is a file\n", target_ptr->fts_accpath);
+                printf("Attempting to delete file: %s\n", target_ptr->fts_accpath);
+                delete(target_ptr->fts_accpath);
+            }
+            // If it's a directory, recursively delete the directory
+            if (next_file->fts_info == FTS_D) {
+                printf("File %s is a directory\n", target_ptr->fts_accpath);
+            }
+            // If it's a directory, recursively delete the director
         }
-        else {
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-        }
-
-        i+=1;
+        source_ptr = source_ptr->fts_link;
+        target_ptr = target_ptr->fts_link;
     }
 
     // Now, how do we set this recursion up so it continues down
