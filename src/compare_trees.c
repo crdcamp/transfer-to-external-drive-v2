@@ -1,5 +1,6 @@
 #include "../include/compare.h"
 #include "../include/arena.h"
+#include <cstring>
 
 int main(void) {
     // `fts` requires the array of paths to end in NULL so it can terminate
@@ -13,16 +14,9 @@ int main(void) {
     return 0;
 }
 
-// We can abandon the entire arena approach,
-// but we can use a scratch arena here as well for string and path length handling
-// In general though, we should primarily be relying on `fts`
-// First, we need a function that only takes in a source and target parameter and a scratch arena
-// We need to compare the source and the destination as we're iterating over the two
-// Not sure how we'd do that, but we have a good enough idea of the data structure to at least get started
-
 FTSENT *children_get_list(FTS *handle) {
-    FTSENT *list_start = fts_read(handle);
-    if (list_start == NULL) {
+    FTSENT *sorted_list_arena = fts_read(handle);
+    if (sorted_list_arena == NULL) {
         perror("fts_read");
         exit(EXIT_FAILURE);
     }
@@ -42,9 +36,10 @@ void children_print_list(FTSENT *children_list) {
     }
 }
 
-void *children_sort_list(FTSENT *children_list) {
-    // Get the file names of each file in the linked list
-    char *names[] = {0};
+// Returns an arena pointer to the sorted list
+void *children_sort_list(Arena *arena, FTSENT *children_list) {
+    // Get the file sorted_list of each file in the linked list
+    char *sorted_list[] = {0};
     int i = 0;
 
     // Need to allocate to the arena for this
@@ -52,13 +47,22 @@ void *children_sort_list(FTSENT *children_list) {
     // the main project since this seems like it's actually
     // going to work out
     while (children_list != NULL) {
-        names[i] = children_list->fts_name;
+        sorted_list[i] = children_list->fts_name;
         i+=1;
     }
 
     for (int j = 0; j < i; j++) {
-        printf("Name: %s", names[i]);
+        printf("Name: %s", sorted_list[i]);
     }
+
+    // Allocate the list to the arena
+    size_t sorted_list_size = sizeof(sorted_list) / sizeof(sorted_list[i]);
+    void *sorted_list_arena = arena_allocate(arena, sorted_list_size, DEFAULT_ALIGNMENT);
+    if (sorted_list_arena == NULL) return NULL;
+    memcpy(sorted_list_arena, sorted_list, sorted_list_size);
+
+    // Return a pointer to the beginning of the list in the arena
+    return sorted_list_arena;
 }
 
  /* Visit each depth of the source and target file paths
@@ -88,6 +92,7 @@ void compare_directories(char **source, char **target) {
     printf("\n");
 
     // Sort both directories alphabetically before continuing (merge sort)
+    // DON'T FORGET to reset the arena after you're done using them
 
 
     // MAKE A THOROUGH PLAN BEFORE CONTINUING HERE
