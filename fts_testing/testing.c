@@ -9,7 +9,7 @@ int main(void) {
     char *target[] = {"TestDirs/Target", NULL};
     //fts_show_tree_info(source);
 
-    fts_compare_dirs(source, target);
+    compare_directories(source, target);
 
     return 0;
 }
@@ -38,17 +38,33 @@ FTSENT *children_get_list(FTS *handle) {
 void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
     while (ptr != NULL) {
-        printf("%s\n", ptr->fts_path);
+        printf("%s\n", ptr->fts_name);
         ptr = ptr->fts_link;
     }
 }
 
-FTSENT *children_sort_list(FTSENT *source_children_list, FTSENT *target_children_list) {
-    printf("Working on it\n");
-    return NULL;
+void *children_sort_list(FTSENT *children_list) {
+    // Get the file names of each file in the linked list
+    char *names[] = {0};
+    int i = 0;
+
+    // Need to allocate to the arena for this
+    // Let's put a pin in this and move these functions into
+    // the main project since this seems like it's actually
+    // going to work out
+    while (children_list != NULL) {
+        names[i] = children_list->fts_name;
+        i+=1;
+    }
+
+    for (int j = 0; j < i; j++) {
+        printf("Name: %s", names[i]);
+    }
 }
 
-void fts_compare_dirs(char **source, char **target) {
+ /* Visit each depth of the source and target file paths
+     to ensure the target directory mirrors the source directory */
+void compare_directories(char **source, char **target) {
     // Open the source and target directories
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, NULL);
     if (source_handle == NULL) {
@@ -61,26 +77,31 @@ void fts_compare_dirs(char **source, char **target) {
         exit(EXIT_FAILURE);
     }
 
-    // Create a linked list of all files in the current directory
-    FTSENT *source_children_list = children_get_list(source_handle);
+    // Create a linked list of all files/directories in the current directory
+    FTSENT *children_list = children_get_list(source_handle);
     FTSENT *target_children_list = children_get_list(target_handle);
 
-    // Test print / list walk demonstration
-    FTSENT *ptr = source_children_list;
-    children_print_list(source_children_list);
+    // Test print
+    FTSENT *ptr = children_list;
+    children_print_list(children_list);
     printf("\n");
     children_print_list(target_children_list);
+    printf("\n");
 
     // Sort both directories alphabetically before continuing (merge sort)
 
+
+    // MAKE A THOROUGH PLAN BEFORE CONTINUING HERE
     // Compare both sorted lists
     // Don't forget to also compare the modification dates
     // You might also want to check if the file size is greater or lesser
-    // and the modification date is more recent, but this might be unnecessary
+    // in addition to the modification date being more recent, but this might be unnecessary
 
     // While iterating through each entry in the lists:
-        // If the list entries are the same, move to the next depth
-        // If the list entries are different, overwrite the source paths into the target
+        // If the list entries are the same, check the modification dates. If the mod dates are different, update the files accordingly
+        // Otherwise move to the next depth
+        // If the list entries are different, overwrite the source paths into the target and delete files not found in the source
+        // DO NOT FORGET to do this on an entry-by-entry basis
 
     // Now, how do we set this recursion up so it continues down
     // the rest of the file paths?
