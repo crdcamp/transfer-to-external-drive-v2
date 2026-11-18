@@ -63,7 +63,6 @@ int main(void) {
 
 void fts_print_info(FTSENT *node) {
     struct _ftsent;
-    printf("access path:       %s\n", node->fts_accpath);
     printf("path:              %s\n", node->fts_path);
     printf("parent name:       %s\n", node->fts_parent->fts_name);
     printf("name:              %s\n", node->fts_name);
@@ -94,8 +93,7 @@ void fts_testing(char **paths) {
     FTSENT *node;
     while ((node = fts_read(fts_handle)) != NULL) {
         if (node->fts_info == FTS_F) {
-            printf("File: %s\n", node->fts_name);
-            printf("Parent: %s\n", node->fts_parent->fts_name);
+            fts_print_info(node);
             printf("\n");
         }
     }
