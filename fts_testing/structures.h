@@ -17,19 +17,21 @@
 
 #include <copyfile.h>
 
-typedef struct Node {
-    char *path;            // fts_path
-    char *name;            // fts_name
-    struct ftsent *parent; // fts_parent
-    short pathlen;         // fts_pathlen
-    short level;           // fts_level
-    void *pointer;         // fts_pointer
-    time_t last_mod;       // fts_statp->st_mtime
-} Node;
+typedef struct FTSNode {
+    char *path;            // fts_path Full file path
+    char *name;            // fts_name File name
+    struct _ftsent *parent; // fts_parent Parent directory name
+    short pathlen;         // fts_pathlen Size in bytes of the file's name
+    short level;           // fts_level How deep within the directory hierarchy the file is
+    void *pointer;         // fts_pointer A NULL pointer that may or may not come in handy
+    time_t last_mod;       // fts_statp->st_mtime Time since last modification. Will be used for determining whether or not to overwrite a file
+} FTSNode;
 
 void fts_show_tree_info(char **file);
 void fts_print_entry_info(FTSENT *node);
 void copyfile_testing(char *file);
+void fts_compare_dirs(char **source, char **target);
+FTSENT *child_list(FTS *fts_handle);
 
 #endif
 

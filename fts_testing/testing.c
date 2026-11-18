@@ -1,16 +1,67 @@
 #include "structures.h"
+#include <stdlib.h>
 
 int main(void) {
     // `fts` requires the array of paths to end in NULL so it can terminate
     // without a length parameter
-    char *paths[] = {"TestDirs", NULL};
-    fts_show_tree_info(paths);
+    char *source[] = {"TestDirs/Source", NULL};
+    char *target[] = {"TestDirs/Target", NULL};
+    //fts_show_tree_info(source);
+
+    fts_compare_dirs(source, target);
 
     return 0;
 }
 
+// We can abandon the entire arena approach,
+// but we can use a scratch arena here as well for string and path length handling
+// In general though, we should primarily be relying on `fts`
+// First, we need a function that only takes in a source and target parameter and a scratch arena
+// We need to compare the source and the destination as we're iterating over the two
+// Not sure how we'd do that, but we have a good enough idea of the data structure to at least get started
+
+void fts_compare_dirs(char **source, char **target) {
+    // Open the source directory
+    FTS *source_handle = fts_open(source, FTS_PHYSICAL, NULL);
+    if (source_handle == NULL) {
+        perror("fts_open");
+        exit(EXIT_FAILURE);
+    }
+
+    FTSENT *node;
+    int i = 0;
+    struct _ftsent *source_list[] = {0};
+    // Read the source directory and add entries to the list
+    while ((node = fts_read(source_handle)) != NULL) {
+        if ((node->fts_info == FTS_D) || (node->fts_info == FTS_F)) {
+            source_list[i] = node;
+            printf("Path: %s\n", source_list[i]->fts_path);
+            i+=1;
+        }
+    }
+
+
+    // Get a linked list of the files in the target directory
+
+    // Get a linked
+
+    // Get an array of the directories in the source and sort
+
+
+    // Get an array of the files in the source and sort
+
+    // Get an array of the files in the target and sort
+
+    // Get an array of directories in the target and sort
+
+    // Compare the source and target directory arrays
+
+    // Compare the source and target file arrays
+
+    // Don't forget to implement the modification date check as well
+}
+
 void fts_print_entry_info(FTSENT *node) {
-    struct _ftsent;
     printf("Full path:         %s\n", node->fts_path);
     printf("Name:              %s\n", node->fts_name);
     if (strcmp(node->fts_parent->fts_name, "") == 0)
@@ -65,20 +116,4 @@ void fts_show_tree_info(char **paths) {
         }
     }
     fts_close(fts_handle);
-
-    // Copy the relevant fields of the struct into the arena. They can then be used to
-    // do the rest of the file handling
-
-    // Now... before you go nuts with the coding, you'll need to read through all of the
-    // `fts` docs, as there might be some tools in there you'll need. Also make sure
-    // to fully read over both the structs just so you're not forgetting any useful info
-    // that you may need for the structs as well
-
-    // NOTE: There's an `fts_pointer` field, which can easily be used for getting information
-    // more quickly. This might come in handy
-
-    // NOTE: You'll need a way to create directories. You can compare both file structures until
-    // they aren't the same anymore. Once you reach one that doesn't match, you overwrite newer files with
-    // older files, delete files not found in the source directory, and make directories that exist in the
-    // source directory, but not the target directory
 }
