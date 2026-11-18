@@ -1,15 +1,15 @@
 #ifndef ARENA_H
 #define ARENA_H
 
-#define DEFAULT_ALIGNMENT sizeof(void *)
-
-#include <stdio.h>
+#include <assert.h>
 #include <limits.h>
 #include <stdbool.h>
-#include <string.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
-#include <assert.h>
+
+#define DEFAULT_ALIGNMENT sizeof(void *)
 
 typedef struct {
     unsigned char *buffer;
