@@ -19,21 +19,27 @@ void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
     printf("Parent: %s\n", ptr->fts_parent->fts_name);
     printf("Depth: %i\n", ptr->fts_level);
-    printf("Files:\n");
+    printf("Files: ");
     while (ptr != NULL) {
-        printf("%s\n", ptr->fts_name);
+        printf("%s ", ptr->fts_name);
         ptr = ptr->fts_link;
     }
+    printf("\n");
 }
 
 static int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
- /* Visit each depth of the source and target file paths
-     to ensure the target directory mirrors the source directory */
-void compare_directories(char **source, char **target) {
-    // Open the source and target directories while sorting them by name
+ /*
+    Visit each depth level of the source and target directory paths
+    to ensure the target directory mirrors the source directory.
+    The target directory is edited in-place and deletes/updates
+    files according to the source directory's file hierarchy structure.
+    A scratch `Arena` must be provided for string operations.
+*/
+void compare_directories(Arena *arena_scratch, char **source, char **target) {
+    // Open the source and target directories while sorting them `by_name`
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
@@ -50,24 +56,33 @@ void compare_directories(char **source, char **target) {
     FTSENT *target_children_list = children_get_list(target_handle);
 
     // Test print
-    children_print_list(source_children_list);
-    printf("\n");
+    // children_print_list(source_children_list);
+    // printf("\n");
 
-    children_print_list(target_children_list);
-    printf("\n");
+    // children_print_list(target_children_list);
+    // printf("\n");
 
+    // Iterate through the `source_children_list` and the `target_children_list` at the same time
+    int i = 1;
+    FTSENT *source_ptr = source_children_list;
+    FTSENT *target_ptr = target_children_list;
+    while (source_ptr != NULL) {
+        printf("Iteration %i\n", i);
+        printf("Current source file: %s\n", source_ptr->fts_name);
+        printf("Current target file: %s\n", target_ptr->fts_name);
+        printf("\n");
 
-    // MAKE A THOROUGH PLAN BEFORE CONTINUING HERE
-    // Compare both sorted lists
-    // Don't forget to also compare the modification dates
-    // You might also want to check if the file size is greater or lesser
-    // in addition to the modification date being more recent, but this might be unnecessary
+        if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
+            printf("Target directory is larger than source! Next target directory: %s\n", target_ptr->fts_link->fts_name);
+            break;
+        }
+        else {
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
 
-    // While iterating through each entry in the lists:
-        // If the list entries are the same, check the modification dates. If the mod dates are different, update the files accordingly
-        // Otherwise move to the next depth
-        // If the list entries are different, overwrite the source paths into the target and delete files not found in the source
-        // DO NOT FORGET to do this on an entry-by-entry basis
+        i+=1;
+    }
 
     // Now, how do we set this recursion up so it continues down
     // the rest of the file paths?
