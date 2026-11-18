@@ -1,5 +1,18 @@
 #include "../include/compare.h"
 #include "../include/arena.h"
+#include <cmath>
+
+void children_print_list(FTSENT *children_list) {
+    FTSENT *ptr = children_list;
+    printf("Parent: %s\n", ptr->fts_parent->fts_name);
+    printf("Depth: %i\n", ptr->fts_level);
+    printf("Files: ");
+    while (ptr != NULL) {
+        printf("%s ", ptr->fts_name);
+        ptr = ptr->fts_link;
+    }
+    printf("\n");
+}
 
 FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
@@ -15,16 +28,14 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-void children_print_list(FTSENT *children_list) {
-    FTSENT *ptr = children_list;
-    printf("Parent: %s\n", ptr->fts_parent->fts_name);
-    printf("Depth: %i\n", ptr->fts_level);
-    printf("Files: ");
-    while (ptr != NULL) {
-        printf("%s ", ptr->fts_name);
-        ptr = ptr->fts_link;
+void delete(const char *file_path) {
+    if (remove(file_path) == 0) {
+        printf("File '%s' deleted\n", file_path);
     }
-    printf("\n");
+    else {
+        printf("Error: Unable to delete file '%s'\n", file_path);
+    }
+    return;
 }
 
 static int by_name(const FTSENT **a, const FTSENT **b) {
