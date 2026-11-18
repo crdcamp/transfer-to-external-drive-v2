@@ -72,6 +72,19 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         printf("Current target file: %s\n", target_ptr->fts_name);
         printf("\n");
 
+        // Note that the following condition is probably the last,
+        // or one of the last conditions you should be checking for,
+        // meaning that the rest will go above this one
+
+        // If the target directory continues past the source directory, let the user know
+        // Now, what should we actually do in this instance?
+        // Well, if the target directory continues past the source,
+        // that means those are files we no longer want.
+        // So... let's delete them!
+        // Step 1: Create a remove function
+        // Step 2: Use the remove function recursively on the extraneous directories
+        // Ensure that you're walking the rest of the `target_ptr` linked list, and
+        // not just the next item in the linked list
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             printf("Target directory is larger than source! Next target directory: %s\n", target_ptr->fts_link->fts_name);
             break;
