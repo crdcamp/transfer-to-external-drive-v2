@@ -17,6 +17,9 @@ FTSENT *children_get_list(FTS *handle) {
 
 void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
+    printf("Parent: %s\n", ptr->fts_parent->fts_name);
+    printf("Depth: %i\n", ptr->fts_level);
+    printf("Files:\n");
     while (ptr != NULL) {
         printf("%s\n", ptr->fts_name);
         ptr = ptr->fts_link;
@@ -30,7 +33,7 @@ static int by_name(const FTSENT **a, const FTSENT **b) {
  /* Visit each depth of the source and target file paths
      to ensure the target directory mirrors the source directory */
 void compare_directories(char **source, char **target) {
-    // Open the source and target directories
+    // Open the source and target directories while sorting them by name
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
@@ -43,18 +46,15 @@ void compare_directories(char **source, char **target) {
     }
 
     // Create a linked list of all files/directories in the current directory
-    FTSENT *children_list = children_get_list(source_handle);
+    FTSENT *source_children_list = children_get_list(source_handle);
     FTSENT *target_children_list = children_get_list(target_handle);
 
     // Test print
-    FTSENT *ptr = children_list;
-    children_print_list(children_list);
-    printf("\n");
-    children_print_list(target_children_list);
+    children_print_list(source_children_list);
     printf("\n");
 
-    // Sort both directories alphabetically before continuing (merge sort)
-    // DON'T FORGET to reset the arena after you're done using them
+    children_print_list(target_children_list);
+    printf("\n");
 
 
     // MAKE A THOROUGH PLAN BEFORE CONTINUING HERE
