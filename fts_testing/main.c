@@ -9,11 +9,12 @@
 #include <fts.h>
 
 #include <stdlib.h>
+#include <time.h>
 
 #include <copyfile.h>
 
 void fts_testing(char **file);
-void fts_print_info(FTSENT *fts_entry);
+void fts_print_info(FTSENT *node);
 void copyfile_testing(char *file);
 
 
@@ -22,9 +23,11 @@ int main(void) {
     // without a length parameter
     char *paths[] = {"TestDirs/TestSource", NULL};
     fts_testing(paths);
+
     return 0;
 }
 
+// STRUCTS FOR FSTAT INFO
 // typedef struct _ftsent {
 //     unsigned short fts_info;     /* flags for FTSENT structure */
 //     char          *fts_accpath;  /* access path */
@@ -42,15 +45,32 @@ int main(void) {
 //     struct stat   *fts_statp;    /* stat(2) information */
 // } FTSENT;
 
-void fts_print_info(FTSENT *fts_entry) {
+// struct stat {
+//     dev_t     st_dev;     /* ID of device containing file */
+//     ino_t     st_ino;     /* inode number */
+//     mode_t    st_mode;    /* protection */
+//     nlink_t   st_nlink;   /* number of hard links */
+//     uid_t     st_uid;     /* user ID of owner */
+//     gid_t     st_gid;     /* group ID of owner */
+//     dev_t     st_rdev;    /* device ID (if special file) */
+//     off_t     st_size;    /* total size, in bytes */
+//     blksize_t st_blksize; /* blocksize for file system I/O */
+//     blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
+//     time_t    st_atime;   /* time of last access */
+//     time_t    st_mtime;   /* time of last modification */
+//     time_t    st_ctime;   /* time of last status change */
+// };
+
+void fts_print_info(FTSENT *node) {
     struct _ftsent;
-    printf("access path:         %s\n", fts_entry->fts_accpath);
-    printf("path:                %s\n", fts_entry->fts_path);
-    if (fts_entry->fts_parent != NULL) {
-        printf("parent name:         %s\n", fts_entry->fts_parent->fts_name);
-    }
-    printf("name:                %s\n", fts_entry->fts_name);
-    printf("path length:         %i\n", fts_entry->fts_pathlen);
+    printf("access path:       %s\n", node->fts_accpath);
+    printf("path:              %s\n", node->fts_path);
+    printf("parent name:       %s\n", node->fts_parent->fts_name);
+    printf("name:              %s\n", node->fts_name);
+    printf("path length:       %i\n", node->fts_pathlen);
+    printf("Last modification: %s\n", ctime(&node->fts_statp->st_mtime));
+    // Print a list of all the files within the directory (then use this in `fts_testing`)
+
 }
 
 // DON'T FORGET WE ALSO HAVE `fts_children` to test out!
@@ -69,15 +89,18 @@ void fts_testing(char **paths) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
-
+    // Traverse the files
     struct _ftsent;
-    FTSENT *fts_entry = fts_read(fts_handle);
-    if (fts_entry == NULL) {
-        perror("fts_read");
-        exit(EXIT_FAILURE);
+    FTSENT *node;
+    while ((node = fts_read(fts_handle)) != NULL) {
+        if (node->fts_info == FTS_F) {
+            printf("File: %s\n", node->fts_name);
+            printf("Parent: %s\n", node->fts_parent->fts_name);
+            printf("\n");
+        }
     }
+    fts_close(fts_handle);
 
-    fts_print_info(fts_entry);
 
     // So, what we need to do is somehow recurse through these entries (or the handle I'm
     // not 100% sure on that yet) while saving them to our own self-made struct
