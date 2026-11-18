@@ -28,7 +28,8 @@ typedef struct FTSNode {
 } FTSNode;
 
 void fts_print_entry_info(FTSENT *node);
-FTSENT *get_children_list(FTS *handle);
+FTSENT *children_get_list(FTS *handle);
+FTSENT *children_sort_list(FTSENT *children_list);
 void fts_compare_dirs(char **source, char **target);
 
 #endif

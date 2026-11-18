@@ -21,7 +21,7 @@ int main(void) {
 // We need to compare the source and the destination as we're iterating over the two
 // Not sure how we'd do that, but we have a good enough idea of the data structure to at least get started
 
-FTSENT *get_children_list(FTS *handle) {
+FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
     if (list_start == NULL) {
         perror("fts_read");
@@ -35,59 +35,68 @@ FTSENT *get_children_list(FTS *handle) {
     return children_list;
 }
 
+FTSENT *children_sort_list(FTSENT *children_list) {
+    printf("Working on it\n");
+    return NULL;
+}
+
 void fts_compare_dirs(char **source, char **target) {
-    // Open the source directory
+    // Open the source and target directories
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, NULL);
     if (source_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
+    FTS *target_handle = fts_open(target, FTS_PHYSICAL, NULL);
+    if (target_handle == NULL) {
+        perror("fts_open");
+        exit(EXIT_FAILURE);
+    }
 
-    FTSENT *source_children = get_children_list(source_handle);
-    FTSENT *ptr = source_children;
+    // Create a linked list of all files in the current directory
+    FTSENT *source_children_list = children_get_list(source_handle);
+    FTSENT *target_children_list = children_get_list(target_handle);
+
+    // Test print / list walk demonstration
+    FTSENT *ptr = source_children_list;
     while (ptr != NULL) {
-        printf("Path: %s\n", source_children->fts_path);
+        printf("Path: %s\n", source_children_list->fts_path);
+        ptr = ptr->fts_link;
+    }
+    printf("\n");
+    ptr = target_children_list;
+    while (ptr != NULL) {
+        printf("Path: %s\n", target_children_list->fts_path);
         ptr = ptr->fts_link;
     }
 
-    // Get a linked list of the files in the target directory
+    // Sort both directories before continuing
 
-    // Get a linked
+    // Compare both sorted lists
+    // Don't forget to also compare the modification dates
+    // You might also want to check if the file size is greater or lesser
+    // and the modification date is more recent, but this might be unnecessary
 
-    // Get an array of the directories in the source and sort
-
-
-    // Get an array of the files in the source and sort
-
-    // Get an array of the files in the target and sort
-
-    // Get an array of directories in the target and sort
-
-    // Compare the source and target directory arrays
-
-    // Compare the source and target file arrays
-
-    // Don't forget to implement the modification date check as well
+    // Now, how do we set this recursion up so it continues down
+    // the rest of the file paths?
 }
 
-void fts_print_entry_info(FTSENT *node) {
-    printf("Full path:         %s\n", node->fts_path);
-    printf("Name:              %s\n", node->fts_name);
-    if (strcmp(node->fts_parent->fts_name, "") == 0)
-        printf("Parent name:       %s\n", "No parent");
-    else
-        printf("Parent name:       %s\n", node->fts_parent->fts_name);
-    printf("Path length:       %i\n", node->fts_pathlen);
-    printf("Depth:             %i\n", node->fts_level);
 
-    // The pointer field is provided for the use of the application program and
-    // is not modified by the fts functions. It is initialized to NULL. Keep
-    // for now since it might be useful later
-    printf("Pointer:           %p\n", node->fts_pointer);
-    printf("Last modification: %s", ctime(&node->fts_statp->st_mtime));
-}
 
-// DON'T FORGET WE ALSO HAVE `fts_children` to test out!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // void fts_show_tree_info(char **paths) {
 //     // Returns a "handle" on the file hierarchy, which is then supplied
 //     // to the other `fts` functions
