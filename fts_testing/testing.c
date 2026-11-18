@@ -70,7 +70,7 @@ void fts_compare_dirs(char **source, char **target) {
         ptr = ptr->fts_link;
     }
 
-    // Sort both directories before continuing
+    // Sort both directories before continuing (merge sort)
 
     // Compare both sorted lists
     // Don't forget to also compare the modification dates
@@ -79,6 +79,10 @@ void fts_compare_dirs(char **source, char **target) {
 
     // Now, how do we set this recursion up so it continues down
     // the rest of the file paths?
+    // I think this would involve passing the file paths that are directories
+    // with an additional slash in them to access the next level.
+    // This could also then be used recursively. You also already have
+    // and arena function to accomplish this
 }
 
 
