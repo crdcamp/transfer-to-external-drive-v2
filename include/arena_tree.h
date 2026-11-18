@@ -55,4 +55,6 @@ void tree_copy_identical(Arena *arena, Arena *arena_scratch, Node *source_node, 
 
 void tree_print(Node *root, int depth); // Remove this when project is complete
 
+void tree_create_fts(Arena *arena, char **dir);
+
 #endif

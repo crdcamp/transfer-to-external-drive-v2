@@ -1,4 +1,5 @@
 #include "structures.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 int main(void) {
@@ -20,6 +21,20 @@ int main(void) {
 // We need to compare the source and the destination as we're iterating over the two
 // Not sure how we'd do that, but we have a good enough idea of the data structure to at least get started
 
+FTSENT *get_children_list(FTS *handle) {
+    FTSENT *list_start = fts_read(handle);
+    if (list_start == NULL) {
+        perror("fts_read");
+        exit(EXIT_FAILURE);
+    }
+    FTSENT *children_list = fts_children(handle, 0);
+    if (children_list == NULL) {
+        perror("fts_children");
+        exit(EXIT_FAILURE);
+    }
+    return children_list;
+}
+
 void fts_compare_dirs(char **source, char **target) {
     // Open the source directory
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, NULL);
@@ -28,18 +43,12 @@ void fts_compare_dirs(char **source, char **target) {
         exit(EXIT_FAILURE);
     }
 
-    FTSENT *node;
-    int i = 0;
-    struct _ftsent *source_list[] = {0};
-    // Read the source directory and add entries to the list
-    while ((node = fts_read(source_handle)) != NULL) {
-        if ((node->fts_info == FTS_D) || (node->fts_info == FTS_F)) {
-            source_list[i] = node;
-            printf("Path: %s\n", source_list[i]->fts_path);
-            i+=1;
-        }
+    FTSENT *source_children = get_children_list(source_handle);
+    FTSENT *ptr = source_children;
+    while (ptr != NULL) {
+        printf("Path: %s\n", source_children->fts_path);
+        ptr = ptr->fts_link;
     }
-
 
     // Get a linked list of the files in the target directory
 
@@ -79,41 +88,41 @@ void fts_print_entry_info(FTSENT *node) {
 }
 
 // DON'T FORGET WE ALSO HAVE `fts_children` to test out!
-void fts_show_tree_info(char **paths) {
-    // Returns a "handle" on the file hierarchy, which is then supplied
-    // to the other `fts` functions
+// void fts_show_tree_info(char **paths) {
+//     // Returns a "handle" on the file hierarchy, which is then supplied
+//     // to the other `fts` functions
 
-    // The function `fts_read()` returns a pointer to a structure describing one of the files in the file hierarchy.
+//     // The function `fts_read()` returns a pointer to a structure describing one of the files in the file hierarchy.
 
-    // The function fts_children() returns a pointer to a linked list of structures,
-    // each of which describes one of the files contained in a directory in the hierarchy
-    // NOTE: You probably shouldn't use this for the purposes of this project
+//     // The function fts_children() returns a pointer to a linked list of structures,
+//     // each of which describes one of the files contained in a directory in the hierarchy
+//     // NOTE: You probably shouldn't use this for the purposes of this project
 
-    // Two structures are defined (and typedef'd) in the include file <fts.h>.
-    // The first is FTS, the structure that represents the file hierarchy itself.
-    // The second is FTSENT, the structure that represents a file in the file hierarchy.
-    // Normally, an FTSENT structure is returned for every file in the file hierarchy.
+//     // Two structures are defined (and typedef'd) in the include file <fts.h>.
+//     // The first is FTS, the structure that represents the file hierarchy itself.
+//     // The second is FTSENT, the structure that represents a file in the file hierarchy.
+//     // Normally, an FTSENT structure is returned for every file in the file hierarchy.
 
-    // Open the base path
-    FTS *fts_handle = fts_open(paths, FTS_PHYSICAL, NULL);
-    if (fts_handle == NULL) {
-        perror("fts_open");
-        exit(EXIT_FAILURE);
-    }
+//     // Open the base path
+//     FTS *fts_handle = fts_open(paths, FTS_PHYSICAL, NULL);
+//     if (fts_handle == NULL) {
+//         perror("fts_open");
+//         exit(EXIT_FAILURE);
+//     }
 
-    // Traverse all files and directories found in the base path
-    FTSENT *node;
-    while ((node = fts_read(fts_handle)) != NULL) {
-        // Print information on directories
-        if (node->fts_info == FTS_D) {
-            fts_print_entry_info(node);
-            printf("\n");
-        }
-        // Print information on files
-        if (node->fts_info == FTS_F) {
-            fts_print_entry_info(node);
-            printf("\n");
-        }
-    }
-    fts_close(fts_handle);
-}
+//     // Traverse all files and directories found in the base path
+//     FTSENT *node;
+//     while ((node = fts_read(fts_handle)) != NULL) {
+//         // Print information on directories
+//         if (node->fts_info == FTS_D) {
+//             fts_print_entry_info(node);
+//             printf("\n");
+//         }
+//         // Print information on files
+//         if (node->fts_info == FTS_F) {
+//             fts_print_entry_info(node);
+//             printf("\n");
+//         }
+//     }
+//     fts_close(fts_handle);
+// }

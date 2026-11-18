@@ -29,7 +29,7 @@ int main(void) {
 
     // FTS REPLACEMENT BEGINS HERE
 
-
+    char *paths[] = {"TestDirs", NULL};
 
 
 

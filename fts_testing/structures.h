@@ -27,11 +27,9 @@ typedef struct FTSNode {
     time_t last_mod;       // fts_statp->st_mtime Time since last modification. Will be used for determining whether or not to overwrite a file
 } FTSNode;
 
-void fts_show_tree_info(char **file);
 void fts_print_entry_info(FTSENT *node);
-void copyfile_testing(char *file);
+FTSENT *get_children_list(FTS *handle);
 void fts_compare_dirs(char **source, char **target);
-FTSENT *child_list(FTS *fts_handle);
 
 #endif
 

@@ -1,10 +1,7 @@
 #include "../include/arena_tree.h"
-
+#include "../fts_testing/structures.h"
 
 // FTS IMPLEMENTATION BEGINS HERE
-
-
-
 
 
 
