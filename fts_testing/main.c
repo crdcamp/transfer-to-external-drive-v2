@@ -76,8 +76,12 @@ void fts_print_info(FTSENT *node) {
 void fts_testing(char **paths) {
     // Returns a "handle" on the file hierarchy, which is then supplied
     // to the other `fts` functions
-    // I believe the final argument `compar` can be used to compare files, or
-    // maybe even hierarchies!
+
+    // The function `fts_read()` returns a pointer to a structure describing one of the files in the file hierarchy.
+
+    // The function fts_children() returns a pointer to a linked list of structures,
+    // each of which describes one of the files contained in a directory in the hierarchy
+    // NOTE: You probably shouldn't use this for the purposes of this project
 
     // Two structures are defined (and typedef'd) in the include file <fts.h>.
     // The first is FTS, the structure that represents the file hierarchy itself.
@@ -92,7 +96,6 @@ void fts_testing(char **paths) {
     }
 
     // Traverse all files and directories found in the base path
-    struct _ftsent;
     FTSENT *node;
     while ((node = fts_read(fts_handle)) != NULL) {
         if (node->fts_info == FTS_F) {
@@ -113,4 +116,11 @@ void fts_testing(char **paths) {
     // `memcpy` solves most of these concerns anyway. Keep it simple to start by using just one
     // arena between two file paths. You can think about editing the code later to create one
     // arena per directory structure.
+
+    // Now... before you go nuts with the coding, you'll need to read through all of the
+    // `fts` docs, as there might be some tools in there you'll need. Also make sure
+    // to fully read over both the structs just so you're not forgetting any useful info
+    // that you may need for the structs as well
+
+    // Consider using `fts_children` when comparing files in a directory
 }

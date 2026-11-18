@@ -1,5 +1,24 @@
 #include "../include/arena_tree.h"
 
+
+// FTS IMPLEMENTATION BEGINS HERE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // TODO: Add file prints to tree_print
 void tree_print(Node *n, int depth) {
     if (n == NULL) return;
