@@ -35,7 +35,15 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-FTSENT *children_sort_list(FTSENT *children_list) {
+void children_print_list(FTSENT *children_list) {
+    FTSENT *ptr = children_list;
+    while (ptr != NULL) {
+        printf("%s\n", ptr->fts_path);
+        ptr = ptr->fts_link;
+    }
+}
+
+FTSENT *children_sort_list(FTSENT *source_children_list, FTSENT *target_children_list) {
     printf("Working on it\n");
     return NULL;
 }
@@ -59,23 +67,20 @@ void fts_compare_dirs(char **source, char **target) {
 
     // Test print / list walk demonstration
     FTSENT *ptr = source_children_list;
-    while (ptr != NULL) {
-        printf("Path: %s\n", source_children_list->fts_path);
-        ptr = ptr->fts_link;
-    }
+    children_print_list(source_children_list);
     printf("\n");
-    ptr = target_children_list;
-    while (ptr != NULL) {
-        printf("Path: %s\n", target_children_list->fts_path);
-        ptr = ptr->fts_link;
-    }
+    children_print_list(target_children_list);
 
-    // Sort both directories before continuing (merge sort)
+    // Sort both directories alphabetically before continuing (merge sort)
 
     // Compare both sorted lists
     // Don't forget to also compare the modification dates
     // You might also want to check if the file size is greater or lesser
     // and the modification date is more recent, but this might be unnecessary
+
+    // While iterating through each entry in the lists:
+        // If the list entries are the same, move to the next depth
+        // If the list entries are different, overwrite the source paths into the target
 
     // Now, how do we set this recursion up so it continues down
     // the rest of the file paths?
@@ -83,6 +88,7 @@ void fts_compare_dirs(char **source, char **target) {
     // with an additional slash in them to access the next level.
     // This could also then be used recursively. You also already have
     // and arena function to accomplish this
+    // Hopefully this recursion actually reaches all tree paths when implemented...
 }
 
 
