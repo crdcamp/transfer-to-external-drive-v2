@@ -89,11 +89,19 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             struct _ftsent *next_file = target_ptr->fts_link;
             printf("Next target file: %s\n", next_file->fts_name);
+
             // If it's a file, just delete the file
             if (next_file->fts_info == FTS_F) {
-                printf("File %s is a file\n", target_ptr->fts_accpath);
-                printf("Attempting to delete file: %s\n", target_ptr->fts_accpath);
-                delete(target_ptr->fts_accpath);
+                // Concatenate `fts_path` and `fts_name`
+                size_t checkpoint = arena_checkpoint(arena_scratch);
+
+                char *full_path_array[3] = {next_file->fts_path, "/", next_file->fts_name};
+                char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+                printf("File %s is a file\n", next_file->fts_path);
+                printf("Attempting to delete file: %s\n", next_file->fts_path);
+                delete(full_path);
+
+                arena_rewind(arena_scratch, checkpoint);
             }
             // If it's a directory, recursively delete the directory
             if (next_file->fts_info == FTS_D) {

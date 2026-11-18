@@ -99,4 +99,12 @@ char *arena_string_concat(Arena *arena, char **strings, size_t element_count) {
     return arena_string;
 }
 
-// Reset the arena's offsets
+size_t arena_checkpoint(Arena *arena) {
+    return arena->current_offset;
+}
+
+// Restore the arena to a previously saved offset, freeing everything allocated since
+void arena_rewind(Arena *arena, size_t checkpoint) {
+    assert(checkpoint <= arena->current_offset);
+    arena->current_offset = checkpoint;
+}
