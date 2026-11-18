@@ -105,6 +105,8 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
                 // If it's a directory, recursively delete_file the directory
                 else if (excess_file->fts_info == FTS_D) {
                     printf("File %s is a directory\n", target_ptr->fts_accpath);
+                    size_t checkpoint = arena_checkpoint(arena_scratch);
+                    char *full_path_array[3] = {excess_file->fts_path}
                 }
                 // If it's a directory, recursively delete_file the director
                 excess_file = excess_file->fts_link;
