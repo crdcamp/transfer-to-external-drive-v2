@@ -4,6 +4,7 @@
 #include <dirent.h>
 
 // `fts` (file tree stream) functionality
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fts.h>
@@ -14,20 +15,20 @@
 #include <copyfile.h>
 
 void fts_testing(char **file);
-void fts_print_info(FTSENT *node);
+void fts_print_entry_info(FTSENT *node);
 void copyfile_testing(char *file);
 
 
 int main(void) {
     // `fts` requires the array of paths to end in NULL so it can terminate
     // without a length parameter
-    char *paths[] = {"TestDirs/TestSource", NULL};
+    char *paths[] = {"TestDirs", NULL};
     fts_testing(paths);
 
     return 0;
 }
 
-// STRUCTS FOR FSTAT INFO
+//FTSENT
 // typedef struct _ftsent {
 //     unsigned short fts_info;     /* flags for FTSENT structure */
 //     char          *fts_accpath;  /* access path */
@@ -45,6 +46,7 @@ int main(void) {
 //     struct stat   *fts_statp;    /* stat(2) information */
 // } FTSENT;
 
+// STAT
 // struct stat {
 //     dev_t     st_dev;     /* ID of device containing file */
 //     ino_t     st_ino;     /* inode number */
@@ -61,15 +63,20 @@ int main(void) {
 //     time_t    st_ctime;   /* time of last status change */
 // };
 
-void fts_print_info(FTSENT *node) {
+void fts_print_entry_info(FTSENT *node) {
     struct _ftsent;
-    printf("path:              %s\n", node->fts_path);
-    printf("parent name:       %s\n", node->fts_parent->fts_name);
-    printf("name:              %s\n", node->fts_name);
-    printf("path length:       %i\n", node->fts_pathlen);
-    printf("Last modification: %s\n", ctime(&node->fts_statp->st_mtime));
-    // Print a list of all the files within the directory (then use this in `fts_testing`)
-
+    printf("Full path:           %s\n", node->fts_path);
+    printf("Name:                %s\n", node->fts_name);
+    if (strcmp(node->fts_parent->fts_name, "") == 0) {
+        printf("Parent name:         %s\n", "No parent");
+    }
+    else {
+        printf("Parent name:         %s\n", node->fts_parent->fts_name);
+    }
+    printf("Path length:         %i\n", node->fts_pathlen);
+    printf("Depth:               %i\n", node->fts_level);
+    printf("Pointer:             %p\n", node->fts_pointer);
+    printf("Last modification:   %s", ctime(&node->fts_statp->st_mtime));
 }
 
 // DON'T FORGET WE ALSO HAVE `fts_children` to test out!
@@ -98,8 +105,13 @@ void fts_testing(char **paths) {
     // Traverse all files and directories found in the base path
     FTSENT *node;
     while ((node = fts_read(fts_handle)) != NULL) {
+        if (node->fts_info == FTS_D) {
+            fts_print_entry_info(node);
+            printf("\n");
+        }
+
         if (node->fts_info == FTS_F) {
-            fts_print_info(node);
+            fts_print_entry_info(node);
             printf("\n");
         }
     }
@@ -122,5 +134,11 @@ void fts_testing(char **paths) {
     // to fully read over both the structs just so you're not forgetting any useful info
     // that you may need for the structs as well
 
-    // Consider using `fts_children` when comparing files in a directory
+    // NOTE: There's an `fts_pointer` field, which can easily be used for getting information
+    // more quickly. This might come in handy
+
+    // NOTE: You'll need a way to create directories. You can compare both file structures until
+    // they aren't the same anymore. Once you reach one that doesn't match, you overwrite newer files with
+    // older files, delete files not found in the source directory, and make directories that exist in the
+    // source directory, but not the target directory
 }
