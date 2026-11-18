@@ -17,51 +17,22 @@ FTSENT *children_get_list(FTS *handle) {
 
 void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
-    while (ptr != NULL) {
-        printf("%s\n", ptr->fts_name);
-        ptr = ptr->fts_link;
-    }
 }
 
-// Returns an arena pointer to the sorted list
-void *children_sort_list(Arena *arena, FTSENT *children_list) {
-    // Get the file sorted_list of each file in the linked list
-    char *sorted_list[] = {0};
-    int i = 0;
-
-    // Need to allocate to the arena for this
-    // Let's put a pin in this and move these functions into
-    // the main project since this seems like it's actually
-    // going to work out
-    while (children_list != NULL) {
-        sorted_list[i] = children_list->fts_name;
-        i+=1;
-    }
-
-    for (int j = 0; j < i; j++) {
-        printf("Name: %s", sorted_list[i]);
-    }
-
-    // Allocate the list to the arena
-    size_t sorted_list_size = sizeof(sorted_list) / sizeof(sorted_list[i]);
-    void *sorted_list_arena = arena_allocate(arena, sorted_list_size, DEFAULT_ALIGNMENT);
-    if (sorted_list_arena == NULL) return NULL;
-    memcpy(sorted_list_arena, sorted_list, sorted_list_size);
-
-    // Return a pointer to the beginning of the list in the arena
-    return sorted_list_arena;
+static int by_name(const FTSENT **a, const FTSENT **b) {
+    return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
  /* Visit each depth of the source and target file paths
      to ensure the target directory mirrors the source directory */
 void compare_directories(char **source, char **target) {
     // Open the source and target directories
-    FTS *source_handle = fts_open(source, FTS_PHYSICAL, NULL);
+    FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
-    FTS *target_handle = fts_open(target, FTS_PHYSICAL, NULL);
+    FTS *target_handle = fts_open(target, FTS_PHYSICAL, by_name);
     if (target_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);

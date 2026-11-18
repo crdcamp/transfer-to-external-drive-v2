@@ -13,9 +13,10 @@
 
 #include "arena.h"
 
+
 FTSENT *children_get_list(FTS *handle);
 void children_print_list(FTSENT *children_list);
-void *children_sort_list(Arena *arena_scratch, FTSENT *children_list);
+static int by_name(const FTSENT **a, const FTSENT **b);
 void compare_directories(char **source, char **target);
 
 #endif
