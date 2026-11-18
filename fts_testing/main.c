@@ -83,12 +83,15 @@ void fts_testing(char **paths) {
     // The first is FTS, the structure that represents the file hierarchy itself.
     // The second is FTSENT, the structure that represents a file in the file hierarchy.
     // Normally, an FTSENT structure is returned for every file in the file hierarchy.
+
+    // Open the base path
     FTS *fts_handle = fts_open(paths, FTS_PHYSICAL, NULL);
     if (fts_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
-    // Traverse the files
+
+    // Traverse all files and directories found in the base path
     struct _ftsent;
     FTSENT *node;
     while ((node = fts_read(fts_handle)) != NULL) {
@@ -100,13 +103,14 @@ void fts_testing(char **paths) {
     fts_close(fts_handle);
 
 
-    // So, what we need to do is somehow recurse through these entries (or the handle I'm
-    // not 100% sure on that yet) while saving them to our own self-made struct
+    // Now we need to clarify exactly how we can use this functionality in one of
+    // your personally created trees
+    // Should we store the file path? Probably not, that would be making the same
+    // mistake as before. There has to be a better way
 
-    // We will then compare two different trees (source and target) at a time, BUT,
-    // instead of determining if they're the same and return a value, we instead fo this
-    // while recursing through the trees
-
-    // Don't forget, in addition to the more obvious information you'll need, that
-    // you'll need to get the timestamp for the last edits in `fts_statp`
+    // You're greatly overthinking this. You can create a custom struct that is strongly
+    // based on the `fts` structs and copy over the `fts` information onto those using the arena
+    // `memcpy` solves most of these concerns anyway. Keep it simple to start by using just one
+    // arena between two file paths. You can think about editing the code later to create one
+    // arena per directory structure.
 }
