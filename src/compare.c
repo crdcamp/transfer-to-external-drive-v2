@@ -37,7 +37,7 @@ void delete(const char *file_path) {
     return;
 }
 
-static int by_name(const FTSENT **a, const FTSENT **b) {
+int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
@@ -94,9 +94,10 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
             if (next_file->fts_info == FTS_F) {
                 // Concatenate `fts_path` and `fts_name`
                 size_t checkpoint = arena_checkpoint(arena_scratch);
-
                 char *full_path_array[3] = {next_file->fts_path, "/", next_file->fts_name};
                 char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+
+                // Delete the files
                 printf("File %s is a file\n", next_file->fts_path);
                 printf("Attempting to delete file: %s\n", next_file->fts_path);
                 delete(full_path);
