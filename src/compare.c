@@ -2,8 +2,8 @@
 #include "../include/arena.h"
 
 FTSENT *children_get_list(FTS *handle) {
-    FTSENT *sorted_list_arena = fts_read(handle);
-    if (sorted_list_arena == NULL) {
+    FTSENT *list_start = fts_read(handle);
+    if (list_start == NULL) {
         perror("fts_read");
         exit(EXIT_FAILURE);
     }
@@ -17,6 +17,10 @@ FTSENT *children_get_list(FTS *handle) {
 
 void children_print_list(FTSENT *children_list) {
     FTSENT *ptr = children_list;
+    while (ptr != NULL) {
+        printf("%s\n", ptr->fts_name);
+        ptr = ptr->fts_link;
+    }
 }
 
 static int by_name(const FTSENT **a, const FTSENT **b) {
