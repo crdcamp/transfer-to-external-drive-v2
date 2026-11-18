@@ -17,6 +17,16 @@
 
 #include <copyfile.h>
 
+typedef struct Node {
+    char *path;            // fts_path
+    char *name;            // fts_name
+    struct ftsent *parent; // fts_parent
+    short pathlen;         // fts_pathlen
+    short level;           // fts_level
+    void *pointer;         // fts_pointer
+    time_t last_mod;       // fts_statp->st_mtime
+} Node;
+
 void fts_show_tree_info(char **file);
 void fts_print_entry_info(FTSENT *node);
 void copyfile_testing(char *file);
