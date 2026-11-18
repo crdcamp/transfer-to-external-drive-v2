@@ -82,32 +82,32 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
 
         // Note that the following condition is probably the last,
         // or one of the last conditions you should be checking for,
-        // meaning that the rest will go above this one
+        // In other words, the rest of the code should go above this loop
 
         // If the target directory's current depth has more files than
-        // the source directory, delete_file the extraneous files
+        // the source directory, delete the extraneous files
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
-            FTSENT *next_file = target_ptr->fts_link;
-            while (next_file != NULL) {
-                // If it's a file, just delete_file the file
-                if (next_file->fts_info == FTS_F) {
+            FTSENT *excess_file = target_ptr->fts_link;
+            while (excess_file != NULL) {
+                // If it's a file, just delete_file it
+                if (excess_file->fts_info == FTS_F) {
+                    // Concatenate the file name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch); // Create a checkpoint for the scratch arena reset later
-                    char *full_path_array[3] = {next_file->fts_path, "/", next_file->fts_name};
+                    char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
 
-                    // delete_file the files
-                    printf("File %s is a file\n", next_file->fts_path);
+                    // Delete the files
+                    printf("File %s is a file\n", excess_file->fts_path);
                     printf("Attempting to delete_file file: %s\n", full_path);
                     delete_file(full_path);
-
                     arena_rewind(arena_scratch, checkpoint); // Reset the scratch arena
                 }
                 // If it's a directory, recursively delete_file the directory
-                else if (next_file->fts_info == FTS_D) {
+                else if (excess_file->fts_info == FTS_D) {
                     printf("File %s is a directory\n", target_ptr->fts_accpath);
                 }
                 // If it's a directory, recursively delete_file the director
-                next_file = next_file->fts_link;
+                excess_file = excess_file->fts_link;
             }
         }
         source_ptr = source_ptr->fts_link;
