@@ -1,6 +1,4 @@
-#include "../include/arena_tree.h"
-#include <stddef.h>
-#include <string.h>
+#include "../include/arena.h"
 
 // Temporary function
 void print_arena_info(Arena *arena) {

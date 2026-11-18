@@ -1,6 +1,5 @@
-#include "structures.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "../include/compare.h"
+#include "../include/arena.h"
 
 int main(void) {
     // `fts` requires the array of paths to end in NULL so it can terminate
@@ -111,58 +110,3 @@ void compare_directories(char **source, char **target) {
     // and arena function to accomplish this
     // Hopefully this recursion actually reaches all tree paths when implemented...
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// void fts_show_tree_info(char **paths) {
-//     // Returns a "handle" on the file hierarchy, which is then supplied
-//     // to the other `fts` functions
-
-//     // The function `fts_read()` returns a pointer to a structure describing one of the files in the file hierarchy.
-
-//     // The function fts_children() returns a pointer to a linked list of structures,
-//     // each of which describes one of the files contained in a directory in the hierarchy
-//     // NOTE: You probably shouldn't use this for the purposes of this project
-
-//     // Two structures are defined (and typedef'd) in the include file <fts.h>.
-//     // The first is FTS, the structure that represents the file hierarchy itself.
-//     // The second is FTSENT, the structure that represents a file in the file hierarchy.
-//     // Normally, an FTSENT structure is returned for every file in the file hierarchy.
-
-//     // Open the base path
-//     FTS *fts_handle = fts_open(paths, FTS_PHYSICAL, NULL);
-//     if (fts_handle == NULL) {
-//         perror("fts_open");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     // Traverse all files and directories found in the base path
-//     FTSENT *node;
-//     while ((node = fts_read(fts_handle)) != NULL) {
-//         // Print information on directories
-//         if (node->fts_info == FTS_D) {
-//             fts_print_entry_info(node);
-//             printf("\n");
-//         }
-//         // Print information on files
-//         if (node->fts_info == FTS_F) {
-//             fts_print_entry_info(node);
-//             printf("\n");
-//         }
-//     }
-//     fts_close(fts_handle);
-// }
