@@ -73,9 +73,15 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
 
                 // If it's a directory, recursively delete_file the directory
                 else if (excess_file->fts_info == FTS_D) {
-                    printf("Excess file '%s' is a directory\n", excess_file->fts_accpath);
+                    // Concatenate the directory name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch);
-                    char *full_path_array[3] = {excess_file->fts_path};
+                    char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
+                    char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+
+                    // Delete all the files using `fts_open`
+                    FTS *directory_handl = fts_open(full_path);
+
+                    arena_rewind(arena_scratch, checkpoint);
                 }
                 // If it's a directory, recursively delete_file the director
                 // DON'T FORGET to close the file if you end up using fts_open()
