@@ -124,10 +124,9 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
                 if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
-                    // Concatenate the directory name with it's path for passing to `file_delete`
+                    // Create a full file path and arena checkpoint
                     ConcatResult full_path_concat = file_path_concatenate(arena_scratch, excess_file->fts_path, excess_file->fts_name);
-
-                    // Delete the directory and it's entire hierarchy
+                    // Delete the directory and it's entire hierarchy and reset the arena
                     file_delete(full_path_concat.file_path);
                     arena_rewind(arena_scratch, full_path_concat.arena_checkpoint);
                 }
