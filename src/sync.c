@@ -15,9 +15,13 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-void file_delete(const char *file_path) {
+void single_file_delete(const char *file_path) {
     if (remove(file_path) == 0) return;
-    else printf("Error: Unable to delete file '%s'\n", file_path);
+    else {
+        printf("Error: Unable to delete file '%s'\n", file_path);
+        perror("fts_open");
+        exit(EXIT_FAILURE);
+    }
     return;
 }
 
@@ -25,9 +29,26 @@ int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
-//char *file_concat()
+/*
+   Provide a scratch arena, base path, and file name to concatenate
+   the base path and file name to create a full path using the scratch arena.
+   Returns an arena checkpoint and concatenated file path.
+   It is recommended to reset the scratch arena to the returned checkpoint
+   after the file path is no longer needed.
+ */
+// Should this return a pointer to ConcatResult???
+ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
+    ConcatResult result = {0};
+    result.arena_checkpoint = arena_checkpoint(arena_scratch);
 
-// void directory_delete()
+    char *file_name_array[3] = {base_path, "/", file_name};
+    result.file_path = arena_string_concat(arena_scratch, file_name_array, 3);
+
+    return result;
+}
+
+// Merge file_delete with this function
+//void file_delete()
 
  /*
     Visit each depth level of the source and target directory paths
@@ -49,7 +70,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         exit(EXIT_FAILURE);
     }
 
-    // Create a linked list of all files/directories in the current directory
+    // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
     FTSENT *target_children_list = children_get_list(target_handle);
 
@@ -61,6 +82,12 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
 
         // SIMPLEST CASE: If the target directory is empty, copy over all source
         // directory files
+
+        // Maybe there's a way to determine if a folder was renamed and that could
+        // also be incorporated somehow?
+        // Could maybe use the ID field in the stat struct? Could pretty easily
+        // test that by just renaming a file
+        // Note that there's also a `rename` function if you can sort this process out
 
         // If the source and target names are identical, check if the source
         // was edited more recently than the target
@@ -75,10 +102,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
-                // If it's a file, delete it
                 if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
-                    // MAKE THE RECURSIVE DELETION CHUNK INTO A FUNCTION
-                    // MAKE THE STRING CONCATENATION INTO A FUNCTION
                     // Concatenate the directory name with it's path for passing to `file_delete`
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};

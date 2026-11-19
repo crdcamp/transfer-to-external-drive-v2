@@ -3,6 +3,7 @@
 
 int main(void) {
     // Create scratch and main arenas
+    // (it's looking like we'll only need the scratch arena)
     size_t arena_buffer_size = 131072;
     size_t arena_scratch_buffer_size = PATH_MAX*8; // Bit of an excessive amount of space, but we can narrow it down later
 
