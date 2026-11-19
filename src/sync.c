@@ -2,8 +2,7 @@
 #include "../include/arena.h"
 
 /*
-  Create a NULL-terminated list of children for a
-  given directory.
+  Create a NULL-terminated list of children files/directories for a given directory.
  */
 FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
@@ -19,6 +18,9 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
+/*
+   Pass to `fts_read()` to sort files alphabetically
+*/
 int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
@@ -52,10 +54,11 @@ void file_delete(char *file_path) {
     }
 
     FTSENT *entry;
-    // `fts_read` automatically recurses through the entire directory
+    // Note: `fts_read` automatically recurses through the entire directory
     while ((entry = fts_read(handle)) != NULL) {
         // Skip directories to empty them before attempting to delete them,
-        // Since `remove` only works on empty directories
+        // since `remove` only works on empty directories
+        // `fts_read` will recurse back to the empty directories and handle them
         if (entry->fts_info == FTS_D) continue;
 
         if (entry->fts_info == FTS_DNR || entry->fts_info == FTS_ERR || entry->fts_info == FTS_NS) {
@@ -74,9 +77,9 @@ void file_delete(char *file_path) {
  /*
     Visit each depth level of the source and target directory paths
     to ensure the target directory is synced with the source directory.
-    The target directory is edited in-place and file_deletes/updates
+    The target directory is edited in-place and deletes/updates
     files according to the source directory's file hierarchy structure.
-    A scratch `Arena` must be provided for string operations.
+    A scratch arena must be provided for string operations.
 */
 void sync_directories(Arena *arena_scratch, char **source, char **target) {
     // Open the source and target directories while sorting them `by_name`
