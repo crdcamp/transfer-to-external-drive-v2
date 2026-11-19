@@ -15,16 +15,6 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-void single_file_delete(const char *file_path) {
-    if (remove(file_path) == 0) return;
-    else {
-        printf("Error: Unable to delete file '%s'\n", file_path);
-        perror("fts_open");
-        exit(EXIT_FAILURE);
-    }
-    return;
-}
-
 int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
@@ -49,7 +39,6 @@ ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *
 
 /*
   Give a path to a file or directory, delete the file, or the entire directory
-  It is recommended to rewind the arena after completing this operation
 */
 // TODO: Revisit this function and ensure the arena rewinding is being handled
 // correctly. I think, given the recursion, that it's fine, but just in case
@@ -64,7 +53,13 @@ void file_delete(Arena *arena_scratch, size_t checkpoint, char *file_path) {
     FTSENT *entry;
     while ((entry = fts_read(file_handle)) != NULL) {
         if (entry->fts_info != FTS_D) {
-            file_delete(arena_scratch, checkpoint, entry->fts_path);
+            if (remove(file_path) == 0) return;
+            else {
+                printf("Error: Unable to delete file '%s'\n", file_path);
+                perror("fts_open");
+                exit(EXIT_FAILURE);
+            }
+            return;
         }
     }
     fts_close(file_handle);
