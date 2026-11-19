@@ -56,12 +56,25 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL) {
+        // BRAINSTORMING TRYING TO ACCOUNT FOR ALL INSTANCES:
+
+        // SIMPLEST CASE: If the target directory is empty, copy over all source
+        // directory files
+
+        // If the source and target names are identical, check if the source
+        // was edited more recently than the target
+
+        // If the source and target directory names are different before
+        // reaching excess directories, I'm not sure what to do yet. Might just
+        // be a simple delete?
+
         // Delete extra directories and files found in the target directory that are not found in the source directory
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
                 // If it's a file, delete it
                 if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
+                    // CONSIDER MAKING THE RECURSIVE DELETION CHUNK INTO A FUNCTION
                     // Concatenate the directory name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
