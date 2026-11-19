@@ -79,7 +79,8 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
 
                     // Delete all the files using `fts_open`
-                    FTS *directory_handl = fts_open(full_path);
+                    char *full_path_fts[] = {full_path, NULL};
+                    FTS *directory_handl = fts_open(full_path_fts, FTS_PHYSICAL, NULL);
 
                     arena_rewind(arena_scratch, checkpoint);
                 }
