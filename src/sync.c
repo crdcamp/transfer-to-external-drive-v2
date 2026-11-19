@@ -28,13 +28,8 @@ int by_name(const FTSENT **a, const FTSENT **b) {
    the base path and file name to create a full path using the scratch arena.
    Returns an arena checkpoint and concatenated file path.
    It is recommended to reset the scratch arena to the returned checkpoint
-   after the file path is no longer needed.
+   after the file path is no longer needed (i.e., after using `file_delete`)
  */
-// Should this return a pointer to ConcatResult??? Eh... probably not
-// Should the ConcatResult struct strictly deal with the values that
-// 'fts` will handle? I feel like this could potentially be very
-// unsafe code... but I also don't know a thing about security
-// and that probably shows
 ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     ConcatResult result = {0};
     result.arena_checkpoint = arena_checkpoint(arena_scratch);
@@ -46,10 +41,8 @@ ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *
 }
 
 /*
-  Give a path to a file or directory, delete the file, or the entire directory
+  Given a path to a file or directory, delete the file, or the entire directory
 */
-// TODO: Add some comments to this function, as it's gonna be pretty easy to
-// forget the logic here
 void file_delete(char *file_path) {
     char *paths[2] = {file_path, NULL};
     FTS *handle = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
@@ -59,7 +52,10 @@ void file_delete(char *file_path) {
     }
 
     FTSENT *entry;
+    // `fts_read` automatically recurses through the entire directory
     while ((entry = fts_read(handle)) != NULL) {
+        // Skip directories to empty them before attempting to delete them,
+        // Since `remove` only works on empty directories
         if (entry->fts_info == FTS_D) continue;
 
         if (entry->fts_info == FTS_DNR || entry->fts_info == FTS_ERR || entry->fts_info == FTS_NS) {

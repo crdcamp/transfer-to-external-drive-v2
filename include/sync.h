@@ -23,7 +23,6 @@ FTSENT *children_get_list(FTS *handle);
 int by_name(const FTSENT **a, const FTSENT **b);
 // File operations
 ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name);
-
 void single_file_delete(const char *file_path);
 void file_delete(char *file_path);
 // Main
