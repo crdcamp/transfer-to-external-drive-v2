@@ -15,7 +15,6 @@
 
 
 FTSENT *children_get_list(FTS *handle);
-void children_print_list(FTSENT *children_list);
 int by_name(const FTSENT **a, const FTSENT **b);
 void sync_directories(Arena *arena_scratch, char **source, char **target);
 
