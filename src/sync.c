@@ -128,16 +128,19 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
 
     while (source_ptr != NULL) {
         // BRAINSTORMING TRYING TO ACCOUNT FOR ALL INSTANCES:
+        ConcatResult source_file_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+        ConcatResult target_file_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
         // If the current target directory depth doesn't match the source, delete it
         // (Bit heavy handed, but a more efficient approach requires way more tedious effort)
         // Delete non-matching files
-        ConcatResult target_file_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-        if ((source_ptr->fts_path != target_ptr->fts_path) && (target_ptr->fts_info == FTS_F)) {
+        if ((source_file_path.file_path != target_file_path.file_path) && (target_ptr->fts_info == FTS_F)) {
+            printf("Normal file delete for file: %s\n", target_file_path.file_path);
             file_delete(target_file_path.file_path);
         }
         // Delete non-matching directories
         if ((source_ptr->fts_path != target_ptr->fts_path) && (target_ptr->fts_info == FTS_D)) {
+            printf("Normal directory delete for directory: %s\n", target_file_path.file_path);
             directory_delete(target_file_path.file_path);
         }
 
@@ -170,11 +173,12 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                 ConcatResult excess_file_path = file_path_concatenate(arena_scratch, excess_file->fts_path, excess_file->fts_name);
                 // If it's a file, just delete the file
                 if (excess_file->fts_info == FTS_F) {
-                    printf("'%s' is a file. deleting...", excess_file_path.file_path);
+                    printf("Excess file delete for file: %s\n", excess_file_path.file_path);
                     file_delete(excess_file_path.file_path);
                 }
                 // Otherwise, if it's a directory, recursively delete the directory
                 else if (excess_file->fts_info == FTS_D) {
+                    printf("Excess directory delete for directory: %s\n", excess_file_path.file_path);
                     directory_delete(excess_file_path.file_path);
                 }
                 // Otherwise, we don't know what the heck we're dealing with
