@@ -61,23 +61,11 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
                 // If it's a file, delete it
-                if (excess_file->fts_info == FTS_F) {
-                    // Concatenate the file name with it's path for passing to `delete_file`
-                    size_t checkpoint = arena_checkpoint(arena_scratch); // Create a checkpoint for the scratch arena reset later
-                    char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
-                    char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
-
-                    delete_file(full_path);
-                    arena_rewind(arena_scratch, checkpoint); // Reset the scratch arena
-                }
-
-                // If it's a directory, recursively delete_file the directory
-                else if (excess_file->fts_info == FTS_D) {
+                if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
                     // Concatenate the directory name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
-
                     // Delete the directory and everything under it using `fts_open`
                     char *full_path_fts[] = {full_path, NULL};
                     FTS *directory_handle = fts_open(full_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
