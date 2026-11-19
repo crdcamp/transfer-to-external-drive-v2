@@ -1,5 +1,5 @@
 #include "../include/arena.h"
-#include "../include/compare.h"
+#include "../include/sync.h"
 
 int main(void) {
     // Create scratch and main arenas

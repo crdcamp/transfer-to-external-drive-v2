@@ -1,4 +1,4 @@
-#include "../include/compare.h"
+#include "../include/sync.h"
 #include "../include/arena.h"
 
 void children_print_list(FTSENT *children_list) {
