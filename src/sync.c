@@ -47,7 +47,7 @@ int by_name(const FTSENT **a, const FTSENT **b) {
     files according to the source directory's file hierarchy structure.
     A scratch `Arena` must be provided for string operations.
 */
-void compare_directories(Arena *arena_scratch, char **source, char **target) {
+void sync_directories(Arena *arena_scratch, char **source, char **target) {
     // Open the source and target directories while sorting them `by_name`
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {

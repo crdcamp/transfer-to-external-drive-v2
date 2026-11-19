@@ -1,5 +1,5 @@
-#ifndef COMPARE_H
-#define COMPARE_H
+#ifndef SYNC_H
+#define SYNC_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +17,6 @@
 FTSENT *children_get_list(FTS *handle);
 void children_print_list(FTSENT *children_list);
 int by_name(const FTSENT **a, const FTSENT **b);
-void compare_directories(Arena *arena_scratch, char **source, char **target);
+void sync_directories(Arena *arena_scratch, char **source, char **target);
 
 #endif

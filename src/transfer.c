@@ -22,7 +22,7 @@ int main(void) {
     char *source[] = {"TestDirs/Source", NULL};
     char *target[] = {"TestDirs/Target", NULL};
 
-    compare_directories(&arena_scratch, source, target);
+    sync_directories(&arena_scratch, source, target);
 
     return 0;
 }
