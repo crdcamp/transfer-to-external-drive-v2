@@ -66,6 +66,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+
                     // Delete the directory and everything under it using `fts_open`
                     char *full_path_fts[] = {full_path, NULL};
                     FTS *directory_handle = fts_open(full_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
@@ -73,8 +74,6 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                         perror("fts_open");
                         exit(EXIT_FAILURE);
                     }
-
-                    // Delete all excess files and folders
                     FTSENT *entry;
                     while ((entry = fts_read(directory_handle)) != NULL) {
                         if (entry->fts_info != FTS_D) {
