@@ -80,38 +80,35 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         printf("Current target file: %s\n", target_ptr->fts_name);
         printf("\n");
 
-        // Note that the following condition is probably the last,
-        // or one of the last conditions you should be checking for,
-        // In other words, the rest of the code should go above this loop
-
-        // If the target directory's current depth has more files than
-        // the source directory, delete the extraneous files
+        // If the target directory's current depth has more files than the source directory, delete the extraneous files/directories
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
-                // If it's a file, just delete_file it
+                // If it's a file, just delete it
                 if (excess_file->fts_info == FTS_F) {
                     // Concatenate the file name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch); // Create a checkpoint for the scratch arena reset later
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
 
-                    // Delete the files
+                    // Delete the file
                     printf("File %s is a file\n", excess_file->fts_path);
                     printf("Attempting to delete_file file: %s\n", full_path);
                     delete_file(full_path);
                     arena_rewind(arena_scratch, checkpoint); // Reset the scratch arena
                 }
+
                 // If it's a directory, recursively delete_file the directory
                 else if (excess_file->fts_info == FTS_D) {
                     printf("File %s is a directory\n", target_ptr->fts_accpath);
                     size_t checkpoint = arena_checkpoint(arena_scratch);
-                    char *full_path_array[3] = {excess_file->fts_path}
+                    char *full_path_array[3] = {excess_file->fts_path};
                 }
                 // If it's a directory, recursively delete_file the director
                 excess_file = excess_file->fts_link;
             }
         }
+
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
     }
