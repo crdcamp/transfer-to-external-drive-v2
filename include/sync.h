@@ -24,6 +24,7 @@ int by_name(const FTSENT **a, const FTSENT **b);
 // File operations
 ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name);
 void file_delete(char *file_path);
+void directory_delete(char *file_path);
 // Main
 void sync_directories(Arena *arena_scratch, char **source, char **target);
 
