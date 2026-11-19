@@ -131,16 +131,24 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         ConcatResult source_file_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         ConcatResult target_file_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
+        // If the files match, move onto the next file
+        if (source_ptr->fts_name == target_ptr->fts_name) {
+            printf("Source file '%s' matches target file '%s'. Moving on\n", source_ptr->fts_name, target_ptr->fts_name);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
+
         // If the current target directory depth doesn't match the source, delete it
-        // (Bit heavy handed, but a more efficient approach requires way more tedious effort)
+        // NOTE: Bit heavy handed, but a more efficient approach requires way more tedious effort
+        // We can implement a more advanced version of this project next time I have the time to do so
         // Delete non-matching files
-        if ((source_file_path.file_path != target_file_path.file_path) && (target_ptr->fts_info == FTS_F)) {
-            printf("Normal file delete for file: %s\n", target_file_path.file_path);
+        if ((source_ptr->fts_name != target_ptr->fts_name) && (target_ptr->fts_info == FTS_F)) {
+            printf("Normal file delete for file `%s`. Full path: %s\n", target_ptr->fts_name, target_file_path.file_path);
             file_delete(target_file_path.file_path);
         }
         // Delete non-matching directories
         if ((source_ptr->fts_path != target_ptr->fts_path) && (target_ptr->fts_info == FTS_D)) {
-            printf("Normal directory delete for directory: %s\n", target_file_path.file_path);
+            printf("Normal directory delete for directory '%s`. Full path: %s\n", target_ptr->fts_name, target_file_path.file_path);
             directory_delete(target_file_path.file_path);
         }
 
@@ -193,7 +201,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                 arena_rewind(arena_scratch, excess_file_path.arena_checkpoint);
             }
         }
-        // Move to the next source and target files
+    // Move to the next source and target files
     source_ptr = source_ptr->fts_link;
     target_ptr = target_ptr->fts_link;
     }
