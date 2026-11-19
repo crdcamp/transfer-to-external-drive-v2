@@ -36,19 +36,40 @@ int by_name(const FTSENT **a, const FTSENT **b) {
    It is recommended to reset the scratch arena to the returned checkpoint
    after the file path is no longer needed.
  */
-// Should this return a pointer to ConcatResult???
+// Should this return a pointer to ConcatResult??? Eh... probably not
 ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     ConcatResult result = {0};
     result.arena_checkpoint = arena_checkpoint(arena_scratch);
 
     char *file_name_array[3] = {base_path, "/", file_name};
-    result.file_path = arena_string_concat(arena_scratch, file_name_array, 3);
+    char *file_path = arena_string_concat(arena_scratch, file_name_array, 3);
 
     return result;
 }
 
-// Merge file_delete with this function
-//void file_delete()
+/*
+  Give a path to a file or directory, delete the file, or the entire directory
+  It is recommended to rewind the arena after completing this operation
+*/
+// TODO: Revisit this function and ensure the arena rewinding is being handled
+// correctly. I think, given the recursion, that it's fine, but just in case
+void file_delete(Arena *arena_scratch, size_t checkpoint, char *file_path) {
+    checkpoint = arena_checkpoint(arena_scratch);
+    char *file_path_fts[2] = {file_path, NULL};
+    FTS *file_handle = fts_open(file_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+    if (file_handle == NULL) {
+        perror("file_delete: fts_open");
+        exit(EXIT_FAILURE);
+    }
+    FTSENT *entry;
+    while ((entry = fts_read(file_handle)) != NULL) {
+        if (entry->fts_info != FTS_D) {
+            file_delete(arena_scratch, checkpoint, entry->fts_path);
+        }
+    }
+    fts_close(file_handle);
+    arena_rewind(arena_scratch, checkpoint);
+}
 
  /*
     Visit each depth level of the source and target directory paths
@@ -118,7 +139,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                     FTSENT *entry;
                     while ((entry = fts_read(directory_handle)) != NULL) {
                         if (entry->fts_info != FTS_D) {
-                            file_delete(entry->fts_path);
+                            single_file_delete(entry->fts_path);
                         }
                     }
                     fts_close(directory_handle);
