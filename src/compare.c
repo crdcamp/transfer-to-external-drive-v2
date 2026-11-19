@@ -29,10 +29,9 @@ FTSENT *children_get_list(FTS *handle) {
 
 void delete_file(const char *file_path) {
     if (remove(file_path) == 0) {
-        printf("File '%s' delete_filed\n", file_path);
     }
     else {
-        printf("Error: Unable to delete_file file '%s'\n", file_path);
+        printf("Error: Unable to delete file '%s'\n", file_path);
     }
     return;
 }
@@ -80,11 +79,11 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
         printf("Current target file: %s\n", target_ptr->fts_name);
         printf("\n");
 
-        // If the target directory's current depth has more files than the source directory, delete the extraneous files/directories
+        // Delete extra directories and files found in the target directory that are not found in the source directory
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
-                // If it's a file, just delete it
+                // If it's a file, delete it
                 if (excess_file->fts_info == FTS_F) {
                     // Concatenate the file name with it's path for passing to `delete_file`
                     size_t checkpoint = arena_checkpoint(arena_scratch); // Create a checkpoint for the scratch arena reset later
@@ -92,19 +91,18 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
 
                     // Delete the file
-                    printf("File %s is a file\n", excess_file->fts_path);
-                    printf("Attempting to delete_file file: %s\n", full_path);
                     delete_file(full_path);
                     arena_rewind(arena_scratch, checkpoint); // Reset the scratch arena
                 }
 
                 // If it's a directory, recursively delete_file the directory
                 else if (excess_file->fts_info == FTS_D) {
-                    printf("File %s is a directory\n", target_ptr->fts_accpath);
+                    printf("Excess file '%s' is a directory\n", excess_file->fts_accpath);
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path};
                 }
                 // If it's a directory, recursively delete_file the director
+                // DON'T FORGET to close the file if you end up using fts_open()
                 excess_file = excess_file->fts_link;
             }
         }
@@ -120,4 +118,7 @@ void compare_directories(Arena *arena_scratch, char **source, char **target) {
     // This could also then be used recursively. You also already have
     // and arena function to accomplish this
     // Hopefully this recursion actually reaches all tree paths when implemented...
+
+    fts_close(source_handle);
+    fts_close(target_handle);
 }
