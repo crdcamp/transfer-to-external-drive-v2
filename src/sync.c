@@ -1,6 +1,10 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
 
+/*
+  Create a NULL-terminated list of children for a
+  given directory.
+ */
 FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
     if (list_start == NULL) {
@@ -27,12 +31,16 @@ int by_name(const FTSENT **a, const FTSENT **b) {
    after the file path is no longer needed.
  */
 // Should this return a pointer to ConcatResult??? Eh... probably not
+// Should the ConcatResult struct strictly deal with the values that
+// 'fts` will handle? I feel like this could potentially be very
+// unsafe code... but I also don't know a thing about security
+// and that probably shows
 ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     ConcatResult result = {0};
     result.arena_checkpoint = arena_checkpoint(arena_scratch);
 
     char *file_name_array[3] = {base_path, "/", file_name};
-    char *file_path = arena_string_concat(arena_scratch, file_name_array, 3);
+    result.file_path = arena_string_concat(arena_scratch, file_name_array, 3);
 
     return result;
 }
@@ -40,30 +48,31 @@ ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *
 /*
   Give a path to a file or directory, delete the file, or the entire directory
 */
-// TODO: Revisit this function and ensure the arena rewinding is being handled
-// correctly. I think, given the recursion, that it's fine, but just in case
-void file_delete(Arena *arena_scratch, size_t checkpoint, char *file_path) {
-    checkpoint = arena_checkpoint(arena_scratch);
-    char *file_path_fts[2] = {file_path, NULL};
-    FTS *file_handle = fts_open(file_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
-    if (file_handle == NULL) {
+// TODO: Add some comments to this function, as it's gonna be pretty easy to
+// forget the logic here
+void file_delete(char *file_path) {
+    char *paths[2] = {file_path, NULL};
+    FTS *handle = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+    if (handle == NULL) {
         perror("file_delete: fts_open");
         exit(EXIT_FAILURE);
     }
+
     FTSENT *entry;
-    while ((entry = fts_read(file_handle)) != NULL) {
-        if (entry->fts_info != FTS_D) {
-            if (remove(file_path) == 0) return;
-            else {
-                printf("Error: Unable to delete file '%s'\n", file_path);
-                perror("fts_open");
-                exit(EXIT_FAILURE);
-            }
-            return;
+    while ((entry = fts_read(handle)) != NULL) {
+        if (entry->fts_info == FTS_D) continue;
+
+        if (entry->fts_info == FTS_DNR || entry->fts_info == FTS_ERR || entry->fts_info == FTS_NS) {
+            fprintf(stderr, "file_delete: %s: %s\n", entry->fts_path, strerror(entry->fts_errno));
+            exit(EXIT_FAILURE);
+        }
+
+        if (remove(entry->fts_path) != 0) {
+            perror(entry->fts_path);
+            exit(EXIT_FAILURE);
         }
     }
-    fts_close(file_handle);
-    arena_rewind(arena_scratch, checkpoint);
+    fts_close(handle);
 }
 
  /*
