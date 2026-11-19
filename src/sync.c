@@ -15,12 +15,9 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-void delete_file(const char *file_path) {
-    if (remove(file_path) == 0) {
-    }
-    else {
-        printf("Error: Unable to delete file '%s'\n", file_path);
-    }
+void file_delete(const char *file_path) {
+    if (remove(file_path) == 0) return;
+    else printf("Error: Unable to delete file '%s'\n", file_path);
     return;
 }
 
@@ -28,10 +25,14 @@ int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
+//char *file_concat()
+
+// void directory_delete()
+
  /*
     Visit each depth level of the source and target directory paths
-    to ensure the target directory mirrors the source directory.
-    The target directory is edited in-place and delete_files/updates
+    to ensure the target directory is synced with the source directory.
+    The target directory is edited in-place and file_deletes/updates
     files according to the source directory's file hierarchy structure.
     A scratch `Arena` must be provided for string operations.
 */
@@ -63,10 +64,12 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
 
         // If the source and target names are identical, check if the source
         // was edited more recently than the target
+        // If it wasn't, obviously overwrite it. If it was, obviously continue
+        // Ensure this only applies to files, not directories
 
         // If the source and target directory names are different before
-        // reaching excess directories, I'm not sure what to do yet. Might just
-        // be a simple delete?
+        // reaching excess directories, I'm not sure what to do yet. Likely
+        // just a simple delete
 
         // Delete extra directories and files found in the target directory that are not found in the source directory
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
@@ -74,14 +77,15 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
             while (excess_file != NULL) {
                 // If it's a file, delete it
                 if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
-                    // CONSIDER MAKING THE RECURSIVE DELETION CHUNK INTO A FUNCTION
-                    // Concatenate the directory name with it's path for passing to `delete_file`
+                    // MAKE THE RECURSIVE DELETION CHUNK INTO A FUNCTION
+                    // MAKE THE STRING CONCATENATION INTO A FUNCTION
+                    // Concatenate the directory name with it's path for passing to `file_delete`
                     size_t checkpoint = arena_checkpoint(arena_scratch);
                     char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
                     char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
+                    char *full_path_fts[] = {full_path, NULL};
 
                     // Delete the directory and everything under it using `fts_open`
-                    char *full_path_fts[] = {full_path, NULL};
                     FTS *directory_handle = fts_open(full_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
                     if (directory_handle == NULL) {
                         perror("fts_open");
@@ -90,18 +94,16 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                     FTSENT *entry;
                     while ((entry = fts_read(directory_handle)) != NULL) {
                         if (entry->fts_info != FTS_D) {
-                            delete_file(entry->fts_path);
+                            file_delete(entry->fts_path);
                         }
                     }
                     fts_close(directory_handle);
                     arena_rewind(arena_scratch, checkpoint);
                 }
-                // If it's a directory, recursively delete_file the director
-                // DON'T FORGET to close the file if you end up using fts_open()
                 excess_file = excess_file->fts_link;
             }
         }
-
+        // Onto the source and target files
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
     }
