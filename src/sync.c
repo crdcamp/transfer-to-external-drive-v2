@@ -125,25 +125,11 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
             while (excess_file != NULL) {
                 if ((excess_file->fts_info == FTS_F) || (excess_file->fts_info == FTS_D)) {
                     // Concatenate the directory name with it's path for passing to `file_delete`
-                    size_t checkpoint = arena_checkpoint(arena_scratch);
-                    char *full_path_array[3] = {excess_file->fts_path, "/", excess_file->fts_name};
-                    char *full_path = arena_string_concat(arena_scratch, full_path_array, 3);
-                    char *full_path_fts[] = {full_path, NULL};
+                    ConcatResult full_path_concat = file_path_concatenate(arena_scratch, excess_file->fts_path, excess_file->fts_name);
 
-                    // Delete the directory and everything under it using `fts_open`
-                    FTS *directory_handle = fts_open(full_path_fts, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
-                    if (directory_handle == NULL) {
-                        perror("fts_open");
-                        exit(EXIT_FAILURE);
-                    }
-                    FTSENT *entry;
-                    while ((entry = fts_read(directory_handle)) != NULL) {
-                        if (entry->fts_info != FTS_D) {
-                            single_file_delete(entry->fts_path);
-                        }
-                    }
-                    fts_close(directory_handle);
-                    arena_rewind(arena_scratch, checkpoint);
+                    // Delete the directory and it's entire hierarchy
+                    file_delete(full_path_concat.file_path);
+                    arena_rewind(arena_scratch, full_path_concat.arena_checkpoint);
                 }
                 excess_file = excess_file->fts_link;
             }
