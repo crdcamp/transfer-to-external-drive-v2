@@ -1,9 +1,13 @@
-# A note to myself before dedicating more time to actually coding this project
+# Overview
 
-After sinking a few hours into this project, it has resulted in a complete and unacceptable mess (at least I got the basics of an arena. There's that).
+**This project is a work in progress.**
 
-Multiple recursions over the same trees, multiple opens and reads on the same files, copying full file paths, many of which you may not need, and excessive memory usage to top it off.
+One thing this project taught me: ["If you don't understand the data, you don't understand the problem"](https://www.youtube.com/watch?v=rX0ItVEVjHc).
 
-Now, let's do some far more thorough research before revisiting the code. Some good starting places are [`fts`](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/fts.3.html) and [`copyfile`](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/copyfile.3.html). Start there, and **don't touch the code until you understand the data**. ["If you don't understand the data, then you don't understand the problem"](https://www.youtube.com/watch?v=rX0ItVEVjHc).
+This is my first serious systems programming project designed to "sync" a source directory with multiple target directories so that they perfectly mirror each other. It is meant to vastly improve its [previous version](https://github.com/crdcamp/transfer-to-external-drive) and involves recursion, a small memory arena implementation, and some advanced file management.
 
-This project will be resumed after I've dedicated enough research into the best approach to this problem in a separate directory.
+While the previous version simply used system calls to the `cp` command, this one gets a lot more technical and (hopefully) a **lot** faster.
+
+This project has also slowly turned into a basis for turning my extra laptop into a server that syncs with directories of my choosing. Might even make a cron job to automate that at some point...
+
+This `README.md` will be finalized when the project has reached completion.
