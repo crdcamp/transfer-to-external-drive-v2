@@ -90,11 +90,10 @@ void directory_delete(char *file_path) {
     fts_close(handle);
 }
 
-// Delete all apple files from the directories (AI generated: Needs review)
-// This should likely just go inside of the sync function itself, since these
-// are more than likely operations that will only be used once
+// Delete all apple files from the directories (Temporary AI generated "bandaid" solution)
 // TODO: Fully implement this into `directory_sync`. This should not be its own function.
-// Allow `directory_sync` to handle this as it recurses through the file levels
+// Allow `directory_sync` to handle this as it recurses through the file levels, since
+// this approach adds an unnecessary extra recursion
 static int is_junk(const char *name) {
     return strcmp(name, ".DS_Store") == 0 ||
            strcmp(name, ".Spotlight-V100") == 0 ||
@@ -178,10 +177,30 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *target_ptr = target_children_list;
 
     while (source_ptr != NULL) {
-        // If the source and target names are identical, check if the source was edited more recently than the target
+        size_t checkpoint = arena_checkpoint(arena_scratch);
+        // DIRECTORIES
+        // If the source and target are directories AND have the same name AND have the same ID:
+        // Do nothing. No code needed
+
+        // If the source and target are directories AND have different names AND have the same ID:
+        // Overwrite the source directory name to the target directory name
+
+
+        // FILES
+        // If the source and target are files AND have the same name AND have the same ID:
+        // Do nothing. No code needed
+
+        // If the source and target are files AND have different names AND have the same ID:
+        // Overwrite the entire source file onto the target file
+
+
+        // If the source and target names ARE FILES and IDs are identical, check if the source was edited more recently than the target
         // If the source's last edit is newer, overwrite the target
         // If the target's last edit is newer (figure this out later stop multitasking)
 
+        // Test if IDs change after renaming before doing this
+        // If the names are different but the IDs are the same, overwrite the source name
+        // into the target ID
 
         // If the target file/directory doesn't match the source, delete
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
@@ -199,7 +218,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // also be incorporated somehow?
         // Could maybe use the ID field in the stat struct? Could pretty easily
         // test that by just renaming a file
-        // Note that there's also a `rename` function if you can sort this process out
+        // Note that there's also a `rename` function if you can sort this logic out
 
         // Consider keeping some metadata on directories of every level to see
         // if subdirectories have the same name. If they do, check that the subdirectory
@@ -238,8 +257,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
         }
     // Move to the next source and target files
-    source_ptr = source_ptr->fts_link;
-    target_ptr = target_ptr->fts_link;
+        source_ptr = source_ptr->fts_link;
+        target_ptr = target_ptr->fts_link;
+        arena_rewind(arena_scratch, checkpoint);
     }
 
     // Now, how do we set this recursion up so it continues down
