@@ -1,7 +1,5 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
-#include <stdint.h>
-#include <stdio.h>
 
 /*
   Create a NULL-terminated list of children files/directories for a given directory.
@@ -31,14 +29,15 @@ int by_name(const FTSENT **a, const FTSENT **b) {
    It is recommended to reset the scratch arena to the returned checkpoint
    after the file path is no longer needed (i.e., after using `directory_delete`)
  */
-ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
-    ConcatResult result = {0};
-    result.arena_checkpoint = arena_checkpoint(arena_scratch);
-
+char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     char *file_name_array[3] = {base_path, "/", file_name};
-    result.file_path = arena_string_concat(arena_scratch, file_name_array, 3);
+    char *file_path = arena_string_concat(arena_scratch, file_name_array, 3);
 
-    return result;
+    return file_path;
+}
+
+void file_copy(char *source, char *target) {
+    printf("file_copy not implemented\n");
 }
 
 /*
@@ -49,6 +48,10 @@ void file_delete(char *file_path) {
         perror(file_path);
         exit(EXIT_FAILURE);
     }
+}
+
+void directory_copy(char *source, char *target) {
+    printf("directory_copy not implemented\n");
 }
 
 /*
@@ -98,8 +101,8 @@ A scratch arena must be provided for string operations.
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Open the source and target directories while sorting them `by_name`
     // TODO: Need more verbose error handling and messaging here
-    char *source_fts[] = {source, NULL};
-    char *target_fts[] = {target, NULL};
+    char *source_fts[2] = {source, NULL};
+    char *target_fts[2] = {target, NULL};
     FTS *source_handle = fts_open(source_fts, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
@@ -142,14 +145,14 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // If the target file/directory doesn't match the source, delete
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
-            ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            printf("Normal file delete for file: '%s'\n\n", full_path.file_path);
-            file_delete(full_path.file_path);
+            char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            printf("Normal file delete for file: '%s'\n\n", full_path);
+            file_delete(full_path);
         }
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_D)) {
-            ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            printf("Normal directory delete for directory: '%s'\n\n", full_path.file_path);
-            directory_delete(full_path.file_path);
+            char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            printf("Normal directory delete for directory: '%s'\n\n", full_path);
+            directory_delete(full_path);
         }
 
         // Maybe there's a way to determine if a folder was renamed and that could
@@ -173,22 +176,22 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             FTSENT *excess_file = target_ptr->fts_link;
             while (excess_file != NULL) {
                 // Create a full file path and arena checkpoint
-                ConcatResult excess_file_path = file_path_concatenate(arena_scratch, excess_file->fts_path, excess_file->fts_name);
+                char *excess_file_path = file_path_concatenate(arena_scratch, excess_file->fts_path, excess_file->fts_name);
                 // If it's a file, just delete the file
                 if (excess_file->fts_info == FTS_F) {
-                    printf("Excess file delete for file: %s\n", excess_file_path.file_path);
-                    file_delete(excess_file_path.file_path);
+                    printf("Excess file delete for file: %s\n", excess_file_path);
+                    file_delete(excess_file_path);
                 }
                 // Otherwise, if it's a directory, recursively delete the directory
                 else if (excess_file->fts_info == FTS_D) {
-                    printf("Excess directory delete for directory: %s\n", excess_file_path.file_path);
-                    directory_delete(excess_file_path.file_path);
+                    printf("Excess directory delete for directory: %s\n", excess_file_path);
+                    directory_delete(excess_file_path);
                 }
                 // Otherwise, we don't know what the heck we're dealing with
                 // (this error handling could almost definitely be improved
                 // using the `stat` struct. Let's just get things moving for now)
                 else {
-                    printf("ERROR: Unrecognized file type for file: '%s'\n", excess_file_path.file_path);
+                    printf("ERROR: Unrecognized file type for file: '%s'\n", excess_file_path);
                     return;
                 }
                 excess_file = excess_file->fts_link;

@@ -12,7 +12,10 @@ int main(void) {
     // Define test directories and test the sync function
     char *source = "TestDirs/Source";
     char *target = "TestDirs/Target";
-    sync_directories(&arena_scratch, source, target);
+    //sync_directories(&arena_scratch, source, target);
+
+    file_copy(source, target);
+    directory_copy(source, target);
 
     return 0;
 }

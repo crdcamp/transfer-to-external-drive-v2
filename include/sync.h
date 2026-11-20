@@ -13,19 +13,14 @@
 
 #include "arena.h"
 
-typedef struct ConcatResult {
-    size_t arena_checkpoint;
-    char *file_path;
-} ConcatResult;
-
 // `fts` operations
 FTSENT *children_get_list(FTS *handle);
 int by_name(const FTSENT **a, const FTSENT **b);
 // File operations
-ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name);
-void file_copy(char *file_path);
+char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name);
+void file_copy(char *source, char *target);
 void file_delete(char *file_path);
-void directory_copy(char *file_path);
+void directory_copy(char *source, char *target);
 void directory_delete(char *file_path);
 // Main
 void sync_directories(Arena *arena_scratch, char *source, char *target);
