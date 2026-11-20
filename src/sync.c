@@ -91,7 +91,7 @@ void directory_delete(char *file_path) {
     fts_close(handle);
 }
 
-// Delete all apple files from the directories (Temporary AI generated "bandaid" solution)
+// Delete all Apple files from the directories (Temporary AI generated "bandaid" solution)
 // TODO: Fully implement this into `directory_sync`. This should not be its own function.
 // Allow `directory_sync` to handle this as it recurses through the file levels, since
 // this approach adds an unnecessary extra recursion
@@ -178,10 +178,19 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *target_ptr = target_children_list;
 
     while (source_ptr != NULL) {
-        size_t checkpoint = arena_checkpoint(arena_scratch);
-        // TODO: Implement stat's st_ino and st_dev when comparing files. This way file
-        // IDs can be used to ensure you are copying correctly. For now, time and name
-        // comparisons are good enough
+        size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
+
+        // I THINK THIS WHOLE THING NEEDS TO BE APPROACHED AGAIN DIFFERENTLY
+        // WHEN REVISITING, FOCUS ON A "PER-DEPTH" BASIS. `directory_delete`, for insance,
+        // recurses downward
+
+        // The plan:
+        // Compare file name, edit time, and sizes - note that directory edit times only change when they're renamed. The same doesn't appy to files
+        // Highly fixate on this being a per-depth basis. Do not use functions that recurse in this entire block
+        // Maybe consider checking for empty directories, since I believe this will recurse upwards
+        // and be able to delete empty directories on the way up (refer to directory_delete)
+        // Actually, you might be able to get away with deleting directories that don't match any directory
+        // names in the source.
 
         //// DIRECTORY LOGIC ////
         // If the source and target have the same name...
@@ -193,8 +202,17 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 // overwrite the source directory into the target directory
                 char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                printf("Overwriting directory '%s' to directory '%s\n", source_full_path, target_full_path);
                 directory_copy(source_full_path, target_full_path);
         }
+        // If the target directory's name doesn't match the source directory's name, delete the target directory
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) &&
+            (source_ptr->fts_info == FTS_D) && (target_ptr->fts_info == FTS_D)) {
+            char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            printf("Normal directory delete for directory: '%s'\n\n", full_path);
+            directory_delete(full_path);
+        }
+
 
         //// FILE LOGIC ////
         // If the source and target have the same name...
@@ -206,43 +224,22 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 // overwrite the source file into the target file
                 char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                printf("Overwriting file '%s' to file '%s\n", source_full_path, target_full_path);
                 file_copy(source_full_path, target_full_path);
         }
-
-
-
-
-        // NOTE: Should file IDs be included here?
-        // If the target file/directory doesn't match the source, delete
-        // TODO: Add FTS_F check for source file as well
-        // If the
+        // If the target file's name doesn't match the source file's name, delete the target file
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) &&
             (source_ptr->fts_info == FTS_F) && (target_ptr->fts_info == FTS_F)) {
             char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             printf("Normal file delete for file: '%s'\n\n", full_path);
             file_delete(full_path);
         }
-        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_D)) {
-            char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            printf("Normal directory delete for directory: '%s'\n\n", full_path);
-            directory_delete(full_path);
-        }
 
-        // Maybe there's a way to determine if a folder was renamed and that could
-        // also be incorporated somehow?
-        // Could maybe use the ID field in the stat struct? Could pretty easily
-        // test that by just renaming a file
-        // Note that there's also a `rename` function if you can sort this logic out
-
-        // Consider keeping some metadata on directories of every level to see
-        // if subdirectories have the same name. If they do, check that the subdirectory
-        // Matches the saved directory and move it to the location if it matches
-        // (I'd consider maybe not doing this at all, but there has to be some
-        // clever way to move directories instead of deleting and remaking them, right?)
 
         // If the source and target directory names are different before
         // reaching excess directories, I'm not sure what to do yet. Likely
         // just a simple delete
+        // The prior logic also might ensure that doesn't happen
 
         //// EXTRA FILE LOGIC ////
         // Delete extra directories and files found in the target directory that are not found in the source directory
