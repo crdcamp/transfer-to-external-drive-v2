@@ -1,9 +1,7 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
 
-/*
-  Create a NULL-terminated list of children files/directories for a given directory.
- */
+// Create a NULL-terminated list of children files/directories for a given directory.
 FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
     if (list_start == NULL) {
@@ -15,19 +13,17 @@ FTSENT *children_get_list(FTS *handle) {
     return children_list;
 }
 
-/*
-   Pass to `fts_read()` to sort files alphabetically
-*/
+// Pass to `fts_read()` to sort files alphabetically
 int by_name(const FTSENT **a, const FTSENT **b) {
     return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
 /*
-   Provide a scratch arena, base path, and file name to concatenate
-   the base path and file name to create a full path using the scratch arena.
-   Returns an arena checkpoint and concatenated file path.
-   It is recommended to reset the scratch arena to the returned checkpoint
-   after the file path is no longer needed (i.e., after using `directory_delete`)
+Provide a scratch arena, base path, and file name to concatenate
+the base path and file name to create a full path using the scratch arena.
+Returns an arena checkpoint and concatenated file path.
+It is recommended to reset the scratch arena to the returned checkpoint
+after the file path is no longer needed (i.e., after using `directory_delete`)
  */
 char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     char *file_name_array[3] = {base_path, "/", file_name};
@@ -40,9 +36,8 @@ void file_copy(char *source, char *target) {
     printf("file_copy not implemented\n");
 }
 
-/*
-Delete a single file
-*/
+
+// Delete a single file
 void file_delete(char *file_path) {
     if (remove(file_path) != 0) {
         perror(file_path);
@@ -50,14 +45,12 @@ void file_delete(char *file_path) {
     }
 }
 
+// Recursively copy a directory and all of its contents
 void directory_copy(char *source, char *target) {
     printf("directory_copy not implemented\n");
 }
 
-/*
-Given a path to a file or directory, delete a directory and
-all of its contents
-*/
+// Recursively delete a directory and all of its contents
 void directory_delete(char *file_path) {
     char *paths[2] = {file_path, NULL};
     FTS *handle = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
@@ -123,10 +116,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
     // IMPORTANT NOTE: Doing the empty directory check properly would require some research on
     // error handling. So, we're gonna do it the incorrect way for now and just
-    // treat NULL as an empty directory
-
-    // If `target_children_list` is NULL, then we (probably) have an empty directory,
-    // so we need to copy the entire source
+    // treat NULL as an empty directory (likely an unsafe practice)
     // MAKE A COPY FUNCTION AND USE IT HERE
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
