@@ -183,31 +183,31 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // IDs can be used to ensure you are copying correctly. For now, time and name
         // comparisons are good enough
 
-        // DIRECTORY LOGIC
+        //// DIRECTORY LOGIC ////
         // If the source and target have the same name...
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) &&
-            // and the source was edited more recently than the target
-            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) &&
             // and both are directories...
-            (source_ptr->fts_info == FTS_D) && (target_ptr->fts_info == FTS_D)){
+            (source_ptr->fts_info == FTS_D) && (target_ptr->fts_info == FTS_D) &&
+            // and the source was edited more recently than the target
+            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
                 // overwrite the source directory into the target directory
                 char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 directory_copy(source_full_path, target_full_path);
         }
 
-        // FILES
+        //// FILE LOGIC ////
         // If the source and target have the same name...
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) &&
+            // and both are files...
+            (source_ptr->fts_info == FTS_F) && (target_ptr->fts_info == FTS_F) &&
             // and the source was edited more recently than the target
-            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) &&
-            // and both are directories...
-            (source_ptr->fts_info == FTS_F) && (target_ptr->fts_info == FTS_F)) {
+            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
                 // overwrite the source file into the target file
                 char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 file_copy(source_full_path, target_full_path);
-            }
+        }
 
 
 
@@ -215,7 +215,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // NOTE: Should file IDs be included here?
         // If the target file/directory doesn't match the source, delete
         // TODO: Add FTS_F check for source file as well
-        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
+        // If the
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) &&
+            (source_ptr->fts_info == FTS_F) && (target_ptr->fts_info == FTS_F)) {
             char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             printf("Normal file delete for file: '%s'\n\n", full_path);
             file_delete(full_path);
@@ -242,6 +244,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // reaching excess directories, I'm not sure what to do yet. Likely
         // just a simple delete
 
+        //// EXTRA FILE LOGIC ////
         // Delete extra directories and files found in the target directory that are not found in the source directory
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
