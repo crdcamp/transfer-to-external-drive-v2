@@ -40,7 +40,6 @@ void file_copy(const char *source, const char *target) {
     return;
 }
 
-
 // Delete a single file
 void file_delete(char *file_path) {
     if (remove(file_path) != 0) {
@@ -51,9 +50,6 @@ void file_delete(char *file_path) {
 }
 
 // Recursively copy a directory and all of its contents
-#include <copyfile.h>
-#include <stdio.h>
-
 void directory_copy(const char *source, const char *target) {
     copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
 
@@ -94,6 +90,40 @@ void directory_delete(char *file_path) {
     fts_close(handle);
 }
 
+// Delete all apple files from the directories (AI generated: Needs review)
+// This should likely just go inside of the sync function itself, since these
+// are more than likely operations that will only be used once
+// TODO: Fully implement this into `directory_sync`. This should not be its own function.
+// Allow `directory_sync` to handle this as it recurses through the file levels
+static int is_junk(const char *name) {
+    return strcmp(name, ".DS_Store") == 0 ||
+           strcmp(name, ".Spotlight-V100") == 0 ||
+           strcmp(name, ".fseventsd") == 0 ||
+           strcmp(name, ".Trashes") == 0 ||
+           strncmp(name, "._", 2) == 0;
+}
+void purge_junk(char *root) {
+    char *paths[2] = {root, NULL};
+    FTS *handle = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
+    if (handle == NULL) {
+        perror("purge_junk: fts_open");
+        exit(EXIT_FAILURE);
+    }
+
+    FTSENT *entry;
+    while ((entry = fts_read(handle)) != NULL) {
+        if (entry->fts_level == 0 || !is_junk(entry->fts_name)) continue;
+
+        if (entry->fts_info == FTS_D) {
+            fts_set(handle, entry, FTS_SKIP);   // don't descend, we're deleting it
+            directory_delete(entry->fts_path);
+        } else if (entry->fts_info != FTS_DP) {
+            file_delete(entry->fts_path);
+        }
+    }
+    fts_close(handle);
+}
+
  /*
 Visit each depth level of the source and target directory paths
 to ensure the target directory is synced with the source directory.
@@ -101,11 +131,11 @@ The target directory is edited in-place and deletes/updates
 files according to the source directory's file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
-// TODO: Simplify arena rewinding. It's quickly becoming a mess.
-// You should instead just free everything between loops
-// Likely should just set an arena checkpoint right at the top
-// Do not bother addressing this until all the logic is complete!
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
+    // Delete unneeded Apple files
+    purge_junk(source);
+    purge_junk(target);
+
     // Open the source and target directories while sorting them `by_name`
     // TODO: Need more verbose error handling and messaging here
     char *source_fts[2] = {source, NULL};
@@ -131,10 +161,15 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // IMPORTANT NOTE: Doing the empty directory check properly would require some research on
     // error handling. So, we're gonna do it the incorrect way for now and just
     // treat NULL as an empty directory (likely an unsafe practice)
-    // MAKE A COPY FUNCTION AND USE IT HERE
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
-        printf("target_children_list is NULL\n");
+        printf("Copying source to empty target\n");
+        size_t checkpoint = arena_checkpoint(arena_scratch);
+        char *source_array[2] = {source, "/"};
+        char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
+
+        directory_copy(source_slash, target);
+        arena_rewind(arena_scratch, checkpoint);
         return;
     }
 
@@ -146,6 +181,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If the source and target names are identical, check if the source was edited more recently than the target
         // If the source's last edit is newer, overwrite the target
         // If the target's last edit is newer (figure this out later stop multitasking)
+
 
         // If the target file/directory doesn't match the source, delete
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
