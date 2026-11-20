@@ -87,10 +87,13 @@ void directory_delete(char *file_path) {
     files according to the source directory's file hierarchy structure.
     A scratch arena must be provided for string operations.
 */
-// TODO: Simplify arena rewinding. It should ideally be called just once
-// You're partially defeating the purpose of an arena here
+// TODO: Simplify arena rewinding. It's quickly becoming a mess.
+// You should instead just free everything between loops
+// Likely should just set an arena checkpoint right at the top
+// Do not bother addressing this until all the logic is complete!
 void sync_directories(Arena *arena_scratch, char **source, char **target) {
     // Open the source and target directories while sorting them `by_name`
+    // TODO: Need more verbose error handling and messaging here
     FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
@@ -127,29 +130,24 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
     FTSENT *target_ptr = target_children_list;
 
     while (source_ptr != NULL) {
-        // BRAINSTORMING TRYING TO ACCOUNT FOR ALL INSTANCES:
-        ConcatResult source_file_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-        ConcatResult target_file_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+        // If the source and target names are identical, check if the source was edited more recently than the target
+        // If the source's last edit is newer, overwrite the target
+        // If the target's last edit is newer (figure this out later stop multitasking)
 
-        // If the files match, move onto the next file
-        if (source_ptr->fts_name == target_ptr->fts_name) {
-            printf("Source file '%s' matches target file '%s'. Moving on\n", source_ptr->fts_name, target_ptr->fts_name);
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-        }
-
-        // If the current target directory depth doesn't match the source, delete it
-        // NOTE: Bit heavy handed, but a more efficient approach requires way more tedious effort
-        // We can implement a more advanced version of this project next time I have the time to do so
-        // Delete non-matching files
+        // If the target file/directory doesn't match the source, delete
         if ((source_ptr->fts_name != target_ptr->fts_name) && (target_ptr->fts_info == FTS_F)) {
-            printf("Normal file delete for file `%s`. Full path: %s\n", target_ptr->fts_name, target_file_path.file_path);
-            file_delete(target_file_path.file_path);
+            printf("Source name: %s\n", source_ptr->fts_name);
+            printf("Target name: %s\n", target_ptr->fts_name);
+            ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            printf("Normal file delete full path: '%s'\n\n", full_path.file_path);
+            //file_delete(target_file_path.file_path);
         }
-        // Delete non-matching directories
-        if ((source_ptr->fts_path != target_ptr->fts_path) && (target_ptr->fts_info == FTS_D)) {
-            printf("Normal directory delete for directory '%s`. Full path: %s\n", target_ptr->fts_name, target_file_path.file_path);
-            directory_delete(target_file_path.file_path);
+        if ((source_ptr->fts_name != target_ptr->fts_name) && (target_ptr->fts_info == FTS_D)) {
+            printf("Source name: %s\n", source_ptr->fts_name);
+            printf("Target name: %s\n", target_ptr->fts_name);
+            ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            printf("Normal directory delete directory path: '%s'\n\n", full_path.file_path);
+            //directory_delete(full_path.file_path);
         }
 
         // Maybe there's a way to determine if a folder was renamed and that could
@@ -157,11 +155,6 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         // Could maybe use the ID field in the stat struct? Could pretty easily
         // test that by just renaming a file
         // Note that there's also a `rename` function if you can sort this process out
-
-        // If the source and target names are identical, check if the source
-        // was edited more recently than the target
-        // If it wasn't, obviously overwrite it. If it was, obviously continue
-        // Ensure this only applies to files, not directories
 
         // Consider keeping some metadata on directories of every level to see
         // if subdirectories have the same name. If they do, check that the subdirectory
@@ -194,11 +187,9 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                 // using the `stat` struct. Let's just get things moving for now)
                 else {
                     printf("ERROR: Unrecognized file type for file: '%s'. Returning...\n", excess_file_path.file_path);
-                    arena_rewind(arena_scratch, excess_file_path.arena_checkpoint);
                     return;
                 }
                 excess_file = excess_file->fts_link;
-                arena_rewind(arena_scratch, excess_file_path.arena_checkpoint);
             }
         }
     // Move to the next source and target files
