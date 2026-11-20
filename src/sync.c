@@ -41,6 +41,9 @@ ConcatResult file_path_concatenate(Arena *arena_scratch, char *base_path, char *
     return result;
 }
 
+/*
+Delete a single file
+*/
 void file_delete(char *file_path) {
     if (remove(file_path) != 0) {
         perror(file_path);
@@ -49,7 +52,8 @@ void file_delete(char *file_path) {
 }
 
 /*
-  Given a path to a file or directory, delete the file, or the entire directory
+Given a path to a file or directory, delete a directory and
+all of its contents
 */
 void directory_delete(char *file_path) {
     char *paths[2] = {file_path, NULL};
@@ -81,33 +85,31 @@ void directory_delete(char *file_path) {
 }
 
  /*
-    Visit each depth level of the source and target directory paths
-    to ensure the target directory is synced with the source directory.
-    The target directory is edited in-place and deletes/updates
-    files according to the source directory's file hierarchy structure.
-    A scratch arena must be provided for string operations.
+Visit each depth level of the source and target directory paths
+to ensure the target directory is synced with the source directory.
+The target directory is edited in-place and deletes/updates
+files according to the source directory's file hierarchy structure.
+A scratch arena must be provided for string operations.
 */
 // TODO: Simplify arena rewinding. It's quickly becoming a mess.
 // You should instead just free everything between loops
 // Likely should just set an arena checkpoint right at the top
 // Do not bother addressing this until all the logic is complete!
-void sync_directories(Arena *arena_scratch, char **source, char **target) {
+void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Open the source and target directories while sorting them `by_name`
     // TODO: Need more verbose error handling and messaging here
-    FTS *source_handle = fts_open(source, FTS_PHYSICAL, by_name);
+    char *source_fts[] = {source, NULL};
+    char *target_fts[] = {target, NULL};
+    FTS *source_handle = fts_open(source_fts, FTS_PHYSICAL, by_name);
     if (source_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
-    FTS *target_handle = fts_open(target, FTS_PHYSICAL, by_name);
+    FTS *target_handle = fts_open(target_fts, FTS_PHYSICAL, by_name);
     if (target_handle == NULL) {
         perror("fts_open");
         exit(EXIT_FAILURE);
     }
-
-    // NOTE: Doing the empty directory check properly would require some research on
-    // error handling. So, we're gonna do it the incorrect way for now and just
-    // treat NULL as an empty directory
 
     // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
@@ -116,9 +118,13 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         return;
     }
 
+    // IMPORTANT NOTE: Doing the empty directory check properly would require some research on
+    // error handling. So, we're gonna do it the incorrect way for now and just
+    // treat NULL as an empty directory
+
     // If `target_children_list` is NULL, then we (probably) have an empty directory,
     // so we need to copy the entire source
-    // WARNING: I have an intuition that this is an unsafe way to handle this
+    // MAKE A COPY FUNCTION AND USE IT HERE
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
         printf("target_children_list is NULL\n");
@@ -136,17 +142,13 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
 
         // If the target file/directory doesn't match the source, delete
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
-            printf("Source name: %s\n", source_ptr->fts_name);
-            printf("Target name: %s\n", target_ptr->fts_name);
             ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            printf("Normal file delete full path: '%s'\n\n", full_path.file_path);
+            printf("Normal file delete for file: '%s'\n\n", full_path.file_path);
             file_delete(full_path.file_path);
         }
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_D)) {
-            printf("Source name: %s\n", source_ptr->fts_name);
-            printf("Target name: %s\n", target_ptr->fts_name);
             ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            printf("Normal directory delete directory path: '%s'\n\n", full_path.file_path);
+            printf("Normal directory delete for directory: '%s'\n\n", full_path.file_path);
             directory_delete(full_path.file_path);
         }
 
@@ -186,7 +188,7 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
                 // (this error handling could almost definitely be improved
                 // using the `stat` struct. Let's just get things moving for now)
                 else {
-                    printf("ERROR: Unrecognized file type for file: '%s'. Returning...\n", excess_file_path.file_path);
+                    printf("ERROR: Unrecognized file type for file: '%s'\n", excess_file_path.file_path);
                     return;
                 }
                 excess_file = excess_file->fts_link;
@@ -197,14 +199,14 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
     target_ptr = target_ptr->fts_link;
     }
 
-    // // Now, how do we set this recursion up so it continues down
-    // // the rest of the file paths?
-    // // I think this would involve passing the file paths that are directories
-    // // with an additional slash in them to access the next level.
-    // // This could also then be used recursively. You also already have
-    // // and arena function to accomplish this
-    // // Hopefully this recursion actually reaches all tree paths when implemented...
+    // Now, how do we set this recursion up so it continues down
+    // the rest of the file paths?
+    // I think this would involve passing the file paths that are directories
+    // with an additional slash in them to access the next level.
+    // This could also then be used recursively. You also already have
+    // and arena function to accomplish this
+    // Hopefully this recursion actually reaches all tree paths when implemented...
 
-    // fts_close(source_handle);
-    // fts_close(target_handle);
+    fts_close(source_handle);
+    fts_close(target_handle);
 }
