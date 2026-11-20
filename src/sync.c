@@ -32,8 +32,12 @@ char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_na
     return file_path;
 }
 
-void file_copy(char *source, char *target) {
-    printf("file_copy not implemented\n");
+void file_copy(const char *source, const char *target) {
+    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
+        perror("copyfile");
+        exit(EXIT_FAILURE);
+    }
+    return;
 }
 
 
@@ -43,11 +47,21 @@ void file_delete(char *file_path) {
         perror(file_path);
         exit(EXIT_FAILURE);
     }
+    return;
 }
 
 // Recursively copy a directory and all of its contents
-void directory_copy(char *source, char *target) {
-    printf("directory_copy not implemented\n");
+#include <copyfile.h>
+#include <stdio.h>
+
+void directory_copy(const char *source, const char *target) {
+    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
+
+    if (copyfile(source, target, NULL, flags) != 0) {
+        perror("copyfile");
+        exit(EXIT_FAILURE);
+    }
+    return;
 }
 
 // Recursively delete a directory and all of its contents
