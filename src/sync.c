@@ -1,5 +1,6 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
+#include <string.h>
 
 // Create a NULL-terminated list of children files/directories for a given directory.
 FTSENT *children_get_list(FTS *handle) {
@@ -178,12 +179,23 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch);
+        // TODO: Implement stat's st_ino and st_dev when comparing files
+
         // DIRECTORIES
-        // If the source and target are directories AND have the same name AND have the same ID:
-        // Do nothing. No code needed
+        // If the source and target have the same names, and the source was edited more recently
+        // than the target, and they are both directories, overwrite the source into the target
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) &&
+            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) &&
+            (source_ptr->fts_info == FTS_D)){
+                char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                directory_copy(source_full_path, target_full_path);
+        }
 
         // If the source and target are directories AND have different names AND have the same ID:
         // Overwrite the source directory name to the target directory name
+
+        // Pretty sure I'm not accounting for something here...
 
 
         // FILES
@@ -194,14 +206,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // Overwrite the entire source file onto the target file
 
 
-        // If the source and target names ARE FILES and IDs are identical, check if the source was edited more recently than the target
-        // If the source's last edit is newer, overwrite the target
-        // If the target's last edit is newer (figure this out later stop multitasking)
-
-        // Test if IDs change after renaming before doing this
-        // If the names are different but the IDs are the same, overwrite the source name
-        // into the target ID
-
+        // NOTE: Should file IDs be included here?
         // If the target file/directory doesn't match the source, delete
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
             char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
