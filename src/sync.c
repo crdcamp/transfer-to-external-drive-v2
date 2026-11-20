@@ -50,7 +50,7 @@ void file_delete(char *file_path) {
     return;
 }
 
-// Recursively copy a directory and all of its contents
+// Recursively copy a directory and all of its contents. Overwrites if names are the same
 void directory_copy(const char *source, const char *target) {
     copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
 
@@ -179,35 +179,42 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch);
-        // TODO: Implement stat's st_ino and st_dev when comparing files
+        // TODO: Implement stat's st_ino and st_dev when comparing files. This way file
+        // IDs can be used to ensure you are copying correctly. For now, time and name
+        // comparisons are good enough
 
-        // DIRECTORIES
-        // If the source and target have the same names, and the source was edited more recently
-        // than the target, and they are both directories, overwrite the source into the target
-        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) &&
+        // DIRECTORY LOGIC
+        // If the source and target have the same name...
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) &&
+            // and the source was edited more recently than the target
             (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) &&
-            (source_ptr->fts_info == FTS_D)){
+            // and both are directories...
+            (source_ptr->fts_info == FTS_D) && (target_ptr->fts_info == FTS_D)){
+                // overwrite the source directory into the target directory
                 char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 directory_copy(source_full_path, target_full_path);
         }
 
-        // If the source and target are directories AND have different names AND have the same ID:
-        // Overwrite the source directory name to the target directory name
-
-        // Pretty sure I'm not accounting for something here...
-
-
         // FILES
-        // If the source and target are files AND have the same name AND have the same ID:
-        // Do nothing. No code needed
+        // If the source and target have the same name...
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) &&
+            // and the source was edited more recently than the target
+            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) &&
+            // and both are directories...
+            (source_ptr->fts_info == FTS_F) && (target_ptr->fts_info == FTS_F)) {
+                // overwrite the source file into the target file
+                char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                file_copy(source_full_path, target_full_path);
+            }
 
-        // If the source and target are files AND have different names AND have the same ID:
-        // Overwrite the entire source file onto the target file
+
 
 
         // NOTE: Should file IDs be included here?
         // If the target file/directory doesn't match the source, delete
+        // TODO: Add FTS_F check for source file as well
         if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
             char *full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             printf("Normal file delete for file: '%s'\n\n", full_path);
@@ -261,7 +268,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 excess_file = excess_file->fts_link;
             }
         }
-    // Move to the next source and target files
+        // Move to the next source and target files
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
         arena_rewind(arena_scratch, checkpoint);
