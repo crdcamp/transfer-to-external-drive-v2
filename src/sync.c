@@ -135,19 +135,19 @@ void sync_directories(Arena *arena_scratch, char **source, char **target) {
         // If the target's last edit is newer (figure this out later stop multitasking)
 
         // If the target file/directory doesn't match the source, delete
-        if ((source_ptr->fts_name != target_ptr->fts_name) && (target_ptr->fts_info == FTS_F)) {
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_F)) {
             printf("Source name: %s\n", source_ptr->fts_name);
             printf("Target name: %s\n", target_ptr->fts_name);
             ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             printf("Normal file delete full path: '%s'\n\n", full_path.file_path);
-            //file_delete(target_file_path.file_path);
+            file_delete(full_path.file_path);
         }
-        if ((source_ptr->fts_name != target_ptr->fts_name) && (target_ptr->fts_info == FTS_D)) {
+        if ((strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) && (target_ptr->fts_info == FTS_D)) {
             printf("Source name: %s\n", source_ptr->fts_name);
             printf("Target name: %s\n", target_ptr->fts_name);
             ConcatResult full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             printf("Normal directory delete directory path: '%s'\n\n", full_path.file_path);
-            //directory_delete(full_path.file_path);
+            directory_delete(full_path.file_path);
         }
 
         // Maybe there's a way to determine if a folder was renamed and that could
