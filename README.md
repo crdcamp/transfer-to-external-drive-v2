@@ -4,7 +4,7 @@
 
 One thing this project taught me: ["If you don't understand the data, you don't understand the problem"](https://www.youtube.com/watch?v=rX0ItVEVjHc).
 
-This is my first serious systems programming project designed to "sync" a source directory with multiple target directories so that they perfectly mirror each other. It is meant to vastly improve its [previous version](https://github.com/crdcamp/transfer-to-external-drive) and involves recursion, a small memory arena implementation, and some advanced file management.
+This is my first serious systems programming project designed to "sync" a source directory with multiple target directories so that they perfectly mirror each other. It is meant to vastly improve its [previous version](https://github.com/crdcamp/transfer-to-external-drive) and involves recursion, a small memory arena implementation, and some advanced file management. **This project currently only works on MacOS**, but will eventually be cross-compatible with Linux.
 
 While the previous version simply used system calls to the `cp` command, this one gets a lot more technical and (hopefully) a **lot** faster.
 
