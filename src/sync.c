@@ -128,6 +128,7 @@ The target directory is edited in-place and deletes/updates
 files according to the source directory's file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
+// TODO: Double check all return statements for arena rewinds and file closes
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
     printf("Syncing source folder '%s' with '%s'\n", source, target);
@@ -154,11 +155,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
     // NOTE: THESE NULL CHECKS MIGHT CAUSE ISSUES WHEN ACTUALLY RECURSING
     // YOU NEED A BASE CASE DON'T FORGET
-    // REVISE THIS PRINT STATEMENT. IT WILL BE INCORRECT EVENTUALLY
+    // REVISE THIS PRINT STATEMENT. It will convey incorrect information when recursing has been implemented
     // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
     if (source_children_list == NULL) {
         printf("Error: An empty source directory was provided\n");
+        fts_close(source_handle);
+        fts_close(target_handle);
         return;
     }
 
@@ -173,6 +176,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         directory_copy(source_slash, target);
         arena_rewind(arena_scratch, checkpoint);
+        fts_close(source_handle);
+        fts_close(target_handle);
 
         return;
     }
@@ -305,9 +310,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             printf("End of target file directories reached at '%s'. Copying remaining source files...\n", target_full_path);
             while (source_ptr != NULL) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
                 if (source_ptr->fts_info == FTS_D) {
                     printf("Copying extra source directory '%s' to target '%s'\n", source_full_path, target_full_path);
                     // NOTE: Not sure if I need to add a slash to this file path
+                    // Double check if directory_copy does this
                     //directory_copy(source_full_path, target_full_path);
                 }
                 if (source_ptr->fts_info == FTS_F) {
