@@ -181,24 +181,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
 
-        // I THINK THIS WHOLE THING NEEDS TO BE APPROACHED AGAIN DIFFERENTLY
-        // WHEN REVISITING, FOCUS ON A "PER-DEPTH" BASIS. `directory_delete`, for insance,
-        // recurses downward. We don't want that
-
         // The plan:
-        // Compare file name, edit time, and sizes - note that directory edit times only change when they're renamed. The same doesn't appy to files
-        // Highly fixate on this being a per-depth basis. Do not use functions that recurse in this entire block
-        // Maybe consider checking for empty directories, since I believe this will recurse upwards
-        // and be able to delete empty directories on the way up (refer to directory_delete)
-        // Actually, you might be able to get away with deleting directories that don't match any directory
-        // names in the source.
-
-        // Also don't forget to consider how the recursion will work when you reach a directory
-        // If the directory name is the same as the source, you should call the recursion
-        // into it until the directory is different or something like that
-
-        // Idk... there's a lot of possibilities here and a lot to keep track of,
-        // so make sure you plan this entire approach very thoroughly
+        // Compare file name, edit time, and sizes - note that directory edit times only change when they're renamed. The same doesn't apply to files
+        // (double check if the edit time/modification date claim is true)
 
         //// DIRECTORY LOGIC ////
         // If the source and target have the same name...
