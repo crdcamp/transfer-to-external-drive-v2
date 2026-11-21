@@ -1,7 +1,3 @@
-First thing you want to do here is consider everything you have written down in the comments before going in to the exact plan
-
-Revisit the docs to determine exactly what fts_open and fts_children do. Keep revisiting them until they're hammered in your head.
-
 You need to come up with a concise logical plan for determining **if a file is in the source, but not in the target**, or **if a file is in the target, but not in the source**. A file can only meet one of those two criteria. You'll want to make a directory structure for testing this.
 
 You also might want to consider converting the logic for "if it's in source, but not in target" and "if it's in target, but not in source" into  function to make the coding a bit easier.
@@ -14,7 +10,34 @@ With all those ideas out of the way, this is the main condition your logic needs
  * **Start by creating a very simple test linked list like the one below**. You don't have to go straight to the actual implementation to understand the basis of how it'd work.
  * **Another thing worth considering:** There are no duplicates in this problem. No OS will allow a duplicate file! SO, that actually makes the problem a bit easier!
 
+ # Larger Source than Target
+
+## Source file is not in the target directory
+
 ```
 source: a  b  c
 target: a  c
 ```
+
+**source = `a`, target = `a`**
+* Ignoring the additional logic needed, we simply continue to the next file
+
+**source = `b`, target = `c`**
+* The files are not the same. What do we do?
+* The target's next file is `NULL` while the source's next file is not.
+* So, because there are no duplicates, the lists are sorted, and the source's next file is not `NULL` we check the next file in `source`.
+* The next file in `source` is `c`. The current file in `target` is also `c`.
+* Therefore, the source file `c` is the the target directory. So, we continue to the next source file.
+
+**source = `c`, target = `NULL`**
+* We have reached the end of the target list while the source list has an **unknown** number of entries left.
+* This means that the rest of the files in the source directory are not in the target directory.
+* Therefore, we stop iterating over the target.
+* We then continue iterating over the source and copy files over to the target.
+* Since we are at the end of the target, we do not need to worry about checking the target files anymore, and can blindly copy over the source files
+
+## Target file is not in the source directory
+
+
+
+# Larger Target than Source
