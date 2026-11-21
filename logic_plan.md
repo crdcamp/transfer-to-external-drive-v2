@@ -20,24 +20,41 @@ target: a  c
 ```
 
 **source = `a`, target = `a`**
-* Ignoring the additional logic needed, we simply continue to the next file
+* Ignoring the additional logic needed (modification date and size comparisons), we simply continue to the next file
 
 **source = `b`, target = `c`**
 * The files are not the same. What do we do?
-* The target's next file is `NULL` while the source's next file is not.
-* So, because there are no duplicates, the lists are sorted, and the source's next file is not `NULL` we check the next file in `source`.
+* Because there are no duplicates and the lists are sorted, we can check the next file in `source`. If the next file in source does not match the current target file, that means that the source file is not in the target directory (again, because the lists are sorted and there are no duplicates). **Don't forget to check if source->next is `NULL`**.
 * The next file in `source` is `c`. The current file in `target` is also `c`.
-* Therefore, the source file `c` is the the target directory. So, we continue to the next source file.
+* Therefore, the source file `c` is the the target directory.
+* This (I'm pretty sure) implicitly means that the source file `b` is not in the target directory. Therefore, we copy source file `b` over to the target directory. This brings up a question that will likely be answered later: **should we only copy and delete after all source and target file boolean checks are complete?** I'd say.... most likely.
 
 **source = `c`, target = `NULL`**
-* We have reached the end of the target list while the source list has an **unknown** number of entries left.
+* We have reached the end of the target list while the source list has an **unknown** number of entries left (since we do not know the size of either list).
 * This means that the rest of the files in the source directory are not in the target directory.
 * Therefore, we stop iterating over the target.
-* We then continue iterating over the source and copy files over to the target.
+* We then continue iterating over the source and copy files over to the target until `source` == `NULL`.
 * Since we are at the end of the target, we do not need to worry about checking the target files anymore, and can blindly copy over the source files
 
 ## Target file is not in the source directory
 
+```
+source: a  b  c  d  e
+target: a  b  c  f
+```
 
+**source = `a`, target = `a`**
+* Ignoring other logic, continue
+
+**source = `b`, target = `b`**
+* Ignoring other logic, continue
+
+**source = `c`, target = `c`**
+* Ignoring other logic, continue
+
+**source = `d`, target = `f`**
+* Similar to before, we check the next value in `source` (assuming it's not `NULL`).
+* The next value in `source` is `e`. The current value in `target` is `f`.
+* This implicitly means that target value `f` is not in the source directory.
 
 # Larger Target than Source

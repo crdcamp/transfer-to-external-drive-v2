@@ -200,9 +200,18 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             size_different = true;
         } else size_different = false;
 
-        // (Not sure if this check is necessarry)
-        // Check if the source is at the end of its linked list, or if the target is at the end of its linked list
+        // Check if the source is at the end of its list
+        bool target_end_of_list;
 
+        // Check if the target is at the end of its list
+        bool source_end_of_list;
+
+        // Using the above bool checks, determine if the source file is in the target
+
+
+
+        // NOTE: YOU'LL PROBABLY NEED TO GET RID OF THESE TWO LINKED LIST PROGRESSIONS
+        // WHEN THE BOOLEAN LOGIC IS DONE
         // Move to the next source and target files
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
