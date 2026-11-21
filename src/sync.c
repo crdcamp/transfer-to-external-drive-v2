@@ -230,7 +230,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             file_sizes_are_different = true;
         } else file_sizes_are_different = false;
 
-        // Check if the source and/or target are at the end of their children list
+        // Check if the source and/or target are at the end of their list
         bool source_at_end_of_list;
         bool target_at_end_of_list;
         if (source_ptr->fts_link == NULL) {
@@ -245,10 +245,24 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
 
         // If the source is at the end of its list and the target is not,
-        // ...
-        // if (source_at_end_of_list && !target_at_end_of_list) {
-
-        // }
+        // Then delete the rest of the files in the target
+        // This is because there are no duplicate files between the source and target and they are sorted.
+        // If there are no additional source directories to compare, then
+        // that means none of the additional target files can be in the current source directory
+        if (source_at_end_of_list && !target_at_end_of_list) {
+            printf("End of source file directories reached at '%s'. Deleting remaining target files\n", source_full_path);
+            while (target_ptr != NULL) {
+                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                if (target_ptr->fts_info == FTS_D) {
+                    printf("Deleting extra target directory '%s'\n", target_full_path);
+                    //directory_delete(target_full_path);
+                }
+                if (target_ptr->fts_info == FTS_F) {
+                    printf("Deleting extra target file '%s'\n", target_full_path);
+                    //file_delete(target_full_path);
+                }
+            }
+        }
 
         // If the target is at the end of its list and the source is not,
         // ...
@@ -258,7 +272,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
 
         ///// LOGIC FOR IF THE FILE NAMES ARE THE SAME /////
-        // If the source and target are directories, and their names match, then continue,
+        // If the source and target are directories, and their names match, then continue to the next file pair
         // Since we don't know if the files in their subdirectories have been changed,
         // we can leave further editing of the subdirectories to the next recursion
         if (source_file_is_a_directory && target_file_is_a_directory && file_names_are_same) {
@@ -268,7 +282,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         }
         // If the source and target files are files, and their names match,
         // and the source was edited more recently, and their file sizes differ,
-        // Overwrite the source file to the target file
+        // Overwrite the source file to the target file and continue to the next file pair
         if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer && file_sizes_are_different) {
             printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target, and they are different sizes. Overwriting source to target\n\n", source_full_path, target_full_path);
             //file_copy(source_full_path, target_full_path);
@@ -280,9 +294,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // and the source was edited more recently, and their file sizes are the same,
         // Move on to the next list items
 
-        // If the source and target files are not directories (i.e. regular files), and their names match,
+        // If the source and target files are files, and their names match,
         // and the source was edited more recently, and their file sizes are the same,
-        // ...
+        // Overwrite the source onto the target
 
         // If the source is a directory and the target is a file, or if the target is a directory and the source is a file.
         // ...
