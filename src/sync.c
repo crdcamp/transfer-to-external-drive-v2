@@ -151,6 +151,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         exit(EXIT_FAILURE);
     }
 
+    // THIS PRINT STATEMENT WILL BE INCORRECT WHEN THE
     // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
     if (source_children_list == NULL) {
@@ -280,16 +281,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // Move to the next source and target files
         source_ptr = source_ptr->fts_link;
         target_ptr = target_ptr->fts_link;
+        // When you add recursion: create a function that returns the next directory
+        // to be passed here. Then call this function in the recursion call
         arena_rewind(arena_scratch, checkpoint);
     }
-
-    // Now, how do we set this recursion up so it continues down
-    // the rest of the file paths?
-    // I think this would involve passing the file paths that are directories
-    // with an additional slash in them to access the next level.
-    // This could also then be used recursively. You also already have
-    // and arena function to accomplish this
-    // Hopefully this recursion actually reaches all tree paths when implemented...
 
     fts_close(source_handle);
     fts_close(target_handle);
