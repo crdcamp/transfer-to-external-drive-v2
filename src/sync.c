@@ -243,12 +243,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // Using the above bool checks, determine if the source file is in the target
 
+        // If the source and target are at the end of their list, there's nothing to do
+        // (the main while loop already check for if source is NULL)
 
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
-        // This is because there are no duplicate files between the source and target and they are sorted.
-        // If there are no additional source directories to compare, then
-        // that means none of the additional target files can be in the current source directory
         if (source_at_end_of_list && !target_at_end_of_list) {
             printf("End of source file directories reached at '%s'. Deleting remaining target files\n", source_full_path);
             while (target_ptr != NULL) {
@@ -265,13 +264,25 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         }
 
         // If the target is at the end of its list and the source is not,
-        // ...
+        // then copy over the rest of the source files
+        if (target_at_end_of_list && !source_at_end_of_list) {
+            while (source_ptr != NULL) {
+                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                if (source_ptr->fts_info == FTS_D) {
+                    printf("Copying extra source directory '%s' to target '%s'\n", source_full_path, target_full_path);
+                    // NOTE: Not sure if I need to add a slash to this file path
+                    //directory_copy(source_full_path, target_full_path);
+                }
+                if (source_ptr->fts_info == FTS_F) {
+                    printf("Copying extra source file '%s' to target '%s'\n", source_full_path, target_full_path);
+                    // NOTE: Again, not sure if I need to add a slash to this file path
+                    file_copy(source_full_path, target_full_path);
+                }
+            }
+        }
 
-        // If the source and target are at the end of their lists,
-        // ...
 
-
-        ///// LOGIC FOR IF THE FILE NAMES ARE THE SAME /////
+        ///// IF THE FILE NAMES ARE THE SAME /////
         // If the source and target are directories, and their names match, then continue to the next file pair
         // Since we don't know if the files in their subdirectories have been changed,
         // we can leave further editing of the subdirectories to the next recursion
