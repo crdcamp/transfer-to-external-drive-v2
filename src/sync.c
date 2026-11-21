@@ -188,28 +188,28 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // TODO: ADD CHECKS FOR IF THE FILE IS A DIRECTORY OR FILE
         // TODO: ADD CHECKS FOR IF THE NEXT VALUE IN SOURCE OR TARGET IS NULL
         // Check if the source and target names are different
-        bool names_different;
+        bool file_names_are_different;
         if (strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) {
-            names_different = true;
+            file_names_are_different = true;
         } else names_different = false;
 
         // Check if the source was modified more recently than the target
-        bool source_newer;
+        bool source_file_is_newer;
         if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
-            source_newer = true;
-        } else source_newer = false;
+            source_file_is_newer = true;
+        } else source_file_is_newer = false;
 
         // Check if the source and target files sizes are different
-        bool size_different;
+        bool file_sizes_are_different;
         if (source_ptr->fts_statp->st_size != target_ptr->fts_statp->st_size) {
-            size_different = true;
-        } else size_different = false;
+            file_sizes_are_different = true;
+        } else file_sizes_are_different = false;
 
         // Check if the source is at the end of its list
-        bool target_end_of_list;
+        bool target_at_end_of_list;
 
         // Check if the target is at the end of its list
-        bool source_end_of_list;
+        bool source_at_end_of_list;
 
         // Using the above bool checks, determine if the source file is in the target
 
