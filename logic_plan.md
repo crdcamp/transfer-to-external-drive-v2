@@ -17,7 +17,9 @@ You need to come up with a concise logical plan for determining **if a file is i
  * When comparing a source and target file, if the current source and target files don't match, and the next source file doesn't match the current target file, that implicitly means that the source file is not in the target directory.
 
  **In regards to the target files not being in the source directory:**
- * When comparing a source and target file, if the current source and target files don't match, and the
+ * I *think* the above logic holds true. Definitely double check this claim.
+
+ **VERY IMPORTANT:** Pay **very close attention** to your decisions between continuing to the next source file iteration, continuing to the next target file iteration, or continuing both iterations.
 
  # Larger Source than Target
 
@@ -43,7 +45,7 @@ target: a  c
 * This means that the rest of the files in the source directory are not in the target directory.
 * Therefore, we stop iterating over the target.
 * We then continue iterating over the source and copy files over to the target until `source` == `NULL`.
-* Since we are at the end of the target, we do not need to worry about checking the target files anymore, and can blindly copy over the source files
+* Since we are at the end of the target, we do not need to worry about checking the target files anymore, and can blindly copy over the rest of source files
 
 ## Target file is not in the source directory
 
@@ -74,8 +76,8 @@ target: a  b  c  f
 ## Source file is not in the target directory
 
 ```
-source: a  b  c  d
-target: a  b  d  e  f
+source: a  b  e
+target: a  b  c  d
 ```
 
 **source = `a`, target = `a`**
@@ -84,17 +86,12 @@ target: a  b  d  e  f
 **source = `b`, target = `b`**
 * Ignoring other logic, continue
 
-**source = `c`, target = `d`**
+**source = `e`, target = `c`**
 * The files don't match! What do we do?
-* Assuming the next source value is not `NULL`, we check the next value in `source`
-* The next value in `source` is `d`.
-* Therefore, source file `d` is in the target directory. Move on to the next source file and the next target file (again, assuming they are not `NULL`).
+* The next file in the source is `NULL`. So, we can't use the next source value check here.
+* The next value in the target directory is `d`. I'm... not sure how to work things out from here.
 
-**source = `d`, target = `e`**
-* The files don't match! Ahhh what do we do?!
-* If the next file in source is not `e`, then that means source file `e` in not in the target directory.
-* In this case, the next source file is `NULL`. Therefore, source file `e` is not in the target directory.
-* Delete target directory file `e`.
+Know what? Let's start coding and see if we can figure this out.
 
 ## Target file is not in the source directory
 
