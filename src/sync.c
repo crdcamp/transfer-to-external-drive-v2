@@ -202,6 +202,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_directory = true;
         } else target_file_is_a_directory = false;
 
+        // Check if the source and target files are files
+        bool source_file_is_a_file;
+        bool target_file_is_a_file;
+        if (source_ptr->fts_info == FTS_F) {
+            source_file_is_a_file = true;
+        } else source_file_is_a_file = false;
+        if (target_ptr->fts_info == FTS_F) {
+            target_file_is_a_file = true;
+        } else target_file_is_a_file = false;
+
         // Check if the source and target names are the same
         bool file_names_are_same;
         if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
@@ -230,35 +240,45 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_at_end_of_list = true;
         } else target_at_end_of_list = false;
 
+
         // Using the above bool checks, determine if the source file is in the target
-        // Make a list here of all checks you are aware of before writing any code
-        // Don't forget that list iteration is likely conditionally different based on these results
 
-        // LOGIC FOR IF SOURCE AND TARGET ARE AT THE END OF THEIR LISTS
 
-        // LOGIC FOR IF THE SOURCE IS AT THE END OF ITS LIST
+        // If the source is at the end of its list and the target is not,
+        // ...
+        // if (source_at_end_of_list && !target_at_end_of_list) {
 
-        // LOGIC FOR IF THE TARGET IS AT THE END OF ITS LIST
+        // }
 
-        // LOGIC FOR IF THE FILE NAMES ARE THE SAME
+        // If the target is at the end of its list and the source is not,
+        // ...
+
+        // If the source and target are at the end of their lists,
+        // ...
+
+
+        ///// LOGIC FOR IF THE FILE NAMES ARE THE SAME /////
         // If the source and target are directories, and their names match, then continue,
-        // since we don't know what files in their subdirectories have been changed
-        // Further editing of the subdirectories can be done in the next recursion with the additional logic
+        // Since we don't know if the files in their subdirectories have been changed,
+        // we can leave further editing of the subdirectories to the next recursion
         if (source_file_is_a_directory && target_file_is_a_directory && file_names_are_same) {
             printf("Source '%s' and target '%s' are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
         }
-
-        // If the source and target files are not directories (i.e. regular files), and their names match,
+        // If the source and target files are files, and their names match,
         // and the source was edited more recently, and their file sizes differ,
         // Overwrite the source file to the target file
-        if (!source_file_is_a_directory && !target_file_is_a_directory && file_names_are_same && source_file_is_newer && file_sizes_are_different) {
+        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer && file_sizes_are_different) {
             printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target, and they are different sizes. Overwriting source to target\n\n", source_full_path, target_full_path);
             //file_copy(source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
         }
+
+        // If the source and target files are files, and their names match,
+        // and the source was edited more recently, and their file sizes are the same,
+        // Move on to the next list items
 
         // If the source and target files are not directories (i.e. regular files), and their names match,
         // and the source was edited more recently, and their file sizes are the same,

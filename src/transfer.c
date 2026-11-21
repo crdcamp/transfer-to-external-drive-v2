@@ -1,6 +1,9 @@
 #include "../include/arena.h"
 #include "../include/sync.h"
 
+// RENAME THIS FILE TO `sync.c` AND RENAME `sync.c` to `sync_directories.`
+// After all, this is no longer a basic file transfer. This is a way more complex directory sync
+
 int main(void) {
     // Create a scratch arena
     size_t arena_scratch_buffer_size = PATH_MAX*64; // This is an excessive amount of space, but we can narrow it down later
