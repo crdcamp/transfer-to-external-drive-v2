@@ -182,6 +182,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
 
+        // DO NOT DO ANY FILE/DIRECTORY DELETION UNTIL YOU ARE CERTAIN THE
+        // LOGIC PER INSTANCE IS CORRECT
+
+        // TODO: ADD CHECKS FOR IF THE FILE IS A DIRECTORY OR FILE
+        // TODO: ADD CHECKS FOR IF THE NEXT VALUE IN SOURCE OR TARGET IS NULL
         // Check if the source and target names are different
         bool names_different;
         if (strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) {

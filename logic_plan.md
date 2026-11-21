@@ -8,13 +8,16 @@ You need to come up with a concise logical plan for determining **if a file is i
 
  ## Some final important notes before beginning full logic
 
- **In regards to the source and target directory sizes:**
+ **In regards to the number of files in the source and target directories:**
  * The source directory can be larger than the target directory.
  * The target directory can be larger than the source
  * The source and target directories can be the same size.
 
  **In regards to source files not being in the target directory:**
- * When comparing a source and target, if the current source and target files don't match, and the next source file doesn't match the current target file, that implicitly means that the source file is not in the target directory.
+ * When comparing a source and target file, if the current source and target files don't match, and the next source file doesn't match the current target file, that implicitly means that the source file is not in the target directory.
+
+ **In regards to the target files not being in the source directory:**
+ * When comparing a source and target file, if the current source and target files don't match, and the
 
  # Larger Source than Target
 
@@ -63,7 +66,8 @@ target: a  b  c  f
 * The next value in `source` is `e`. The current value in `target` is `f`.
 * This implicitly means that target value `f` is not in the source directory.
 * Delete target value `f`.
-*
+
+*This could be wrong.*
 
 # Larger Target than Source
 
