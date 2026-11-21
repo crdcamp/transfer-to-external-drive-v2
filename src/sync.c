@@ -22,10 +22,8 @@ int by_name(const FTSENT **a, const FTSENT **b) {
 /*
 Provide a scratch arena, base path, and file name to concatenate
 the base path and file name to create a full path using the scratch arena.
-Returns an arena checkpoint and concatenated file path.
-It is recommended to reset the scratch arena to the returned checkpoint
-after the file path is no longer needed (i.e., after using `directory_delete`)
- */
+It is recommended to reset the scratch arena after the file path is no longer needed.
+*/
 char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_name) {
     char *file_name_array[3] = {base_path, "/", file_name};
     char *file_path = arena_string_concat(arena_scratch, file_name_array, 3);
@@ -184,6 +182,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
 
+        // char *source_base_path = source_ptr->fts_path;
+        // char *source_base_name = source_ptr->fts_name;
+        // char *target_base_path = target_ptr->fts_path;
+        // char *target_base_name = target_ptr->fts_name;
+
+        char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+        char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+        printf("Source full path: %s\n", source_full_path);
+        printf("Target full path: %s\n", target_full_path);
+
         // Check if the source and target files are directories
         bool source_file_is_a_directory;
         bool target_file_is_a_directory;
@@ -194,13 +202,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_directory = true;
         } else target_file_is_a_directory = false;
 
-        // Check if the source and target names are different
-        bool file_names_are_different;
-        if (strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) {
-            file_names_are_different = true;
-        } else file_names_are_different = false;
+        // Check if the source and target names are the same
+        bool file_names_are_same;
+        if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
+            file_names_are_same = true;
+        } else file_names_are_same = false;
 
-        // Check if the source was modified more recently than the target
+        // Check if the source was edited more recently than the target
         bool source_file_is_newer;
         if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
             source_file_is_newer = true;
@@ -222,26 +230,49 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_at_end_of_list = true;
         } else target_at_end_of_list = false;
 
-
-
-        // FOR LATER: Determine if the file IDs are identical. Note that file IDs for the same
-        // file are likely different across volumes
-
         // Using the above bool checks, determine if the source file is in the target
+        // Make a list here of all checks you are aware of before writing any code
+        // Don't forget that list iteration is likely conditionally different based on these results
 
+        // LOGIC FOR IF SOURCE AND TARGET ARE AT THE END OF THEIR LISTS
 
+        // LOGIC FOR IF THE SOURCE IS AT THE END OF ITS LIST
 
-        // NOTE: YOU'LL PROBABLY NEED TO GET RID OF THESE TWO LINKED LIST PROGRESSIONS
-        // WHEN THE BOOLEAN LOGIC IS DONE
-        // Move to the next source and target files
-        source_ptr = source_ptr->fts_link;
-        target_ptr = target_ptr->fts_link;
-        // When you add recursion: create a function that returns the next directory
-        // to be passed here. Then call this function in the recursion call
-        // Function should likely return a pointer
+        // LOGIC FOR IF THE TARGET IS AT THE END OF ITS LIST
+
+        // LOGIC FOR IF THE FILE NAMES ARE THE SAME
+        // If the source and target are directories, and their names match, then continue,
+        // since we don't know what files in their subdirectories have been changed
+        // Further editing of the subdirectories can be done in the next recursion with the additional logic
+        if (source_file_is_a_directory && target_file_is_a_directory && file_names_are_same) {
+            printf("Source '%s' and target '%s' are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
+
+        // If the source and target files are not directories (i.e. regular files), and their names match,
+        // and the source was edited more recently, and their file sizes differ,
+        // Overwrite the source file to the target file
+        if (!source_file_is_a_directory && !target_file_is_a_directory && file_names_are_same && source_file_is_newer && file_sizes_are_different) {
+            printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target, and they are different sizes. Overwriting source to target\n\n", source_full_path, target_full_path);
+            //file_copy(source_full_path, target_full_path);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
+
+        // If the source and target files are not directories (i.e. regular files), and their names match,
+        // and the source was edited more recently, and their file sizes are the same,
+        // ...
+
+        // If the source is a directory and the target is a file, or if the target is a directory and the source is a file.
+        // ...
+
+        // LOGIC FOR IF THE FILE NAMES ARE DIFFERENT
+
+        // When you add recursion: create a function that returns a pointer to the next directory string
+        // that will be passed here. Then call this function in the recursion call
         arena_rewind(arena_scratch, checkpoint);
     }
-
     fts_close(source_handle);
     fts_close(target_handle);
 }
