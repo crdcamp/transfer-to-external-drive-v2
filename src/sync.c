@@ -129,6 +129,7 @@ files according to the source directory's file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
+    size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
     printf("Syncing source folder '%s' with '%s'\n", source, target);
     // DON'T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
 
@@ -167,12 +168,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
         printf("Copying source directory '%s` to empty target directory '%s'...\n", source, target);
-        size_t checkpoint = arena_checkpoint(arena_scratch);
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
 
         directory_copy(source_slash, target);
         arena_rewind(arena_scratch, checkpoint);
+
         return;
     }
 
@@ -180,8 +181,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL) {
-        size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
-
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
         printf("Source full path: %s\n", source_full_path);
@@ -250,6 +249,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             printf("Source '%s' and target '%s' are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
+            continue;
         }
         // If the source and target files are files, and their names match, and the source was edited more recently
         // Overwrite the source file to the target file and continue to the next file pair
@@ -258,12 +258,24 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             //file_copy(source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
+            continue;
         }
 
         ///////////////////////////////////////////////////
         ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
         ///////////////////////////////////////////////////
+        // If the source and target files are directories, and their names do not match,
+        // Check the next list item in the target list
+        if (source_file_is_a_directory && target_file_is_a_directory && !file_names_are_same) {
+            printf("Source '%s' and target '%s' files are directories, and do not have matching names. Checking next target file for match\n", source_full_path, target_full_path);
+            // If the next target file is a directory, and has a matching name,
+            continue;
+        }
 
+        ///////////////////////////////////////////////////////////////////////
+        ///// IF SOURCE/TARGET IS A FILE AND TARGET/SOURCE IS A DIRECTORY /////
+        ///////////////////////////////////////////////////////////////////////
+        // Walk through the logic in your notes on this before continuing
 
         /////////////////////////////////////////
         ///// IF EITHER LIST IS AT ITS END //////
@@ -285,6 +297,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 target_ptr = target_ptr->fts_link;
             }
             printf("\n");
+            break;
         }
         // If the target is at the end of its list and the source is not,
         // then copy over the rest of the source files
@@ -305,12 +318,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_ptr = source_ptr->fts_link;
             }
             printf("\n");
+            continue;
         }
-
-        // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
-        // that will be passed here. Then call this function in the recursion call
-        arena_rewind(arena_scratch, checkpoint);
     }
+    // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
+    // that will be passed here. Then call this function in the recursion call
+    arena_rewind(arena_scratch, checkpoint);
     fts_close(source_handle);
     fts_close(target_handle);
 }
