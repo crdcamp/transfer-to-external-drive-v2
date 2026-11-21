@@ -132,6 +132,8 @@ A scratch arena must be provided for string operations.
 */
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     printf("Syncing source folder '%s' with '%s'", source, target);
+    // DON'T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
+
     // Delete unneeded Apple files
     purge_junk(source);
     purge_junk(target);
@@ -182,16 +184,21 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
 
-        // DO NOT DO ANY FILE/DIRECTORY DELETION UNTIL YOU ARE CERTAIN THE
-        // LOGIC PER INSTANCE IS CORRECT
+        // Check if the source and target files are directories
+        bool source_file_is_a_directory;
+        bool target_file_is_a_directory;
+        if (source_ptr->fts_info == FTS_D) {
+            source_file_is_a_directory = true;
+        } else source_file_is_a_directory = false;
+        if (target_ptr->fts_info == FTS_D) {
+            target_file_is_a_directory = true;
+        } else target_file_is_a_directory = false;
 
-        // TODO: ADD CHECKS FOR IF THE FILE IS A DIRECTORY OR FILE
-        // TODO: ADD CHECKS FOR IF THE NEXT VALUE IN SOURCE OR TARGET IS NULL
         // Check if the source and target names are different
         bool file_names_are_different;
         if (strcmp(source_ptr->fts_name, target_ptr->fts_name) != 0) {
             file_names_are_different = true;
-        } else names_different = false;
+        } else file_names_are_different = false;
 
         // Check if the source was modified more recently than the target
         bool source_file_is_newer;
@@ -205,11 +212,20 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             file_sizes_are_different = true;
         } else file_sizes_are_different = false;
 
-        // Check if the source is at the end of its list
-        bool target_at_end_of_list;
-
-        // Check if the target is at the end of its list
+        // Check if the source and/or target are at the end of their children list
         bool source_at_end_of_list;
+        bool target_at_end_of_list;
+        if (source_ptr->fts_link == NULL) {
+            source_at_end_of_list = true;
+        } else source_at_end_of_list = false;
+        if (target_ptr->fts_link == NULL) {
+            target_at_end_of_list = true;
+        } else target_at_end_of_list = false;
+
+
+
+        // FOR LATER: Determine if the file IDs are identical. Note that file IDs for the same
+        // file are likely different across volumes
 
         // Using the above bool checks, determine if the source file is in the target
 
