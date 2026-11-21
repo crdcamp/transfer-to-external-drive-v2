@@ -109,7 +109,6 @@ void purge_junk(char *root) {
         perror("purge_junk: fts_open");
         exit(EXIT_FAILURE);
     }
-
     FTSENT *entry;
     while ((entry = fts_read(handle)) != NULL) {
         if (entry->fts_level == 0 || !is_junk(entry->fts_name)) continue;
@@ -132,6 +131,7 @@ files according to the source directory's file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
+    printf("Syncing source folder '%s' with '%s'", source, target);
     // Delete unneeded Apple files
     purge_junk(source);
     purge_junk(target);
@@ -163,7 +163,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // treat NULL as an empty directory (likely an unsafe practice)
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
-        printf("Copying source to empty target\n");
+        printf("Copying source directory '%s` to empty target directory '%s'...\n", source, target);
         size_t checkpoint = arena_checkpoint(arena_scratch);
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
@@ -182,7 +182,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // I THINK THIS WHOLE THING NEEDS TO BE APPROACHED AGAIN DIFFERENTLY
         // WHEN REVISITING, FOCUS ON A "PER-DEPTH" BASIS. `directory_delete`, for insance,
-        // recurses downward
+        // recurses downward. We don't want that
 
         // The plan:
         // Compare file name, edit time, and sizes - note that directory edit times only change when they're renamed. The same doesn't appy to files
@@ -191,6 +191,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // and be able to delete empty directories on the way up (refer to directory_delete)
         // Actually, you might be able to get away with deleting directories that don't match any directory
         // names in the source.
+
+        // Also don't forget to consider how the recursion will work when you reach a directory
+        // If the directory name is the same as the source, you should call the recursion
+        // into it until the directory is different or something like that
+
+        // Idk... there's a lot of possibilities here and a lot to keep track of,
+        // so make sure you plan this entire approach very thoroughly
 
         //// DIRECTORY LOGIC ////
         // If the source and target have the same name...
@@ -242,6 +249,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // The prior logic also might ensure that doesn't happen
 
         //// EXTRA FILE LOGIC ////
+        // TODO: ADD LOGIC FOR IF THE SOURCE DIRECTORY IS LONGER THAN THE TARGET
+        // this should follow the below logic
         // Delete extra directories and files found in the target directory that are not found in the source directory
         if ((source_ptr->fts_link == NULL) && (target_ptr->fts_link != NULL)) {
             FTSENT *excess_file = target_ptr->fts_link;
