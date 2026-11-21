@@ -129,7 +129,7 @@ files according to the source directory's file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
-    printf("Syncing source folder '%s' with '%s'", source, target);
+    printf("Syncing source folder '%s' with '%s'\n", source, target);
     // DON'T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
 
     // Delete unneeded Apple files
@@ -187,6 +187,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         printf("Source full path: %s\n", source_full_path);
         printf("Target full path: %s\n", target_full_path);
 
+        // TODO: When all logic is complete, double check if any of these checks are unneeded
+
+        // Boolean logic:
         // Check if the source and target files are directories
         bool source_file_is_a_directory;
         bool target_file_is_a_directory;
@@ -220,6 +223,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         } else source_file_is_newer = false;
 
         // Check if the source and target files sizes are different or the same
+        // (Might not need this one)
         bool file_sizes_are_different;
         if (source_ptr->fts_statp->st_size != target_ptr->fts_statp->st_size) {
             file_sizes_are_different = true;
@@ -236,9 +240,34 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         } else target_at_end_of_list = false;
 
 
-        // Using the above bool checks, determine if the source file is in the target
+        // Application of boolean logic:
+        /////////////////////////////////////////////
+        ///// IF SOURCE AND TARGET NAMES MATCH //////
+        /////////////////////////////////////////////
+        // If the source and target are directories, and their names match, then continue to the next file pair,
+        // since we don't know if the files in their subdirectories have been changed, we can leave further editing of the subdirectories to the next recursion
+        if (source_file_is_a_directory && target_file_is_a_directory && file_names_are_same) {
+            printf("Source '%s' and target '%s' are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
+        // If the source and target files are files, and their names match, and the source was edited more recently
+        // Overwrite the source file to the target file and continue to the next file pair
+        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer) {
+            printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n", source_full_path, target_full_path);
+            //file_copy(source_full_path, target_full_path);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
 
-        //// IF EITHER LISTS ARE AT THEIR END /////
+        ///////////////////////////////////////////////////
+        ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
+        ///////////////////////////////////////////////////
+
+
+        /////////////////////////////////////////
+        ///// IF EITHER LIST IS AT ITS END //////
+        /////////////////////////////////////////
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
         if (source_at_end_of_list && !target_at_end_of_list) {
@@ -278,41 +307,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             printf("\n");
         }
 
-        ///// IF THE FILE NAMES ARE THE SAME /////
-        // If the source and target are directories, and their names match, then continue to the next file pair
-        // Since we don't know if the files in their subdirectories have been changed,
-        // we can leave further editing of the subdirectories to the next recursion
-        if (source_file_is_a_directory && target_file_is_a_directory && file_names_are_same) {
-            printf("Source '%s' and target '%s' are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-        }
-        // If the source and target files are files, and their names match, and the source was edited more recently
-        // Overwrite the source file to the target file and continue to the next file pair
-        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer) {
-            printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n", source_full_path, target_full_path);
-            //file_copy(source_full_path, target_full_path);
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-        }
-
-        // If the source and target files are files, and their names match, and the source was edited more recently,
-        // Move on to the next list items
-        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer) {
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-        }
-
-        // If the source and target files are files, and their names match,
-        // and the source was edited more recently, and their file sizes are the same,
-        // Overwrite the source onto the target
-
-        // If the source is a directory and the target is a file, or if the target is a directory and the source is a file.
-        // ...
-
-        // LOGIC FOR IF THE FILE NAMES ARE DIFFERENT
-
-        // When you add recursion: create a function that returns a pointer to the next directory string
+        // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
         // that will be passed here. Then call this function in the recursion call
         arena_rewind(arena_scratch, checkpoint);
     }
