@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fts.h>
+#include <stdbool.h>
 
 #include "arena.h"
 
@@ -24,6 +25,7 @@ void file_delete(char *file_path);
 void directory_copy(const char *source, const char *target);
 void directory_delete(char *file_path);
 // Main
+bool is_different(FTSENT *source, FTSENT *target);
 void sync_directories(Arena *arena_scratch, char *source, char *target);
 
 #endif
