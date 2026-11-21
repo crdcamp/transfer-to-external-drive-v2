@@ -71,4 +71,33 @@ target: a  b  c  f
 
 # Larger Target than Source
 
+## Source file is not in the target directory
+
+```
+source: a  b  c  d
+target: a  b  d  e  f
+```
+
+**source = `a`, target = `a`**
+* Ignoring other logic, continue
+
+**source = `b`, target = `b`**
+* Ignoring other logic, continue
+
+**source = `c`, target = `d`**
+* The files don't match! What do we do?
+* Assuming the next source value is not `NULL`, we check the next value in `source`
+* The next value in `source` is `d`.
+* Therefore, source file `d` is in the target directory. Move on to the next source file and the next target file (again, assuming they are not `NULL`).
+
+**source = `d`, target = `e`**
+* The files don't match! Ahhh what do we do?!
+* If the next file in source is not `e`, then that means source file `e` in not in the target directory.
+* In this case, the next source file is `NULL`. Therefore, source file `e` is not in the target directory.
+* Delete target directory file `e`.
+
+## Target file is not in the source directory
+
 # Source and Target are the Same Size
+
+# Putting it All Together
