@@ -182,11 +182,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between while loops
 
-        // char *source_base_path = source_ptr->fts_path;
-        // char *source_base_name = source_ptr->fts_name;
-        // char *target_base_path = target_ptr->fts_path;
-        // char *target_base_name = target_ptr->fts_name;
-
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
         printf("Source full path: %s\n", source_full_path);
@@ -224,7 +219,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             source_file_is_newer = true;
         } else source_file_is_newer = false;
 
-        // Check if the source and target files sizes are different
+        // Check if the source and target files sizes are different or the same
         bool file_sizes_are_different;
         if (source_ptr->fts_statp->st_size != target_ptr->fts_statp->st_size) {
             file_sizes_are_different = true;
@@ -243,13 +238,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // Using the above bool checks, determine if the source file is in the target
 
-        // If the source and target are at the end of their list, there's nothing to do
-        // (the main while loop already check for if source is NULL)
-
+        //// IF EITHER LISTS ARE AT THEIR END /////
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
         if (source_at_end_of_list && !target_at_end_of_list) {
-            printf("End of source file directories reached at '%s'. Deleting remaining target files\n", source_full_path);
+            printf("End of source file directories reached at '%s'. Deleting remaining target files...\n", source_full_path);
             while (target_ptr != NULL) {
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (target_ptr->fts_info == FTS_D) {
@@ -260,12 +253,14 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                     printf("Deleting extra target file '%s'\n", target_full_path);
                     //file_delete(target_full_path);
                 }
+                target_ptr = target_ptr->fts_link;
             }
+            printf("\n");
         }
-
         // If the target is at the end of its list and the source is not,
         // then copy over the rest of the source files
         if (target_at_end_of_list && !source_at_end_of_list) {
+            printf("End of target file directories reached at '%s'. Copying remaining source files...\n", target_full_path);
             while (source_ptr != NULL) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 if (source_ptr->fts_info == FTS_D) {
@@ -278,9 +273,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                     // NOTE: Again, not sure if I need to add a slash to this file path
                     file_copy(source_full_path, target_full_path);
                 }
+                source_ptr = source_ptr->fts_link;
             }
+            printf("\n");
         }
-
 
         ///// IF THE FILE NAMES ARE THE SAME /////
         // If the source and target are directories, and their names match, then continue to the next file pair
@@ -291,19 +287,21 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
         }
-        // If the source and target files are files, and their names match,
-        // and the source was edited more recently, and their file sizes differ,
+        // If the source and target files are files, and their names match, and the source was edited more recently
         // Overwrite the source file to the target file and continue to the next file pair
-        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer && file_sizes_are_different) {
-            printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target, and they are different sizes. Overwriting source to target\n\n", source_full_path, target_full_path);
+        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer) {
+            printf("Source '%s' and target '%s' are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n", source_full_path, target_full_path);
             //file_copy(source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
         }
 
-        // If the source and target files are files, and their names match,
-        // and the source was edited more recently, and their file sizes are the same,
+        // If the source and target files are files, and their names match, and the source was edited more recently,
         // Move on to the next list items
+        if (source_file_is_a_file && target_file_is_a_file && file_names_are_same && source_file_is_newer) {
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+        }
 
         // If the source and target files are files, and their names match,
         // and the source was edited more recently, and their file sizes are the same,
