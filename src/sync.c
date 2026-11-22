@@ -298,6 +298,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             // If the next file in the source list is not null, is a directory, and does not have the same name as the current directory in the target list,
             // that means that that the next source file is not in the target list, so copy it over
+            // THE CURRENT DIRECTORY STRUCTURE CALLS THIS CONDITION
             if ((source_ptr->fts_link != NULL) &&
                 is_a_directory(source_ptr->fts_link) &&
                 strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
@@ -308,12 +309,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                     source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
 
                 //file_copy(source_full_path, target_full_path);
-                // DOUBLE CHECK POINTER LOGIC
-                // Do this by adding print statements that fully explain what`s going on
-                printf("Moving target from directory `%s` to directory ", target_ptr->fts_name);
-                target_ptr = target_ptr->fts_link;
-                printf("`%s`\n", target_ptr->fts_name);
-                printf("Current source directory: %s\n\n", source_ptr->fts_name);
+
+
+                // Iterate source_ptr over one
+                source_ptr = source_ptr->fts_link;
+
+                // Iterate target_ptr until it is <= source_ptr
+                while ((strcmp(target_ptr->fts_name, source_ptr->fts_name) > 0) && (target_ptr->fts_link != NULL)) {
+                    printf("Moving target `%s` to `%s`\n", target_ptr->fts_name, target_ptr->fts_link->fts_name);
+                    target_ptr = target_ptr->fts_link;
+                }
                 continue;
             }
         }
