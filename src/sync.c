@@ -204,8 +204,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL || target_ptr != NULL) {
+
+        // TO DO: PRE DECLARE STRING PATHS FOR EACH DIFFERENT INSTANCE (maybe)
+
         // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
-        // So, we copy the rest of the files in the source directory to the target directory
+        // So, we copy the rest of the files in the current source directory to the target directory
+        // This is the first check since this is the most likely case when syncing directories
         if (target_ptr == NULL) {
             while (source_ptr != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
@@ -227,14 +231,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         }
 
         // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
-        // So, we delete the rest of the files in the target directory
+        // So, we delete the rest of the files in the current target directory
         if (source_ptr == NULL) {
             while (target_ptr != NULL) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (is_a_directory(target_ptr)) {
+                    printf("Deleting DIRECTORY `%s`\n", target_path);
                     //directory_delete(target_path);
                 }
                 else if (is_a_file(target_ptr)) {
+                    printf("Deleting FILE `%s`\n", target_path);
                     //file_delete(target_path);
                 }
                 target_ptr = target_ptr->fts_link;
@@ -262,6 +268,18 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 //file_copy(source_path, target_path);
                 continue;
         }
+
+        // If `string_comparison` > 0, and they're the same file type that means the file is in the target, and not the source
+        // So, we delete it
+        if ((string_comparison > 0) && is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
+            char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            directory_delete(target_path);
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+            continue;
+        }
+
+        // If `string_comparison` < 0, and they're different file types....
     }
 
 
