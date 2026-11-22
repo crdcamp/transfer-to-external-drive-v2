@@ -94,6 +94,74 @@ target: a  b  c  d
 Know what? Let's start coding and see if we can figure this out.
 
 ```
-source: a  b  c
+source: a  b  g
 target: a  c
 ```
+
+# List Alignment
+
+In the current iteration of the code, where we're trying to figure out how to move the linked lists after detecting non-matching directories, we have the following code block:
+
+```c
+if (source_file_is_a_directory &&
+    target_file_is_a_directory &&
+    !file_names_are_same) {
+
+    printf("Source directory `%s` and...\ntarget directory `%s`\n...are directories and do not have matching names. Checking next source file for match...\n",
+        source_full_path, target_full_path);
+
+    // If the next file in the source list is not null, is a directory, and has the same name as the current item in the target list,
+    // that means that the current source directory file is not in the target directory, so copy it over
+    if ((source_ptr->fts_link != NULL) &&
+        (is_a_directory(source_ptr->fts_link)) &&
+        (strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0)) {
+        source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+        target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+
+        printf("Next source directory `%s` matches current target file `%s`. This means that current source directory `%s` is not in the target directory. Copying current source file `%s to target `%s`\n",
+        source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
+
+        //directory_copy(source_full_path, target_full_path);
+        printf("Moving source from directory `%s` to directory ", source_ptr->fts_name);
+        source_ptr = source_ptr->fts_link;
+        printf("`%s`\n", source_ptr->fts_name);
+        printf("Current target directory: %s\n\n", target_ptr->fts_name);
+        continue;
+    }
+```
+
+In our code directories, we have the following source and target:
+
+**Source:**
+```
+SubDir1  SubDir2  SubDir4  SubDir6
+```
+
+**Target:**
+```
+SubDir1  SubDir2  SubDir3  SubDir4
+```
+
+The relevant portion of the current code outputs the follows:
+
+```
+Source directory `TestDirs/Source/SubDir4` and...
+target directory `TestDirs/Target/SubDir3`
+...are directories and do not have matching names. Checking next source file for match...
+Next source directory `SubDir6` does not match the current target directory `SubDir3`. This means that the next source directory is not in the target directory. Copying next source file `TestDirs/Source/SubDir6` to target `TestDirs/Target/
+
+Moving target from directory `SubDir3` to directory `SubDir4`
+Current source directory: SubDir4
+
+Source `TestDirs/Source/SubDir4` and...
+target `TestDirs/Target/SubDir4`
+...are directories and have matching names. Moving to next list item
+```
+
+The goal of this notes section is to ensure that we're correctly aligning the children linked lists. Keep in mind that the lists **do not change** when you copy or delete files. This is because the linked list of children is created before another read to a directory is made.
+
+As the above output states, the
+
+"Next source directory `SubDir6` does not match the current target directory `SubDir3`. This means that the next source directory is not in the target directory. Copying next source file `TestDirs/Source/SubDir6` to target `TestDirs/Target/"
+
+Now, **how do we properly move to the next files in one or both linked lists?**
