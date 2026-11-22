@@ -216,15 +216,32 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         }
 
         // If the names match, they're both files, and the source file was edited more recently than the target file,
-        // Overwrite the source file to the target
+        // overwrite the source file to the target
         if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
             (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 //file_copy(source_path, target_path);
-            }
+                continue;
+        }
 
-        if (source_ptr == NULL) string_comparison = 1; // Only target entries left
+
+        // If `source_ptr` is NULL and `target_ptr` is not,
+        // that means all remaining target files are not in the source directory
+        // Therefore, we delete them
+        if (source_ptr == NULL) {
+            while (target_ptr != NULL) {
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                if (is_a_directory(target_ptr)) {
+                    //directory_delete(target_path);
+                }
+                else if (is_a_file(target_ptr)) {
+                    //file_delete(target_path);
+                }
+            }
+            continue;
+        }
+
         else if (target_ptr == NULL) string_comparison = -1; // Only source entries left
         else string_comparison = strcmp(source_ptr->fts_name, target_ptr->fts_name);
 
