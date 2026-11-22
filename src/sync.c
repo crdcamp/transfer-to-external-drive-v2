@@ -204,8 +204,46 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL || target_ptr != NULL) {
+        // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
+        // So, we copy the rest of the files in the source directory to the target directory
+        if (target_ptr == NULL) {
+            while (source_ptr != NULL) {
+                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+                // If the source file is a directory, we need to add a '/' to the end of the target base path
+                if (is_a_directory(source_ptr)) {
+                    printf("Copying source DIRECTORY '%s' to target DIRECTORY '%s'\n", source_path, target_path);
+                    //directory_copy(source_path, target_path);
+                }
+                // If the source file is a file, we need to
+                else if (is_a_file(source_ptr)) {
+                    char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                    printf("Copying source FILE '%s' to target DIRECTORY '%s'\n", source_path, target_path);
+                    //file_copy(source_path, target_path);
+                }
+                source_ptr = source_ptr->fts_link;
+            }
+            continue;
+        }
+
+        // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
+        // So, we delete the rest of the files in the target directory
+        if (source_ptr == NULL) {
+            while (target_ptr != NULL) {
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                if (is_a_directory(target_ptr)) {
+                    //directory_delete(target_path);
+                }
+                else if (is_a_file(target_ptr)) {
+                    //file_delete(target_path);
+                }
+                target_ptr = target_ptr->fts_link;
+            }
+            continue;
+        }
+
         // Because there are no duplicates and the files are sorted alphabetically, we can use string comparisons here
-        int string_comparison;
+        int string_comparison = strcmp(source_ptr->fts_name, target_ptr->fts_name);
 
         // If the names match and they're both directories,
         // advance both pointers, continue to the next iteration, and leave further processing to the next recursion
@@ -224,30 +262,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 //file_copy(source_path, target_path);
                 continue;
         }
-
-
-        // If `source_ptr` is NULL and `target_ptr` is not,
-        // that means all remaining target files are not in the source directory
-        // Therefore, we delete them
-        if (source_ptr == NULL) {
-            while (target_ptr != NULL) {
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                if (is_a_directory(target_ptr)) {
-                    //directory_delete(target_path);
-                }
-                else if (is_a_file(target_ptr)) {
-                    //file_delete(target_path);
-                }
-            }
-            continue;
-        }
-
-        else if (target_ptr == NULL) string_comparison = -1; // Only source entries left
-        else string_comparison = strcmp(source_ptr->fts_name, target_ptr->fts_name);
-
-
-
     }
+
+
+
     // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
     // that will be passed here. Then call this function in the recursion call
     arena_rewind(arena_scratch, checkpoint);
