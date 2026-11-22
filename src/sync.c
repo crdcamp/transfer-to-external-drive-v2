@@ -121,6 +121,26 @@ void purge_junk(char *root) {
     fts_close(handle);
 }
 
+// Given an fts entry, determine if the file is a directory
+bool is_a_directory(FTSENT *entry) {
+    if (entry->fts_info == FTS_D) {
+        return true;
+    } else return false;
+}
+
+// Given an fts entry, determine if the file is a file
+bool is_a_file(FTSENT *entry) {
+    if (entry->fts_info == FTS_F) {
+        return true;
+    } else return false;
+}
+
+bool file_names_are_the_same(FTSENT *source_entry, FTSENT *target_entry) {
+    if (strcmp(source_entry->fts_name, target_entry->fts_name) == 0) {
+        return true;
+    } else return false;
+}
+
  /*
 Visit each depth level of the source and target directory paths
 to ensure the target directory is synced with the source directory.
@@ -131,7 +151,7 @@ A scratch arena must be provided for string operations.
 // TODO: Double check all return statements for arena rewinds and file closes
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
-    printf("Syncing source folder '%s' with '%s'\n", source, target);
+    printf("Syncing source directory '%s' with target directory '%s'\n", source, target);
     // DON'T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
 
     // Delete unneeded Apple files
@@ -188,32 +208,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL) {
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-        printf("Source full path: %s\n", source_full_path);
-        printf("Target full path: %s\n", target_full_path);
 
         // Boolean logic:
-        bool source_file_is_a_directory;
-        bool target_file_is_a_directory;
-        if (source_ptr->fts_info == FTS_D) {
-            source_file_is_a_directory = true;
-        } else source_file_is_a_directory = false;
-        if (target_ptr->fts_info == FTS_D) {
-            target_file_is_a_directory = true;
-        } else target_file_is_a_directory = false;
-
-        bool source_file_is_a_file;
-        bool target_file_is_a_file;
-        if (source_ptr->fts_info == FTS_F) {
-            source_file_is_a_file = true;
-        } else source_file_is_a_file = false;
-        if (target_ptr->fts_info == FTS_F) {
-            target_file_is_a_file = true;
-        } else target_file_is_a_file = false;
-
-        bool file_names_are_same;
-        if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
-            file_names_are_same = true;
-        } else file_names_are_same = false;
+        bool source_file_is_a_directory = is_a_directory(source_ptr);
+        bool target_file_is_a_directory = is_a_directory(target_ptr);
+        bool source_file_is_a_file = is_a_file(source_ptr);
+        bool target_file_is_a_file = is_a_file(target_ptr);
+        bool file_names_are_same = file_names_are_the_same(source_ptr, target_ptr);
 
         bool source_file_is_newer;
         if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
@@ -260,17 +261,23 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (source_file_is_a_directory && target_file_is_a_directory && !file_names_are_same) {
             printf("Source '%s' and target '%s' are directories, and do not have matching names. Checking next source file for match...\n", source_full_path, target_full_path);
             // If the next file in the source list is not null and has the same name as the current item in the target list,
-            // then this means that the current source directory file is not in the target directory, so copy it over
+            // that means that the current source directory file is not in the target directory, so copy it over
             if ((source_ptr->fts_link != NULL) && strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
                 printf("Next source file '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
-                    source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
+                source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
                 //directory_copy(source_full_path, target_full_path);
-            } // Else?... Do nothing??????
-            // Iterate only the source?
+                // Realign the lists by only iterating to the next source
+            }
+            // If the next file in the source list is not null, is a directory and does not have the same name as the current directory in the target list,
+            // that means that that the next source file is not in the target list, so copy it over
+            if ((source_ptr->fts_link != NULL) && strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
+
+            }
+
+            // I'm pretty sure we only iterate the source to realign the lists
             source_ptr = source_ptr->fts_link;
-            break;
             continue;
         }
 

@@ -93,8 +93,7 @@ target: a  b  c  d
 
 Know what? Let's start coding and see if we can figure this out.
 
-## Target file is not in the source directory
-
-# Source and Target are the Same Size
-
-# Putting it All Together
+```
+source: a  b  c
+target: a  c
+```
