@@ -142,7 +142,7 @@ SubDir1  SubDir2  SubDir4  SubDir6
 SubDir1  SubDir2  SubDir3  SubDir4
 ```
 
-The relevant portion of the current code outputs the follows:
+The relevant portion of the current code outputs the following:
 
 ```
 Source directory `TestDirs/Source/SubDir4` and...
@@ -158,10 +158,30 @@ target `TestDirs/Target/SubDir4`
 ...are directories and have matching names. Moving to next list item
 ```
 
-The goal of this notes section is to ensure that we're correctly aligning the children linked lists. Keep in mind that the lists **do not change** when you copy or delete files. This is because the linked list of children is created before another read to a directory is made.
+Keep in mind that the lists **do not change** when you copy or delete files. This is because the linked list of children is created before another read to a directory is made. Therefore, **any worries about copying and deleting files affecting the list alignment are out the window**.
 
 As the above output states, the
 
 "Next source directory `SubDir6` does not match the current target directory `SubDir3`. This means that the next source directory is not in the target directory. Copying next source file `TestDirs/Source/SubDir6` to target `TestDirs/Target/"
 
 Now, **how do we properly move to the next files in one or both linked lists?**
+
+Well, when we
+
+```
+Moving target from directory `SubDir3` to directory `SubDir4`
+```
+
+... and
+
+```
+Current source directory: SubDir4
+```
+
+We've just **ended up right back where we started** at `SubDir4`. What does this mean? Well, it obviously means that **you have not moved the pointer far enough!**
+
+Moreover, this indicates we need a string comparison in a while loop to get us where we need to be!
+
+THEREFORE, we actually want to move the current source directory forward, and move the target directory forward until its `strcmp` with a `> 0` condition with the *new* current source directory (I'm pretty sure)!
+
+Go to the code and try this NOW.

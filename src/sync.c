@@ -81,7 +81,7 @@ void directory_delete(char *file_path) {
             fprintf(stderr, "directory_delete: %s: %s\n", entry->fts_path, strerror(entry->fts_errno));
             exit(EXIT_FAILURE);
         }
-        // Deliberately didn't call `file_delete` here to keep things separate. Ya neva know...
+        // Deliberately didn`t call `file_delete` here to keep things separate. Ya neva know...
         if (remove(entry->fts_path) != 0) {
             perror(entry->fts_path);
             exit(EXIT_FAILURE);
@@ -113,7 +113,7 @@ void purge_junk(char *root) {
         if (entry->fts_level == 0 || !is_junk(entry->fts_name)) continue;
 
         if (entry->fts_info == FTS_D) {
-            fts_set(handle, entry, FTS_SKIP);   // don't descend, we're deleting it
+            fts_set(handle, entry, FTS_SKIP);   // don`t descend, we`re deleting it
             directory_delete(entry->fts_path);
         } else if (entry->fts_info != FTS_DP) {
             file_delete(entry->fts_path);
@@ -140,14 +140,14 @@ bool is_a_file(FTSENT *entry) {
 Visit each depth level of the source and target directory paths
 to ensure the target directory is synced with the source directory.
 The target directory is edited in-place and deletes/updates
-files according to the source directory's file hierarchy structure.
+files according to the source directory`s file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
 // TODO: Double check all return statements for arena rewinds and file closes
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
-    printf("Syncing source directory '%s' with target directory '%s'\n", source, target);
-    // DON'T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
+    printf("Syncing source directory `%s` with target directory `%s`\n", source, target);
+    // DON`T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
 
     // Delete unneeded Apple files
     purge_junk(source);
@@ -169,7 +169,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     }
 
     // NOTE: THESE NULL CHECKS MIGHT CAUSE ISSUES WHEN ACTUALLY RECURSING
-    // YOU NEED A BASE CASE DON'T FORGET
+    // YOU NEED A BASE CASE DON`T FORGET
     // REVISE THIS PRINT STATEMENT. It will convey incorrect information when recursing has been implemented
     // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
@@ -183,12 +183,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     }
 
     // IMPORTANT NOTE: Doing the empty directory check properly would require some research on
-    // error handling. So, we're gonna do it the incorrect way for now and just
+    // error handling. So, we`re gonna do it the incorrect way for now and just
     // treat NULL as an empty directory (likely an unsafe practice)
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
 
-        printf("Copying source directory '%s` to empty target directory '%s'...\n", source, target);
+        printf("Copying source directory `%s` to empty target directory `%s`...\n", source, target);
 
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
@@ -208,7 +208,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
         // Boolean logic:
-        // Rest of boolean logic is only used once, so they don't need functions
+        // Rest of boolean logic is only used once, so they don`t need functions
         bool source_file_is_a_directory = is_a_directory(source_ptr);
         bool target_file_is_a_directory = is_a_directory(target_ptr);
         bool source_file_is_a_file = is_a_file(source_ptr);
@@ -238,12 +238,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///// IF SOURCE AND TARGET NAMES MATCH //////
         /////////////////////////////////////////////
         // If the source and target are directories, and their names match, then continue to the next file pair,
-        // since we don't know if the files in their subdirectories have been changed, we can leave further editing of the subdirectories to the next recursion
+        // since we don`t know if the files in their subdirectories have been changed, we can leave further editing of the subdirectories to the next recursion
         if (source_file_is_a_directory &&
             target_file_is_a_directory &&
             file_names_are_same) {
 
-            printf("Source '%s' and...\ntarget '%s'\n...are directories and have matching names. Moving to next list item\n\n",
+            printf("Source `%s` and...\ntarget `%s`\n...are directories and have matching names. Moving to next list item\n\n",
                 source_full_path, target_full_path);
 
             source_ptr = source_ptr->fts_link;
@@ -257,7 +257,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             file_names_are_same &&
             source_file_is_newer) {
 
-            printf("Source '%s' and...\ntarget '%s'\n...are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n",
+            printf("Source `%s` and...\ntarget `%s`\n...are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n",
                 source_full_path, target_full_path);
 
             //file_copy(source_full_path, target_full_path);
@@ -275,7 +275,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_directory &&
             !file_names_are_same) {
 
-            printf("Source directory '%s' and...\ntarget directory '%s'\n...are directories and do not have matching names. Checking next source file for match...\n",
+            printf("Source directory `%s` and...\ntarget directory `%s`\n...are directories and do not have matching names.\nChecking next source file for match...\n",
                 source_full_path, target_full_path);
 
             // If the next file in the source list is not null, is a directory, and has the same name as the current item in the target list,
@@ -286,13 +286,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
 
-                printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n",
+                printf("Next source directory `%s` matches current target file `%s`.\nThis means that current source directory `%s` is not in the target directory. Copying current source file `%s to target `%s`\n",
                 source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
 
                 //directory_copy(source_full_path, target_full_path);
-                printf("Moving source from directory '%s' to directory ", source_ptr->fts_name);
+                printf("Moving source from directory `%s` to directory ", source_ptr->fts_name);
                 source_ptr = source_ptr->fts_link;
-                printf("'%s'\n", source_ptr->fts_name);
+                printf("`%s`\n", source_ptr->fts_name);
                 printf("Current target directory: %s\n\n", target_ptr->fts_name);
                 continue;
             }
@@ -304,15 +304,15 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
 
-                printf("Next source directory '%s' does not match the current target file '%s'. This means that the next source directory is not in the target directory. Copying next source file '%s' to target '%s\n\n",
+                printf("Next source directory `%s` does not match the current target directory `%s`.\nThis means that the next source directory is not in the target directory. Copying next source file `%s` to target `%s\n\n",
                     source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
 
                 //file_copy(source_full_path, target_full_path);
                 // DOUBLE CHECK POINTER LOGIC
-                // Do this by adding print statements that fully explain what's going on
-                printf("Moving target from directory '%s' to directory ", target_ptr->fts_name);
+                // Do this by adding print statements that fully explain what`s going on
+                printf("Moving target from directory `%s` to directory ", target_ptr->fts_name);
                 target_ptr = target_ptr->fts_link;
-                printf("'%s'\n", target_ptr->fts_name);
+                printf("`%s`\n", target_ptr->fts_name);
                 printf("Current source directory: %s\n\n", source_ptr->fts_name);
                 continue;
             }
@@ -323,34 +323,34 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///////////////////////////////////////////////////////////////////////
         // Walk through the logic in your notes on this before continuing
         // Also adjust the directories to reflect this scenario
-        // As a starting point, I'm pretty sure this mostly just involves deleting
+        // As a starting point, I`m pretty sure this mostly just involves deleting
         // target files. Since the lists should always be aligned, any instance where
-        // they're not indicates that you should either copy or delete something
+        // they`re not indicates that you should either copy or delete something
 
         /////////////////////////////////////////
         ///// IF EITHER LIST IS AT ITS END //////
         /////////////////////////////////////////
         // If the source and target are at the end of their lists,
         // Move on to the next iteration
-        // I'm almost certain the while loop condition takes care of this
+        // I`m almost certain the while loop condition takes care of this
 
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
         if (source_at_end_of_list && !target_at_end_of_list) {
 
-            printf("End of source file directories reached at '%s'. Deleting remaining target files...\n", source_full_path);
+            printf("End of source file directories reached at `%s`. Deleting remaining target files...\n", source_full_path);
 
             while (target_ptr != NULL) {
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (target_ptr->fts_info == FTS_D) {
 
-                    printf("Deleting extra target directory '%s'\n", target_full_path);
+                    printf("Deleting extra target directory `%s`\n", target_full_path);
 
                     //directory_delete(target_full_path);
                 }
                 if (target_ptr->fts_info == FTS_F) {
 
-                    printf("Deleting extra target file '%s'\n", target_full_path);
+                    printf("Deleting extra target file `%s`\n", target_full_path);
 
                     //file_delete(target_full_path);
                 }
@@ -363,20 +363,20 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // then copy over the rest of the source files
         if (target_at_end_of_list && !source_at_end_of_list) {
 
-            printf("End of target file directories reached at '%s'. Copying remaining source files...\n", target_full_path);
+            printf("End of target file directories reached at `%s`. Copying remaining source files...\n", target_full_path);
 
             while (source_ptr != NULL) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
                 if (source_ptr->fts_info == FTS_D) {
 
-                    printf("Copying extra source directory '%s' to target '%s'\n", source_full_path, target_full_path);
+                    printf("Copying extra source directory `%s` to target `%s`\n", source_full_path, target_full_path);
 
                     //directory_copy(source_full_path, target_full_path);
                 }
                 if (source_ptr->fts_info == FTS_F) {
 
-                    printf("Copying extra source file '%s' to target '%s'\n", source_full_path, target_full_path);
+                    printf("Copying extra source file `%s` to target `%s`\n", source_full_path, target_full_path);
 
                     //file_copy(source_full_path, target_full_path);
                 }
