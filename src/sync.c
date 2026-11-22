@@ -191,10 +191,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         printf("Source full path: %s\n", source_full_path);
         printf("Target full path: %s\n", target_full_path);
 
-        // TODO: When all logic is complete, double check if any of these checks are unneeded
-
         // Boolean logic:
-        // Check if the source and target files are directories
         bool source_file_is_a_directory;
         bool target_file_is_a_directory;
         if (source_ptr->fts_info == FTS_D) {
@@ -204,7 +201,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_directory = true;
         } else target_file_is_a_directory = false;
 
-        // Check if the source and target files are files
         bool source_file_is_a_file;
         bool target_file_is_a_file;
         if (source_ptr->fts_info == FTS_F) {
@@ -214,26 +210,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_file = true;
         } else target_file_is_a_file = false;
 
-        // Check if the source and target names are the same
         bool file_names_are_same;
         if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
             file_names_are_same = true;
         } else file_names_are_same = false;
 
-        // Check if the source was edited more recently than the target
         bool source_file_is_newer;
         if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
             source_file_is_newer = true;
         } else source_file_is_newer = false;
 
-        // Check if the source and target files sizes are different or the same
-        // (Might not need this one)
-        bool file_sizes_are_different;
-        if (source_ptr->fts_statp->st_size != target_ptr->fts_statp->st_size) {
-            file_sizes_are_different = true;
-        } else file_sizes_are_different = false;
-
-        // Check if the source and/or target are at the end of their list
         bool source_at_end_of_list;
         bool target_at_end_of_list;
         if (source_ptr->fts_link == NULL) {
@@ -270,10 +256,21 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
         ///////////////////////////////////////////////////
         // If the source and target files are directories, and their names do not match,
-        // Check the next list item in the target list
+        // Check if the next file in the target list matches the current source file
         if (source_file_is_a_directory && target_file_is_a_directory && !file_names_are_same) {
-            printf("Source '%s' and target '%s' files are directories, and do not have matching names. Checking next target file for match\n", source_full_path, target_full_path);
-            // If the next target file is a directory, and has a matching name,
+            printf("Source '%s' and target '%s' are directories, and do not have matching names. Checking next source file for match...\n", source_full_path, target_full_path);
+            // If the next file in the source list is not null and has the same name as the current item in the target list,
+            // then this means that the current source directory file is not in the target directory, so copy it over
+            if ((source_ptr->fts_link != NULL) && strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0) {
+                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+                printf("Next source file '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
+                    source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
+                //directory_copy(source_full_path, target_full_path);
+            } // Else?... Do nothing??????
+            // Iterate only the source?
+            source_ptr = source_ptr->fts_link;
+            break;
             continue;
         }
 
@@ -281,10 +278,14 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///// IF SOURCE/TARGET IS A FILE AND TARGET/SOURCE IS A DIRECTORY /////
         ///////////////////////////////////////////////////////////////////////
         // Walk through the logic in your notes on this before continuing
+        // Also adjust the directories to reflect this scenario
 
         /////////////////////////////////////////
         ///// IF EITHER LIST IS AT ITS END //////
         /////////////////////////////////////////
+        // If the source and target are at the end of their lists,
+        // Move on to the next iteration
+
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
         if (source_at_end_of_list && !target_at_end_of_list) {
@@ -314,7 +315,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 if (source_ptr->fts_info == FTS_D) {
                     printf("Copying extra source directory '%s' to target '%s'\n", source_full_path, target_full_path);
                     // NOTE: Not sure if I need to add a slash to this file path
-                    // Double check if directory_copy does this
+                    // Double check if directory_copy does this. I'm pretty sure it does
                     //directory_copy(source_full_path, target_full_path);
                 }
                 if (source_ptr->fts_info == FTS_F) {
@@ -324,7 +325,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 }
                 source_ptr = source_ptr->fts_link;
             }
-            printf("\n");
+            printf("\n\n");
             continue;
         }
     }
