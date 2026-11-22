@@ -27,7 +27,6 @@ void directory_delete(char *file_path);
 // Sync function
 bool is_a_directory(FTSENT *entry);
 bool is_a_file(FTSENT *entry);
-bool file_names_are_the_same(FTSENT *source_entry, FTSENT *target_entry);
 void sync_directories(Arena *arena_scratch, char *source, char *target);
 
 #endif

@@ -135,12 +135,6 @@ bool is_a_file(FTSENT *entry) {
     } else return false;
 }
 
-bool file_names_are_the_same(FTSENT *source_entry, FTSENT *target_entry) {
-    if (strcmp(source_entry->fts_name, target_entry->fts_name) == 0) {
-        return true;
-    } else return false;
-}
-
  /*
 Visit each depth level of the source and target directory paths
 to ensure the target directory is synced with the source directory.
@@ -214,7 +208,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         bool target_file_is_a_directory = is_a_directory(target_ptr);
         bool source_file_is_a_file = is_a_file(source_ptr);
         bool target_file_is_a_file = is_a_file(target_ptr);
-        bool file_names_are_same = file_names_are_the_same(source_ptr, target_ptr);
+
+        bool file_names_are_same;
+        if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
+            file_names_are_same = true;
+        } else file_names_are_same = false;
 
         bool source_file_is_newer;
         if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
@@ -262,7 +260,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             printf("Source '%s' and target '%s' are directories, and do not have matching names. Checking next source file for match...\n", source_full_path, target_full_path);
             // If the next file in the source list is not null and has the same name as the current item in the target list,
             // that means that the current source directory file is not in the target directory, so copy it over
-            if ((source_ptr->fts_link != NULL) && strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0) {
+            if ((source_ptr->fts_link != NULL) && file_names_are_the_same(source_ptr->fts_link->fts_name, target_ptr->fts_name)) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
                 printf("Next source file '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
