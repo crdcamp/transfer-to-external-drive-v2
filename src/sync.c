@@ -203,200 +203,33 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Iterate through the `source_children_list` and the `target_children_list` at the same time
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
-    while (source_ptr != NULL) {
-        char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-        char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+    while (source_ptr != NULL || target_ptr != NULL) {
+        // Because there are no duplicates and the files are sorted alphabetically, we can use string comparisons here
+        int string_comparison;
 
-        // Boolean logic:
-        // Rest of boolean logic is only used once, so they don`t need functions
-        bool source_file_is_a_directory = is_a_directory(source_ptr);
-        bool target_file_is_a_directory = is_a_directory(target_ptr);
-        bool source_file_is_a_file = is_a_file(source_ptr);
-        bool target_file_is_a_file = is_a_file(target_ptr);
-
-        bool file_names_are_same;
-        if (strcmp(source_ptr->fts_name, target_ptr->fts_name) == 0) {
-            file_names_are_same = true;
-        } else file_names_are_same = false;
-
-        bool source_file_is_newer;
-        if (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) {
-            source_file_is_newer = true;
-        } else source_file_is_newer = false;
-
-        bool source_at_end_of_list;
-        bool target_at_end_of_list;
-        if (source_ptr->fts_link == NULL) {
-            source_at_end_of_list = true;
-        } else source_at_end_of_list = false;
-        if (target_ptr->fts_link == NULL) {
-            target_at_end_of_list = true;
-        } else target_at_end_of_list = false;
-
-        // Application of boolean logic:
-        /////////////////////////////////////////////
-        ///// IF SOURCE AND TARGET NAMES MATCH //////
-        /////////////////////////////////////////////
-        // If the source and target are directories, and their names match, then continue to the next file pair,
-        // since we don`t know if the files in their subdirectories have been changed, we can leave further editing of the subdirectories to the next recursion
-        if (source_file_is_a_directory &&
-            target_file_is_a_directory &&
-            file_names_are_same) {
-
-            printf("Source `%s` and...\ntarget `%s`\n...are directories and have matching names. Moving to next list item\n\n",
-                source_full_path, target_full_path);
-
-            source_ptr = source_ptr->fts_link;
-            target_ptr = target_ptr->fts_link;
-            continue;
-        }
-        // If the source and target files are files, and their names match, and the source was edited more recently
-        // Overwrite the source file to the target file and continue to the next file pair
-        if (source_file_is_a_file &&
-            target_file_is_a_file &&
-            file_names_are_same &&
-            source_file_is_newer) {
-
-            printf("Source `%s` and...\ntarget `%s`\n...are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n",
-                source_full_path, target_full_path);
-
-            //file_copy(source_full_path, target_full_path);
+        // If the names match and they're both directories,
+        // advance both pointers, continue to the next iteration, and leave further processing to the next recursion
+        if (string_comparison == 0 && is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
             continue;
         }
 
-        ///////////////////////////////////////////////////
-        ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
-        ///////////////////////////////////////////////////
-        // If the source and target files are directories, and their names do not match,
-        // Check if the next file in the target list matches the current source file
-        if (source_file_is_a_directory &&
-            target_file_is_a_directory &&
-            !file_names_are_same) {
-
-            printf("Source directory `%s` and...\ntarget directory `%s`\n...are directories and do not have matching names.\nChecking next source file for match...\n",
-                source_full_path, target_full_path);
-
-            // If the next file in the source list is not null, is a directory, and has the same name as the current item in the target list,
-            // that means that the current source directory file is not in the target directory, so copy it over
-            if ((source_ptr->fts_link != NULL) &&
-                (is_a_directory(source_ptr->fts_link)) &&
-                (strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0)) {
-                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
-
-                printf("Next source directory `%s` matches current target file `%s`.\nThis means that current source directory `%s` is not in the target directory. Copying current source file `%s to target `%s`\n",
-                source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
-
-                //directory_copy(source_full_path, target_full_path);
-                printf("Moving source from directory `%s` to directory ", source_ptr->fts_name);
-                source_ptr = source_ptr->fts_link;
-                printf("`%s`\n", source_ptr->fts_name);
-                printf("Current target directory: %s\n\n", target_ptr->fts_name);
-                continue;
+        // If the names match, they're both files, and the source file was edited more recently than the target file,
+        // Overwrite the source file to the target
+        if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
+            (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
+                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                //file_copy(source_path, target_path);
             }
-            // If the next file in the source list is not null, is a directory, and does not have the same name as the current directory in the target list,
-            // that means that that the next source file is not in the target list, so copy it over
-            // THE CURRENT DIRECTORY STRUCTURE CALLS THIS CONDITION
-            if (is_a_directory(source_ptr->fts_link) &&
-                strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
-                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_name);
-                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
 
-                printf("Next source directory `%s` does not match the current target directory `%s`.\nThis means that the next source directory is not in the target directory. Copying next source file `%s` to target `%s\n\n",
-                    source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
-
-                //file_copy(source_full_path, target_full_path);
+        if (source_ptr == NULL) string_comparison = 1; // Only target entries left
+        else if (target_ptr == NULL) string_comparison = -1; // Only source entries left
+        else string_comparison = strcmp(source_ptr->fts_name, target_ptr->fts_name);
 
 
-                // Iterate source_ptr over one
-                source_ptr = source_ptr->fts_link;
-                printf("CURRENT SOURCE DIRECTORY: %s\n", source_ptr->fts_name);
-                printf("CURRENT TARGET DIRECTORY: %s\n", target_ptr->fts_name);
-                // Iterate target_ptr until it is == source_ptr
-                // Implicitly, every file in between the current target directory and the new next source directory
-                // is not in the source directory
-                while ((strcmp(target_ptr->fts_name, source_ptr->fts_name) != 0) && (target_ptr->fts_link != NULL)) {
-                    if (target_ptr->fts_name != source_ptr->fts_name) {
-                        printf("Target directory `%s` != source directory `%s`. Deleting", target_ptr->fts_name, source_ptr->fts_name);
-                        // Don't forget to also account for non-matching files as well
-                    }
-                    printf("MOVING TARGET `%s` TO `%s`\n", target_ptr->fts_name, target_ptr->fts_link->fts_name);
-                    target_ptr = target_ptr->fts_link;
-                }
-                printf("CURRENT TARGET DIRECTORY: %s\n", target_ptr->fts_name);
-                continue;
-            }
-        }
 
-        ///////////////////////////////////////////////////////////////////////
-        ///// IF SOURCE/TARGET IS A FILE AND TARGET/SOURCE IS A DIRECTORY /////
-        ///////////////////////////////////////////////////////////////////////
-        // Walk through the logic in your notes on this before continuing
-        // Also adjust the directories to reflect this scenario
-        // As a starting point, I`m pretty sure this mostly just involves deleting
-        // target files. Since the lists should always be aligned, any instance where
-        // they`re not indicates that you should either copy or delete something
-
-        /////////////////////////////////////////
-        ///// IF EITHER LIST IS AT ITS END //////
-        /////////////////////////////////////////
-        // If the source and target are at the end of their lists,
-        // Move on to the next iteration
-        // I`m almost certain the while loop condition takes care of this
-
-        // If the source is at the end of its list and the target is not,
-        // Then delete the rest of the files in the target
-        if (source_at_end_of_list && !target_at_end_of_list) {
-
-            printf("End of source file directories reached at `%s`. Deleting remaining target files...\n", source_full_path);
-
-            while (target_ptr != NULL) {
-                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                if (target_ptr->fts_info == FTS_D) {
-
-                    printf("Deleting extra target directory `%s`\n", target_full_path);
-
-                    //directory_delete(target_full_path);
-                }
-                if (target_ptr->fts_info == FTS_F) {
-
-                    printf("Deleting extra target file `%s`\n", target_full_path);
-
-                    //file_delete(target_full_path);
-                }
-                target_ptr = target_ptr->fts_link;
-            }
-            printf("\n");
-            break;
-        }
-        // If the target is at the end of its list and the source is not,
-        // then copy over the rest of the source files
-        if (target_at_end_of_list && !source_at_end_of_list) {
-
-            printf("End of target file directories reached at `%s`. Copying remaining source files...\n", target_full_path);
-
-            while (source_ptr != NULL) {
-                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
-                if (source_ptr->fts_info == FTS_D) {
-
-                    printf("Copying extra source directory `%s` to target `%s`\n", source_full_path, target_full_path);
-
-                    //directory_copy(source_full_path, target_full_path);
-                }
-                if (source_ptr->fts_info == FTS_F) {
-
-                    printf("Copying extra source file `%s` to target `%s`\n", source_full_path, target_full_path);
-
-                    //file_copy(source_full_path, target_full_path);
-                }
-                source_ptr = source_ptr->fts_link;
-            }
-            printf("\n\n");
-            continue;
-        }
     }
     // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
     // that will be passed here. Then call this function in the recursion call
