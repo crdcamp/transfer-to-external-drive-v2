@@ -174,7 +174,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Create a linked list of all files/directories in the current directory depth level
     FTSENT *source_children_list = children_get_list(source_handle);
     if (source_children_list == NULL) {
+
         printf("Error: An empty source directory was provided\n");
+
         fts_close(source_handle);
         fts_close(target_handle);
         return;
@@ -185,7 +187,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // treat NULL as an empty directory (likely an unsafe practice)
     FTSENT *target_children_list = children_get_list(target_handle);
     if (target_children_list == NULL) {
+
         printf("Copying source directory '%s` to empty target directory '%s'...\n", source, target);
+
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
         directory_copy(source_slash, target);
@@ -204,6 +208,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
         // Boolean logic:
+        // Rest of boolean logic is only used once, so they don't need functions
         bool source_file_is_a_directory = is_a_directory(source_ptr);
         bool target_file_is_a_directory = is_a_directory(target_ptr);
         bool source_file_is_a_file = is_a_file(source_ptr);
@@ -281,13 +286,14 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
 
-                printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
+                printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n",
                 source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
 
                 //directory_copy(source_full_path, target_full_path);
-                // DOUBLE CHECK POINTER LOGIC
-                // Do this by adding print statements that fully explain what's going on
+                printf("Moving source from directory '%s' to directory ", source_ptr->fts_name);
                 source_ptr = source_ptr->fts_link;
+                printf("'%s'\n", source_ptr->fts_name);
+                printf("Current target directory: %s\n\n", target_ptr->fts_name);
                 continue;
             }
             // If the next file in the source list is not null, is a directory, and does not have the same name as the current directory in the target list,
@@ -304,7 +310,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 //file_copy(source_full_path, target_full_path);
                 // DOUBLE CHECK POINTER LOGIC
                 // Do this by adding print statements that fully explain what's going on
+                printf("Moving target from directory '%s' to directory ", target_ptr->fts_name);
                 target_ptr = target_ptr->fts_link;
+                printf("'%s'\n", target_ptr->fts_name);
+                printf("Current source directory: %s\n\n", source_ptr->fts_name);
                 continue;
             }
         }
