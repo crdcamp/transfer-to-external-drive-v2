@@ -203,7 +203,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Iterate through the `source_children_list` and the `target_children_list` at the same time
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
-    while (source_ptr != NULL && target_ptr != NULL) {
+    while (source_ptr != NULL) {
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
@@ -299,8 +299,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             // If the next file in the source list is not null, is a directory, and does not have the same name as the current directory in the target list,
             // that means that that the next source file is not in the target list, so copy it over
             // THE CURRENT DIRECTORY STRUCTURE CALLS THIS CONDITION
-            if ((source_ptr->fts_link != NULL) &&
-                is_a_directory(source_ptr->fts_link) &&
+            if (is_a_directory(source_ptr->fts_link) &&
                 strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
@@ -313,12 +312,20 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
                 // Iterate source_ptr over one
                 source_ptr = source_ptr->fts_link;
-
-                // Iterate target_ptr until it is <= source_ptr
-                while ((strcmp(target_ptr->fts_name, source_ptr->fts_name) > 0) && (target_ptr->fts_link != NULL)) {
-                    printf("Moving target `%s` to `%s`\n", target_ptr->fts_name, target_ptr->fts_link->fts_name);
+                printf("CURRENT SOURCE DIRECTORY: %s\n", source_ptr->fts_name);
+                printf("CURRENT TARGET DIRECTORY: %s\n", target_ptr->fts_name);
+                // Iterate target_ptr until it is == source_ptr
+                // Implicitly, every file in between the current target directory and the new next source directory
+                // is not in the source directory
+                while ((strcmp(target_ptr->fts_name, source_ptr->fts_name) != 0) && (target_ptr->fts_link != NULL)) {
+                    if (target_ptr->fts_name != source_ptr->fts_name) {
+                        printf("Target directory `%s` != source directory `%s`. Deleting", target_ptr->fts_name, source_ptr->fts_name);
+                        // Don't forget to also account for non-matching files as well
+                    }
+                    printf("MOVING TARGET `%s` TO `%s`\n", target_ptr->fts_name, target_ptr->fts_link->fts_name);
                     target_ptr = target_ptr->fts_link;
                 }
+                printf("CURRENT TARGET DIRECTORY: %s\n", target_ptr->fts_name);
                 continue;
             }
         }
