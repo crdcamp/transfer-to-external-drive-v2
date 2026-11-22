@@ -210,6 +210,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the rest of the files in the current source directory to the target directory
         // This is the first check since this is the most likely case when syncing directories
+        // Advance only `source_ptr`
         if (target_ptr == NULL) {
             while (source_ptr != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
@@ -232,6 +233,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
         // So, we delete the rest of the files in the current target directory
+        // Advance only `target_ptr`
         if (source_ptr == NULL) {
             while (target_ptr != NULL) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
@@ -252,7 +254,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         int string_comparison = strcmp(source_ptr->fts_name, target_ptr->fts_name);
 
         // If the names match and they're both directories,
-        // advance both pointers, continue to the next iteration, and leave further processing to the next recursion
+        // continue to the next iteration, and leave further processing to the next recursion
+        // Advance both pointers,
         if (string_comparison == 0 && is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
@@ -261,25 +264,53 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // If the names match, they're both files, and the source file was edited more recently than the target file,
         // overwrite the source file to the target
+        // Advance both pointers
         if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
             (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 //file_copy(source_path, target_path);
+
+                source_ptr = source_ptr->fts_link;
+                target_ptr = target_ptr->fts_link;
                 continue;
         }
 
-        // If `string_comparison` > 0, and they're the same file type that means the file is in the target, and not the source
-        // So, we delete it
-        if ((string_comparison > 0) && is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
-            char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            directory_delete(target_path);
+        // cmp < 0: the source name comes earlier alphabetically
+        // cmp > 0: the source name comes later alphabetically
+
+        // TODO: ADD ERROR HANDLING FOR IF THE TYPE IS NOT A SOURCE OR DIRECTORY
+
+        // If `string_comparison` < 0, and they're the same file types, that means the file is in the source, and not the target
+        // So, we copy the source to the target
+        // Advance only `source_ptr`
+        if (string_comparison < 0) {
+            char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+            if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+                directory_copy(source_path, target_path);
+            }
+            else if (is_a_file(source_ptr) && is_a_file(target_ptr)) {
+                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                file_copy(source_path, target_path);
+            }
             source_ptr = source_ptr->fts_link;
+        }
+
+        // If `string_comparison` > 0 and they're the same file type, that means the file is in the target, and not the source
+        // So, we delete the target file
+        // Advance only `target_ptr`
+        if (string_comparison > 0) {
+            char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
+                //directory_delete(target_path);
+            }
+            else if (is_a_file(source_ptr) && is_a_file(target_ptr)) {
+                //file_delete(target_path);
+            }
             target_ptr = target_ptr->fts_link;
             continue;
         }
-
-        // If `string_comparison` < 0, and they're different file types....
     }
 
 
