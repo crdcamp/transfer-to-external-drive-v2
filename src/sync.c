@@ -201,11 +201,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL) {
-
-        // CONSIDER ADDING A HELPER FUNCTION FOR DELETING LINKED LIST ENTRIES
-        // YOU COULD DELETE THE ENTRY IN THE LINKED LIST AND STITCH IT BACK TOGETHER
-        // INSTEAD OF ALL THIS OTHER MUMBO JUMBO
-
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
@@ -260,23 +255,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///////////////////////////////////////////////////
         ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
         ///////////////////////////////////////////////////
-        // int cmp = strcmp(source_ptr->fts_name, target_ptr->fts_name);
-
-        // Use some of this logic for comparing strings. Do a search on
-        // strcmp's use in an alphabetical instance
-        // if (cmp < 0) {
-        //     // Source entry sorts before target's current entry, so it's missing from target.
-        //     // Copy it, advance source only.
-        //     source_ptr = source_ptr->fts_link;
-        // } else {
-        //     // Target entry sorts before source's current entry, so it's not in source.
-        //     // Delete it, advance target only.
-        //     target_ptr = target_ptr->fts_link;
-        // }
-        // continue;
         // If the source and target files are directories, and their names do not match,
         // Check if the next file in the target list matches the current source file
-        if (source_file_is_a_directory && target_file_is_a_directory && (strcmp(source_full_path, target_full_path) != 0)) {
+        if (source_file_is_a_directory && target_file_is_a_directory && !file_names_are_same) {
             printf("Source directory '%s' and...\ntarget directory '%s'\n...are directories and do not have matching names. Checking next source file for match...\n", source_full_path, target_full_path);
             // If the next file in the source list is not null, is a directory, and has the same name as the current item in the target list,
             // that means that the current source directory file is not in the target directory, so copy it over
@@ -284,24 +265,22 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
                 printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
-                    source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
+                source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
                 //directory_copy(source_full_path, target_full_path);
                 source_ptr = source_ptr->fts_link;
+                continue;
             }
             // If the next file in the source list is not null, is a directory, and does not have the same name as the current directory in the target list,
             // that means that that the next source file is not in the target list, so copy it over
-            if ((source_ptr->fts_link != NULL) && is_a_directory(source_ptr->fts_link) && (strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0)) {
-                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_name);
+            if ((source_ptr->fts_link != NULL) && is_a_directory(source_ptr->fts_link) && strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
+                source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_path);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
                 printf("Next source directory '%s' does not match the current target file '%s'. This means that next source file is not in the target directory. Copying next source file '%s' to target '%s\n\n",
                     source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
                 //file_copy(source_full_path, target_full_path);
                 target_ptr = target_ptr->fts_link;
+                continue;
             }
-
-            // If the next file in the source list is not null, and is a file,
-            // then I'm *pretty sure* we just move the source pointer forward
-            continue;
         }
 
         ///////////////////////////////////////////////////////////////////////
