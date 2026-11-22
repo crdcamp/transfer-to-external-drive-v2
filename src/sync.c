@@ -200,7 +200,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     // Iterate through the `source_children_list` and the `target_children_list` at the same time
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
-    while (source_ptr != NULL) {
+    // TODO: Double check logic for including the target ptr NULL check
+    while (source_ptr != NULL && target_ptr != NULL) {
         char *source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
         char *target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
@@ -255,6 +256,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///////////////////////////////////////////////////
         ///// IF SOURCE AND TARGET NAMES DO NOT MATCH /////
         ///////////////////////////////////////////////////
+        // GO BACK AND MAKE THOROUGH NOTES AGAIN TO FIGURE THIS OUT
+        // YOU CLEARLY HAVE NO IDEA WHAT YOU'RE DOING
         // If the source and target files are directories, and their names do not match,
         // Check if the next file in the target list matches the current source file
         if (source_file_is_a_directory && target_file_is_a_directory && !file_names_are_same) {
@@ -267,6 +270,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
                 source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
                 //directory_copy(source_full_path, target_full_path);
+                // DOUBLE CHECK POINTER LOGIC
+                // Do this by adding print statements that fully explain what's going on
                 source_ptr = source_ptr->fts_link;
                 continue;
             }
@@ -278,6 +283,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 printf("Next source directory '%s' does not match the current target file '%s'. This means that next source file is not in the target directory. Copying next source file '%s' to target '%s\n\n",
                     source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
                 //file_copy(source_full_path, target_full_path);
+                // DOUBLE CHECK POINTER LOGIC
+                // Do this by adding print statements that fully explain what's going on
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
