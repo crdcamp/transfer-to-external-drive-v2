@@ -188,12 +188,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         printf("Copying source directory '%s` to empty target directory '%s'...\n", source, target);
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
-
         directory_copy(source_slash, target);
+
         arena_rewind(arena_scratch, checkpoint);
         fts_close(source_handle);
         fts_close(target_handle);
-
         return;
     }
 
@@ -229,7 +228,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_at_end_of_list = true;
         } else target_at_end_of_list = false;
 
-
         // Application of boolean logic:
         /////////////////////////////////////////////
         ///// IF SOURCE AND TARGET NAMES MATCH //////
@@ -239,7 +237,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (source_file_is_a_directory &&
             target_file_is_a_directory &&
             file_names_are_same) {
-            printf("Source '%s' and...\ntarget '%s'\n...are directories and have matching names. Moving to next list item\n\n", source_full_path, target_full_path);
+
+            printf("Source '%s' and...\ntarget '%s'\n...are directories and have matching names. Moving to next list item\n\n",
+                source_full_path, target_full_path);
+
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
             continue;
@@ -250,7 +251,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_file_is_a_file &&
             file_names_are_same &&
             source_file_is_newer) {
-            printf("Source '%s' and...\ntarget '%s'\n...are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n", source_full_path, target_full_path);
+
+            printf("Source '%s' and...\ntarget '%s'\n...are files, have matching names, and the source was edited more recently than the target. Overwriting source to target\n\n",
+                source_full_path, target_full_path);
+
             //file_copy(source_full_path, target_full_path);
             source_ptr = source_ptr->fts_link;
             target_ptr = target_ptr->fts_link;
@@ -265,7 +269,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (source_file_is_a_directory &&
             target_file_is_a_directory &&
             !file_names_are_same) {
-            printf("Source directory '%s' and...\ntarget directory '%s'\n...are directories and do not have matching names. Checking next source file for match...\n", source_full_path, target_full_path);
+
+            printf("Source directory '%s' and...\ntarget directory '%s'\n...are directories and do not have matching names. Checking next source file for match...\n",
+                source_full_path, target_full_path);
+
             // If the next file in the source list is not null, is a directory, and has the same name as the current item in the target list,
             // that means that the current source directory file is not in the target directory, so copy it over
             if ((source_ptr->fts_link != NULL) &&
@@ -273,8 +280,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 (strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) == 0)) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+
                 printf("Next source directory '%s' matches current target file '%s'. This means that current source directory '%s' is not in the target directory. Copying current source file '%s to target '%s'\n\n",
                 source_ptr->fts_link->fts_name, target_ptr->fts_name, source_ptr->fts_name, source_full_path, target_full_path);
+
                 //directory_copy(source_full_path, target_full_path);
                 // DOUBLE CHECK POINTER LOGIC
                 // Do this by adding print statements that fully explain what's going on
@@ -288,8 +297,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 strcmp(source_ptr->fts_link->fts_name, target_ptr->fts_name) != 0) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_link->fts_path, source_ptr->fts_link->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
+
                 printf("Next source directory '%s' does not match the current target file '%s'. This means that the next source directory is not in the target directory. Copying next source file '%s' to target '%s\n\n",
                     source_ptr->fts_link->fts_name, target_ptr->fts_name, source_full_path, target_full_path);
+
                 //file_copy(source_full_path, target_full_path);
                 // DOUBLE CHECK POINTER LOGIC
                 // Do this by adding print statements that fully explain what's going on
@@ -303,25 +314,35 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         ///////////////////////////////////////////////////////////////////////
         // Walk through the logic in your notes on this before continuing
         // Also adjust the directories to reflect this scenario
+        // As a starting point, I'm pretty sure this mostly just involves deleting
+        // target files. Since the lists should always be aligned, any instance where
+        // they're not indicates that you should either copy or delete something
 
         /////////////////////////////////////////
         ///// IF EITHER LIST IS AT ITS END //////
         /////////////////////////////////////////
         // If the source and target are at the end of their lists,
         // Move on to the next iteration
+        // I'm almost certain the while loop condition takes care of this
 
         // If the source is at the end of its list and the target is not,
         // Then delete the rest of the files in the target
         if (source_at_end_of_list && !target_at_end_of_list) {
+
             printf("End of source file directories reached at '%s'. Deleting remaining target files...\n", source_full_path);
+
             while (target_ptr != NULL) {
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (target_ptr->fts_info == FTS_D) {
+
                     printf("Deleting extra target directory '%s'\n", target_full_path);
+
                     //directory_delete(target_full_path);
                 }
                 if (target_ptr->fts_info == FTS_F) {
+
                     printf("Deleting extra target file '%s'\n", target_full_path);
+
                     //file_delete(target_full_path);
                 }
                 target_ptr = target_ptr->fts_link;
@@ -332,20 +353,23 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If the target is at the end of its list and the source is not,
         // then copy over the rest of the source files
         if (target_at_end_of_list && !source_at_end_of_list) {
+
             printf("End of target file directories reached at '%s'. Copying remaining source files...\n", target_full_path);
+
             while (source_ptr != NULL) {
                 source_full_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 target_full_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
                 if (source_ptr->fts_info == FTS_D) {
+
                     printf("Copying extra source directory '%s' to target '%s'\n", source_full_path, target_full_path);
-                    // NOTE: Not sure if I need to add a slash to this file path
-                    // Double check if directory_copy does this. I'm pretty sure it does
+
                     //directory_copy(source_full_path, target_full_path);
                 }
                 if (source_ptr->fts_info == FTS_F) {
+
                     printf("Copying extra source file '%s' to target '%s'\n", source_full_path, target_full_path);
-                    // NOTE: Again, not sure if I need to add a slash to this file path
-                    file_copy(source_full_path, target_full_path);
+
+                    //file_copy(source_full_path, target_full_path);
                 }
                 source_ptr = source_ptr->fts_link;
             }
