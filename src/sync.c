@@ -279,7 +279,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If `string_comparison` < 0, and they're the same file types, that means the file is in the source, and not the target
         // So, we copy the source to the target
         // Advance only `source_ptr`
-        if (string_comparison < 0 && (source_ptr->fts_info == target_ptr->fts_info)) {
+        if (string_comparison < 0) {
             char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
@@ -292,6 +292,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             source_ptr = source_ptr->fts_link;
             continue;
         }
+        // OTHERWISE, if they are not both directories or files...
 
         // If `string_comparison` < 0, and they're different file types, that means the file is in the source, and not the target
         // So, we copy the source to the target
@@ -300,7 +301,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If `string_comparison` > 0 and they're the same file type, that means the file is in the target, and not the source
         // So, we delete the target file
         // Advance only `target_ptr`
-        if (string_comparison > 0 && (source_ptr->fts_info == target_ptr->fts_info)) {
+        if (string_comparison > 0) {
             char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
                 //directory_delete(target_path);
@@ -311,6 +312,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             target_ptr = target_ptr->fts_link;
             continue;
         }
+        // OTHERWISE, if they are not both directories or files...
     }
 
 
