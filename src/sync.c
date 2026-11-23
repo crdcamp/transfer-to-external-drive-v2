@@ -500,9 +500,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     fts_close(target_handle);
 
     // NEXT RECURSION
-    char *source_next = file_path_concatenate(arena_scratch, source_directory, "");
-    char *target_next = file_path_concatenate(arena_scratch, target_directory, "");
-    printf("Next recursive source directory: %s\nNext recursive target directory: %s\n\n\n", source_directory, target_directory);
+    char *source_next = file_path_concatenate(arena_scratch, source_directory, s->fts_name);
+    char *target_next = file_path_concatenate(arena_scratch, target_directory, t->fts_name);
+    printf("Next recursive source directory: %s\nNext recursive target directory: %s\n\n\n", source_next, target_next);
 
     test_directories_sync(arena_scratch, source_next, target_next);
 }
