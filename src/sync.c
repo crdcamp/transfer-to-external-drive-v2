@@ -129,15 +129,16 @@ void purge_junk(char *root) {
 
 // TODO: Find a way to avoid redeclaring these every time the function is called
 // In other words, store them in an arena
-void skip_apple_files(FTSENT *entry) {
+FTSENT *skip_apple_files(FTSENT *entry) {
     char *apple_files[] = {".DS_Store", ".Spotlight-V100", ".fseventsd", ".Trashes", "._"};
     size_t apple_files_size = sizeof(apple_files) / sizeof(apple_files[0]);
     for (size_t i = 0; i < apple_files_size; i++) {
         if (strcmp(entry->fts_name, apple_files[i]) == 0) {
-            printf("Apple found. Moving from `%s` to `%s`\n", entry->fts_name, entry->fts_link->fts_name);
+            printf("Apple file found. Moving from `%s` to `%s`\n", entry->fts_name, entry->fts_link->fts_name);
             entry = entry->fts_link;
         }
     }
+    return entry;
 }
 
 // Given an fts entry, determine if the file is a directory
@@ -464,7 +465,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // Advance only `source_ptr
         if (t == NULL) {
             // Skip apple file
-            skip_apple_files(s);
+            s = skip_apple_files(s);
             while (s != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 if (is_a_directory(s)) {
@@ -488,6 +489,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we delete the rest of the files in the current target directory
         // Advance only `target_ptr`
         if (s == NULL) {
+            t = skip_apple_files(t);
             while (t != NULL) {
                 char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
                 if (is_a_directory(t)) {
@@ -504,16 +506,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         break;
     }
 
-    // CLEANUP
-    // ARENA MEMORY IS PILING UP. FIX THAT!
-    printf("Arena before rewind: ");
-    print_arena_info(arena_scratch);
-
-    arena_rewind(arena_scratch, checkpoint);
-
+    // Cleanup
     printf("Arena after rewind: ");
     print_arena_info(arena_scratch);
-
     fts_close(source_handle);
     fts_close(target_handle);
+    arena_rewind(arena_scratch, checkpoint);
 }
