@@ -253,8 +253,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         // TODO:
         // Handle what happens when one is a directory and one is a file
-        // Handle what happens if the source is not newer
-        // Handle what happens if the target is newer than the source
+        // Handle what happens if both are files and have the same last mod time
+        // X Handle what happens if the target is newer than the source
         // Handle what happens if the files have the same name but unsupported types
 
 
@@ -264,18 +264,20 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If the file names are the same...
         if (string_comparison == 0) {
             // If the names match and they're both directories,
-            // continue to the next iteration, and leave further processing to the next recursion
-            // Advance both pointers,
+            // advance both pointers,
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
+
             // If the names match, they're both files, and the source file was edited more recently than the target file,
-            // overwrite the source file to the target
-            // Advance both pointers
+            // or the target file was edited more recently than the source
+            // overwrite the source file to the target regardless if the target was edited more recently
+            // advance both pointers
             if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
-                (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
+                (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) ||
+                (source_ptr->fts_statp->st_mtime < target_ptr->fts_statp->st_mtime)) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 //file_copy(source_path, target_path);
@@ -284,6 +286,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
+
+            // If the names match, they're both files, and they have the same last modification time
+            // Advance both pointers
+
+            // If the names match, they're both files, and the target file was edited more recently than the target file,
+            // overwrite the source file to the target
+            // Advance both pointers
         }
 
         // cmp < 0: the source name comes earlier alphabetically
