@@ -442,7 +442,7 @@ void test_directory_copy(const char *source, const char *target) {
 
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
-        printf("Source and target are null!\n");
+        printf("End of source or target!\n");
         return;
     }
     size_t checkpoint = arena_checkpoint(arena_scratch);
@@ -477,13 +477,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Copying source directory: `%s`\n", source_path);
                     printf("Into target:              `%s`\n", target_path);
                     //test_directory_copy(source_directory, target_directory);
-                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file `%s`\n", source_path);
                     printf("Into target:        `%s`\n", target_path);
                     //file_copy(source_path, target_path);
-                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
                 s = s->fts_link;
             }
@@ -533,5 +531,28 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 
     fts_close(source_handle);
     fts_close(target_handle);
-    //FTS *source_next
+
+
+    // IF THIS WORKS, CONVERT STRING PARAMETERS INTO THE FORM THAT FTS ACCEPT
+    // MAKE A FUNCTION FOR THIS TOO!!! The function should convert a string path to and fts format
+    char *source_next;
+    if (s != NULL) {
+        char *source_next = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+        char *source_next_fts[] = {source_next, NULL};
+        FTS *source_handle = fts_open(source_next_fts, FTS_PHYSICAL, by_name);
+        if (source_handle == NULL) {
+            perror("fts_open");
+            exit(EXIT_FAILURE);
+        }
+
+    } else s = NULL;
+
+    char *target_next;
+    if (t != NULL) {
+        char *target_next = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+    } else t = NULL;
+
+    printf("Recursive next source: %s\n", source_next);
+    printf("Recursive next target: %s\n\n\n", target_next);
+    test_directories_sync(arena_scratch, source_next, target_next);
 }
