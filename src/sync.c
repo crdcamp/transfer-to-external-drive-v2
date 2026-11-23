@@ -427,6 +427,7 @@ void test_directory_copy(const char *source, const char *target) {
 }
 
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
+    if (source_directory == NULL || target_directory == NULL) return;
     size_t checkpoint = arena_checkpoint(arena_scratch);
 
     purge_junk(source_directory);
@@ -456,12 +457,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 if (is_a_directory(s)) {
                     char *target_path = file_path_concatenate(arena_scratch, target_directory, "");
-                    printf("Copying source DIRECTORY `%s`\ninto target `%s`\n", source_path, target_path);
+                    printf("Copying source directory: `%s`\n", source_path);
+                    printf("Into target:              `%s`\n", target_path);
                     //test_directory_copy(source_directory, target_directory);
                 }
                 else if (is_a_file(s)) {
-                    char *target_path = file_path_concatenate(arena_scratch, t->fts_path, s->fts_name);
-                    printf("Copying source FILE `%s`\ninto target `%s`\n", source_path, target_path);
+                    char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+                    printf("Copying source file `%s`\n", source_path);
+                    printf("Into target:        `%s`\n", target_path);
                     //file_copy(source_path, target_path);
                 }
                 s = s->fts_link;
@@ -500,8 +503,16 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     fts_close(target_handle);
 
     // NEXT RECURSION
-    char *source_next = file_path_concatenate(arena_scratch, source_directory, s->fts_name);
-    char *target_next = file_path_concatenate(arena_scratch, target_directory, t->fts_name);
+    char *source_next;
+    if (s != NULL) {
+        source_next = file_path_concatenate(arena_scratch, source_directory, s->fts_name);
+    } else source_next = NULL;
+
+    char *target_next;
+    if (t != NULL) {
+        target_next = file_path_concatenate(arena_scratch, target_directory, t->fts_name);
+    } else target_next = NULL;
+
     printf("Next recursive source directory: %s\nNext recursive target directory: %s\n\n\n", source_next, target_next);
 
     test_directories_sync(arena_scratch, source_next, target_next);
