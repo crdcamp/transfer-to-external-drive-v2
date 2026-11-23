@@ -53,3 +53,9 @@ FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used pri
     return children_list;
 }
 ```
+
+Now, any time FTS_DNR, FTS_ERR or FTS_NS are found in the `fts_info` field, the program will throw an error and exit.
+
+This also brings up the concern of file processing that fails part of the way through. We certainly shouldn't give this script `sudo` permissions to address the error of files that require permissions. That wouldn't address `FTS_DNR` (a file that cannot be read) or `FTS_NS` (a file with no stats - a highly unlikely instance).
+
+This could be resolved by creating sort of tree structure containing all the relevant commands, and recursing through that tree to execute all commands, but that doesn't fully resolve the issue. How about this? You can worry about cancelled operations in a project improvement. After all, that's not a huge concern at the moment.

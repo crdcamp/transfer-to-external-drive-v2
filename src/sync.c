@@ -9,12 +9,14 @@ int by_name(const FTSENT **a, const FTSENT **b) {
 
 // Create a NULL-terminated list of children files/directories for a given directory.
 FTSENT *children_get_list(FTS *handle) {
-    FTSENT *list_start = fts_read(handle);
-    if (list_start == NULL) {
-        perror("fts_read");
+    errno = 0; // Always set to 0 in a function, since errno can be edited by other operations
+    FTSENT *list_head = fts_read(handle); // Handle has the be read before being passed to `fts_children`
+    FTSENT *children_list = fts_children(handle, 0);
+    // If `fts_info` returns as FTS_DNR, FTS_ERR or FTS_NS, that will set the external `errno`
+    if (errno != 0) {
+        printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
-    FTSENT *children_list = fts_children(handle, 0);
 
     return children_list;
 }
