@@ -13,6 +13,8 @@
 #include <fts.h>
 #include <stdbool.h>
 
+#include <errno.h>
+
 #include "arena.h"
 
 // `fts` operations
@@ -27,6 +29,10 @@ void directory_delete(char *file_path);
 // Sync operations
 bool is_a_directory(FTSENT *entry);
 bool is_a_file(FTSENT *entry);
-void sync_directories(Arena *arena_scratch, char *source, char *target);
+void directories_sync(Arena *arena_scratch, char *source, char *target);
+
+// TEMPORARY REWRITE FUNCTIONS
+FTSENT *test_children_get_list(FTS *handle);
+void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory);
 
 #endif

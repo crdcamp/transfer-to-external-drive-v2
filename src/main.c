@@ -10,10 +10,10 @@ int main(void) {
     arena_init(&arena_scratch, arena_scratch_buffer, arena_scratch_buffer_length);
 
     // Define test directories and test the sync function
-    char *source = "TestDirs/Source";
+    char *source = "TestDirs/Source/noread";
     char *target = "TestDirs/Target";
 
-    sync_directories(&arena_scratch, source, target);
+    test_directories_sync(&arena_scratch, source, target);
 
     return 0;
 }

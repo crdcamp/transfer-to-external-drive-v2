@@ -2,6 +2,11 @@
 #include "../include/arena.h"
 #include <string.h>
 
+// Pass to `fts_open()` to sort files alphabetically
+int by_name(const FTSENT **a, const FTSENT **b) {
+    return strcmp((*a)->fts_name, (*b)->fts_name);
+}
+
 // Create a NULL-terminated list of children files/directories for a given directory.
 FTSENT *children_get_list(FTS *handle) {
     FTSENT *list_start = fts_read(handle);
@@ -12,11 +17,6 @@ FTSENT *children_get_list(FTS *handle) {
     FTSENT *children_list = fts_children(handle, 0);
 
     return children_list;
-}
-
-// Pass to `fts_read()` to sort files alphabetically
-int by_name(const FTSENT **a, const FTSENT **b) {
-    return strcmp((*a)->fts_name, (*b)->fts_name);
 }
 
 /*
@@ -144,7 +144,7 @@ files according to the source directory`s file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
 // TODO: Double check all return statements for arena rewinds and file closes
-void sync_directories(Arena *arena_scratch, char *source, char *target) {
+void directories_sync(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
     printf("Syncing source directory `%s` with target directory `%s`\n", source, target);
 
@@ -251,7 +251,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             // both are directories, advance both pointers (leave further edits to the next recursion)
             // Both are directories: recurse into them
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
-                sync_directories(arena_scratch, source_ptr->fts_path, target_ptr->fts_path);
+                directories_sync(arena_scratch, source_ptr->fts_path, target_ptr->fts_path);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
@@ -313,7 +313,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 fprintf(stderr,
-                        "sync_directories: cannot sync `%s` with `%s`: unsupported file type "
+                        "directories_sync: cannot sync `%s` with `%s`: unsupported file type "
                         "(source fts_info = %d, target fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
                         source_path, target_path, source_ptr->fts_info, target_ptr->fts_info);
@@ -338,7 +338,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             else {
                 fprintf(stderr,
-                        "sync_directories: cannot sync `%s`: unsupported file type (fts_info = %d). "
+                        "directories_sync: cannot sync `%s`: unsupported file type (fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
                         source_path, source_ptr->fts_info);
                 exit(EXIT_FAILURE);
@@ -360,7 +360,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             else {
                 fprintf(stderr,
-                        "sync_directories: cannot sync `%s`: unsupported file type (fts_info = %d). "
+                        "directories_sync: cannot sync `%s`: unsupported file type (fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
                         target_path, target_ptr->fts_info);
                 exit(EXIT_FAILURE);
@@ -375,4 +375,42 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     arena_rewind(arena_scratch, checkpoint);
     fts_close(source_handle);
     fts_close(target_handle);
+}
+
+
+
+
+
+///////////////////////////
+///// REWRITE SECTION /////
+///////////////////////////
+FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used prior
+    errno = 0; // Always set to 0 in a function, since errno can be edited by other operations
+    FTSENT *list_head = fts_read(handle); // Handle has the be read before being passed to `fts_children`
+    FTSENT *children_list = fts_children(handle, 0);
+    // If `fts_info` returns as FTS_DNR, FTS_ERR or FTS_NS, that will set the external `errno`
+    if (errno != 0) {
+        printf("Error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    return children_list;
+}
+
+void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
+    char *source_directory_fts[] = {source_directory, NULL};
+    char *target_directory_fts[] = {target_directory, NULL};
+
+    FTS *source_handle = fts_open(source_directory_fts, FTS_PHYSICAL, by_name);
+    FTS *target_handle = fts_open(target_directory_fts, FTS_PHYSICAL, by_name);
+
+    FTSENT *source_children = test_children_get_list(source_handle);
+    FTSENT *target_children = test_children_get_list(target_handle);
+
+    // Test print
+    FTSENT *s = source_children;
+    while (s != NULL) {
+        printf("File: %s\n", s->fts_name);
+        s = s->fts_link;
+    }
 }

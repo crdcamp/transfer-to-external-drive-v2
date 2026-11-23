@@ -12,9 +12,9 @@
 
 # `fts_children` Error Handling
 
-The first function we're revisiting is `children_get_list()` in [`sync.c`](../src/sync.c) and the ambiguity this function causes due to its improper error handling. Luckily, we've found an `fts` function in [the documentation](https://linux.die.net/man/3/fts_children) specifically made fror this.
+The first function we're revisiting is `children_get_list()` in [`sync.c`](../src/sync.c) and the ambiguity this function causes due to its improper error handling. Luckily, we've found an `fts` function in [the documentation](https://linux.die.net/man/3/fts_children) specifically made for this - `fts_errno`.
 
-**As a refresher, `fts_children` and its relevant fields are as follows:**
+As a refresher, `fts_children` and its relevant fields are as follows:
 
 ```c
 FTSENT *fts_children(FTS *ftsp, int options);
@@ -24,7 +24,7 @@ FTSENT *fts_children(FTS *ftsp, int options);
 
 Upon return of a `FTSENT` structure from the `fts_children()` or `fts_read()` functions, with its `fts_info` field set to `FTS_DNR`, `FTS_ERR` or `FTS_NS`, the `fts_errno` field contains the value of the external variable errno specifying the cause of the error. Otherwise, the contents of the fts_errno field are undefined.
 
-Let's clarify what each of these `fts_info` fields mean to get `fts_errno`:
+**Let's clarify what each of these `fts_info` fields mean to get `fts_errno`:**
 
 `FTS_DNR`
 
@@ -38,4 +38,18 @@ This is an error return, and the `fts_errno` field will be set to indicate what 
 
 A file for which no stat(2) information was available. The contents of the fts_statp field are undefined. This is an error return, and the fts_errno field will be set to indicate what caused the error.
 
-##
+Using this in combination with `errno.h` can help ensure that we're not getting errors:
+
+```c
+FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used prior
+    errno = 0; // Always set to 0 in a function, since errno can be edited by other operations
+    FTSENT *list_head = fts_read(handle); // Handle has the be read before being passed to `fts_children`
+    FTSENT *children_list = fts_children(handle, 0);
+    if (errno != 0) {
+        printf("Error : %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    return children_list;
+}
+```
