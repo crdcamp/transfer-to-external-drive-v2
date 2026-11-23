@@ -481,6 +481,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Deleting file `%s`\n", target_path);
                     //file_delete(target_path);
                 }
+                t = t->fts_link;
             }
         }
     }
