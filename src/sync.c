@@ -428,12 +428,18 @@ void test_directory_copy(const char *source, const char *target) {
 
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     size_t checkpoint = arena_checkpoint(arena_scratch);
+
+    purge_junk(source_directory);
+    purge_junk(target_directory);
+
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
 
     // Not entirely sure if `fts_open` needs error handling here
     FTS *source_handle = fts_open(source_directory_fts, FTS_PHYSICAL, by_name);
+    if (source_handle == NULL) return;
     FTS *target_handle = fts_open(target_directory_fts, FTS_PHYSICAL, by_name);
+    if (target_handle == NULL) return;
 
     FTSENT *source_children = test_children_get_list(source_handle);
     FTSENT *target_children = test_children_get_list(target_handle);
@@ -443,12 +449,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     while (s != NULL || t != NULL) {
         // DIRECTORY COPY TEST
         char *source_directory = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-        char *target_directory = file_path_concatenate(arena_scratch, t->fts_path, s->fts_name);
+        char *target_directory = file_path_concatenate(arena_scratch, target_directory, "");
         printf("Copying from `%s` to `%s`\n", source_directory, target_directory);
         //directory_copy(source_directory, target_directory);
 
-        s = s->fts_link;
-        t = t->fts_link;
+        if (s->fts_link != NULL) {
+            s = s->fts_link;
+        }
 
 
 
@@ -464,9 +471,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 
         char *source_next = file_path_concatenate(arena_scratch, source_directory, "");
         char *target_next = file_path_concatenate(arena_scratch, target_directory, "");
-        test_directories_sync(arena_scratch, source_next, target_next);
         printf("NEXT SOURCE DIRECTORY: %s\n", source_next);
         printf("NEXT TARGET DIRECTORY: %s\n", target_next);
+
+        test_directories_sync(arena_scratch, source_next, target_next);
         printf("Copying directory `%s` to `%s`\n\n\n", source_directory, target_directory);
     }
 }
