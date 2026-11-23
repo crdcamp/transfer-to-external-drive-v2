@@ -408,6 +408,15 @@ FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used pri
     return children_list;
 }
 
+// Copy a single file
+void test_file_copy(const char *source, const char *target) {
+    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
+        perror("copyfile");
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
@@ -421,7 +430,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     // Test print
     FTSENT *s = source_children;
     while (s != NULL) {
-        printf("File: %s\n", s->fts_name);
+        char *source_file = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+        char *target_file = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+        printf("Copying file `%s`\ninto target  `%s`\n\n", source_file, target_file);
+        file_copy(source_file, target_file);
+
         s = s->fts_link;
     }
 }

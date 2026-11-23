@@ -92,3 +92,48 @@ void file_copy(const char *source, const char *target) {
     return;
 }
 ```
+
+First thing I noticed are the flags `COPYFILE_DATA | COPYFILE_STAT`.
+
+`COPYFILE_DATA` copies the source file's data, while `COPYFILE_STAT` copies the file's POSIX information. I was originally going to change this to `COPYFILE_ALL`, but I think this would result in portability issues, since `COPYFILE_ALL` copies *everything*, including all of Apple's little quirks. So, we'll leave that part of the function as is.
+
+I originally wanted to delete them, but I think just skipping them would be the wiser choice.
+
+**There are some noteworthy things for copying into a directory:**
+
+Copying into a directory
+
+Copying files into a directory is supported. If to is a directory, from will be copied into to. (If from is a directory, copying its contents requires use of the COPYFILE_RECURSIVE parameter, which is documented below.)
+
+Given that this is for only single files, we're only copying from a file to a directory. **This does, however**, bring up some needed double checking of `directory_copy`. **Keep a mental note of that**.
+
+`copyfile` also returns an `errno`, and the function checks for that. So, I think we're all good here.
+
+Just need to write some quick tests then we should certainly check out `directory_copy()`, as that also uses `copyfile`.
+
+Alright. With some basic tests, `file_copy()` works as intended.
+
+## `directory_copy()`
+
+The original function is as follows:
+
+```c
+// Recursively copy a directory and all of its contents. Overwrites if names are the same
+void directory_copy(const char *source, const char *target) {
+    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
+
+    if (copyfile(source, target, NULL, flags) != 0) {
+        perror("copyfile");
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+```
+
+As a first note, **this should only be used when copying the source to target**. Obvious, I know, but still...
+
+The only way to continue is by testing.
+
+# Implementing the Recursion Before Continuing
+
+# DO NOT START UNTIL ERROR HANDLING IS DONE: Removing Apple Files within the recursion

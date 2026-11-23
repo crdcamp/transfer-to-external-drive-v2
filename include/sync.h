@@ -34,5 +34,6 @@ void directories_sync(Arena *arena_scratch, char *source, char *target);
 // TEMPORARY REWRITE FUNCTIONS
 FTSENT *test_children_get_list(FTS *handle);
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory);
+void test_file_copy(const char *source, const char *target);
 
 #endif
