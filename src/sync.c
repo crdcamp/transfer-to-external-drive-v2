@@ -363,10 +363,9 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             target_ptr = target_ptr->fts_link;
             continue;
+            }
         }
     }
-
-
 
     // NOTE: When you add recursion: create a function that returns a pointer to the next directory string
     // that will be passed here. Then call this function in the recursion call
