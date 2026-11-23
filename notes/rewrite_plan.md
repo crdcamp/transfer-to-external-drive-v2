@@ -10,7 +10,9 @@
 * Break down every file path concatenation
 * When you rewrite the sync function, ensure that the junk files are implemented into it, rather than having them as a separate function.
 
-# `fts_children` Error Handling
+# Error Handling
+
+## `children_get_list()`
 
 The first function we're revisiting is `children_get_list()` in [`sync.c`](../src/sync.c) and the ambiguity this function causes due to its improper error handling. Luckily, we've found an `fts` function in [the documentation](https://linux.die.net/man/3/fts_children) specifically made for this - `fts_errno`.
 
