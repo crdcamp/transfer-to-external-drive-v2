@@ -192,7 +192,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
-        directory_copy(source_slash, target);
+        //directory_copy(source_slash, target);
 
         arena_rewind(arena_scratch, checkpoint);
         fts_close(source_handle);
@@ -204,9 +204,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     FTSENT *source_ptr = source_children_list;
     FTSENT *target_ptr = target_children_list;
     while (source_ptr != NULL || target_ptr != NULL) {
-
-        // TO DO: PRE DECLARE STRING PATHS FOR EACH DIFFERENT INSTANCE (maybe)
-
         // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the rest of the files in the current source directory to the target directory
         // This is the first check since this is the most likely case when syncing directories
@@ -267,13 +264,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // Advance both pointers
         if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
             (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime)) {
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                //file_copy(source_path, target_path);
+            char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+            char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            //file_copy(source_path, target_path);
 
-                source_ptr = source_ptr->fts_link;
-                target_ptr = target_ptr->fts_link;
-                continue;
+            source_ptr = source_ptr->fts_link;
+            target_ptr = target_ptr->fts_link;
+            continue;
         }
 
         // cmp < 0: the source name comes earlier alphabetically
@@ -288,15 +285,19 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
-                directory_copy(source_path, target_path);
+                //directory_copy(source_path, target_path);
             }
             else if (is_a_file(source_ptr) && is_a_file(target_ptr)) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                file_copy(source_path, target_path);
+                //file_copy(source_path, target_path);
             }
             source_ptr = source_ptr->fts_link;
             continue;
         }
+
+        // If `string_comparison` < 0, and they're different file types, that means the file is in the source, and not the target
+        // So, we copy the source to the target
+        // Advance only `source_ptr`
 
         // If `string_comparison` > 0 and they're the same file type, that means the file is in the target, and not the source
         // So, we delete the target file
