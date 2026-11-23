@@ -211,16 +211,14 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (target_ptr == NULL) {
             while (source_ptr != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, "");
-                // If the source file is a directory, we need to add a '/' to the end of the target base path
+                char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
+
                 if (is_a_directory(source_ptr)) {
-                    printf("Copying source DIRECTORY '%s' to target DIRECTORY '%s'\n", source_path, target_path);
+                    printf("Copying source DIRECTORY '%s' to target '%s'\n", source_path, target_path);
                     //directory_copy(source_path, target_path);
                 }
-                // If the source file is a file, we need to
                 else if (is_a_file(source_ptr)) {
-                    char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                    printf("Copying source FILE '%s' to target DIRECTORY '%s'\n", source_path, target_path);
+                    printf("Copying source FILE '%s' to target '%s'\n", source_path, target_path);
                     //file_copy(source_path, target_path);
                 }
                 source_ptr = source_ptr->fts_link;
