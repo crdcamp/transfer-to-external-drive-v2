@@ -111,6 +111,20 @@ Just need to write some quick tests then we should certainly check out `director
 
 Alright. With some basic tests, `file_copy()` works as intended. You can find the path formulation for it in [`file_path_concatenations.c`](notes/file_path_concatenations.md).
 
+For now, the only change I want to make was a different error print:
+
+```c
+void test_directory_copy(const char *source, const char *target) {
+    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
+
+    if (copyfile(source, target, NULL, flags) != 0) {
+        printf("Error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+```
+
 Now I'm just going to implement `strerror` into the error handling to make errors a bit better.
 
 ## `directory_copy()`
@@ -132,8 +146,13 @@ void directory_copy(const char *source, const char *target) {
 
 As a first note, **this should only be used when copying the source to target**. Obvious, I know, but still...
 
-The only way to continue is by testing this function and seeing if we run into any issues.
+### **Return to this test when recursion has been implemented into `test_directories_sync()`!!!**
+
+The only way to continue is by testing this function and seeing if we run into any issues. You **need to be careful here when considering how this will behave when in the recursive loop**.
+
 
 # Implementing the Recursion Before Continuing
+
+# Ignoring Apple Files
 
 # DO NOT START UNTIL ERROR HANDLING IS DONE: Removing Apple Files within the recursion

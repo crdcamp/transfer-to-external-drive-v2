@@ -1,3 +1,7 @@
+# Deleting a single file
+
+# Deleting a directory
+
 # Copying a single file
 
 ```c

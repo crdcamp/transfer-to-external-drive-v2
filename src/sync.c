@@ -58,9 +58,8 @@ void file_delete(char *file_path) {
 // Recursively copy a directory and all of its contents. Overwrites if names are the same
 void directory_copy(const char *source, const char *target) {
     copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
-
     if (copyfile(source, target, NULL, flags) != 0) {
-        perror("copyfile");
+        printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     return;
@@ -417,11 +416,11 @@ void test_file_copy(const char *source, const char *target) {
     return;
 }
 
+// Copy a directory
 void test_directory_copy(const char *source, const char *target) {
     copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
-
     if (copyfile(source, target, NULL, flags) != 0) {
-        perror("copyfile");
+        printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     return;
@@ -440,7 +439,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     // Test print
     FTSENT *s = source_children;
     while (s != NULL) {
-
+        char *source_directory_path = file_path_concatenate(arena_scratch, source_children->fts_path, source_children->fts_name);
+        char *target_directory_path = file_path_concatenate(arena_scratch, target_children->fts_path, source_children->fts_name);
+        printf("Copying file `%s`\ninto target  `%s`\n\n", source_directory_path, target_directory_path);
+        //directory_copy(source_directory_path, target_directory_path);
 
         s = s->fts_link;
     }
