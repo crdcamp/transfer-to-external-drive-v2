@@ -467,8 +467,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we copy the rest of the files in the current source directory to the target directory
         // Advance only `s`
         if (t == NULL) {
-            printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
             // Skip apple file
+            printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
             s = skip_apple_files(s);
             char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
             char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
