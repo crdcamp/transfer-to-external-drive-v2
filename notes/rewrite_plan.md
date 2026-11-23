@@ -237,12 +237,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 }
 ```
 
+This code is currently fixated on what happens if the source is populated, and the target has nothing in it.
+
 I believe that, in order to get the recursion working (ignoring the arena rewinding for now), that function needs to call itself in every logic branch. This is going to be relatively easy, but the hard part is getting the file names to pass to the next recursion without hitting a segmentation fault.
 
 The seg fault results from attempting to access `NULL` `fts_link`s. And I'm having trouble figuring out how to address this.
 
 The core logic that's here right now happens when either the source or target child list of the current directory depth is at its end.
 
-By extension, the problem I don't know how to address is passing whichever list is at its end (null) to the next recursion. So... what's the solution here?
+By extension, the problem I don't know how to address is passing whichever list is at its end (null) to the next recursion. **I think a big confusion is stemming from not thinking about the while loop as an iteration over the current depth**.
 
 # DO NOT START UNTIL ERROR HANDLING IS DONE: Removing Apple Files within the recursion

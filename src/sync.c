@@ -464,6 +464,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we copy the rest of the files in the current source directory to the target directory
         // Advance only `source_ptr
         if (t == NULL) {
+            printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
             // Skip apple file
             s = skip_apple_files(s);
             while (s != NULL) {
@@ -488,6 +489,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we delete the rest of the files in the current target directory
         // Advance only `target_ptr`
         if (s == NULL) {
+            printf("CURRENT TARGET DEPTH: %hd\n", t->fts_level);
             t = skip_apple_files(t);
             while (t != NULL) {
                 char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
