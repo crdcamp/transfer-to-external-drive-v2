@@ -192,7 +192,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
         char *source_array[2] = {source, "/"};
         char *source_slash = arena_string_concat(arena_scratch, source_array, 2);
-        //directory_copy(source_slash, target);
+        directory_copy(source_slash, target);
 
         arena_rewind(arena_scratch, checkpoint);
         fts_close(source_handle);
@@ -214,11 +214,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
 
                 if (is_a_directory(source_ptr)) {
                     printf("Copying source DIRECTORY '%s' to target '%s'\n", source_path, target_path);
-                    //directory_copy(source_path, target_path);
+                    directory_copy(source_path, target_path);
                 }
                 else if (is_a_file(source_ptr)) {
                     printf("Copying source FILE '%s' to target '%s'\n", source_path, target_path);
-                    //file_copy(source_path, target_path);
+                    file_copy(source_path, target_path);
                 }
                 source_ptr = source_ptr->fts_link;
             }
@@ -232,11 +232,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (is_a_directory(target_ptr)) {
                     printf("Deleting DIRECTORY `%s`\n", target_path);
-                    //directory_delete(target_path);
+                    directory_delete(target_path);
                 }
                 else if (is_a_file(target_ptr)) {
                     printf("Deleting FILE `%s`\n", target_path);
-                    //file_delete(target_path);
+                    file_delete(target_path);
                 }
                 target_ptr = target_ptr->fts_link;
             }
@@ -250,6 +250,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (string_comparison == 0) {
             // both are directories, advance both pointers (leave further edits to the next recursion)
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
+                char *source_subdir = file_path_concatenate(arena_scratch, source, source_ptr->fts_name);
+                char *target_subdir = file_path_concatenate(arena_scratch, target, target_ptr->fts_name);
+                sync_directories(arena_scratch, source_subdir, target_subdir);
+
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
@@ -270,7 +274,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
-                //file_copy(source_path, target_path);
+                file_copy(source_path, target_path);
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
@@ -279,11 +283,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             // delete the target directory and copy the source file
             if (is_a_file(source_ptr) && is_a_directory(target_ptr)) {
                 char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                //directory_delete(target_delete_path);
+                directory_delete(target_delete_path);
 
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
-                //file_copy(source_path, target_path);
+                file_copy(source_path, target_path);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
@@ -293,11 +297,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             // delete the target file and copy the source directory
             if (is_a_directory(source_ptr) && is_a_file(target_ptr)) {
                 char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                //file_delete(target_delete_path);
+                file_delete(target_delete_path);
 
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
-                //directory_copy(source_path, target_path);
+                directory_copy(source_path, target_path);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
@@ -326,11 +330,11 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
             if (is_a_directory(source_ptr)) {
                 char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
-                //directory_copy(source_path, target_path);
+                directory_copy(source_path, target_path);
             }
             else if (is_a_file(source_ptr)) {
                 char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
-                //file_copy(source_path, target_path);
+                file_copy(source_path, target_path);
             }
             else {
                 fprintf(stderr,
@@ -349,10 +353,10 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         if (string_comparison > 0) {
             char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             if (is_a_directory(target_ptr)) {
-                //directory_delete(target_path);
+                directory_delete(target_path);
             }
             else if (is_a_file(target_ptr)) {
-                //file_delete(target_path);
+                file_delete(target_path);
             }
             else {
                 fprintf(stderr,
