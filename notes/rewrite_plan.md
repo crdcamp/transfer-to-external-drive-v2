@@ -153,6 +153,96 @@ The only way to continue is by testing this function and seeing if we run into a
 
 # Implementing the Recursion Before Continuing
 
-# Ignoring Apple Files
+Now time for the hardest part. God damnit...
+
+Before showing the code, note that:
+* I implemented `skip_apple_files`
+* The arena rewinding is not working as intended
+
+Here's the code so far:
+
+```c
+void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
+    if (source_directory == NULL || target_directory == NULL) return;
+    size_t checkpoint = arena_checkpoint(arena_scratch);
+
+    char *source_directory_fts[] = {source_directory, NULL};
+    char *target_directory_fts[] = {target_directory, NULL};
+
+    // Not entirely sure if `fts_open` needs error handling here
+    FTS *source_handle = fts_open(source_directory_fts, FTS_PHYSICAL, by_name);
+    if (source_handle == NULL) return;
+    FTS *target_handle = fts_open(target_directory_fts, FTS_PHYSICAL, by_name);
+    if (target_handle == NULL) return;
+
+    FTSENT *source_children = test_children_get_list(source_handle);
+    FTSENT *target_children = test_children_get_list(target_handle);
+
+    FTSENT *s = source_children;
+    FTSENT *t = target_children;
+    while (s != NULL || t != NULL) {
+        // DIRECTORY COPY TEST
+        // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
+        // So, we copy the rest of the files in the current source directory to the target directory
+        // Advance only `source_ptr
+        if (t == NULL) {
+            // Skip apple file
+            s = skip_apple_files(s);
+            while (s != NULL) {
+                char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+                if (is_a_directory(s)) {
+                    char *target_path = file_path_concatenate(arena_scratch, target_directory, "");
+                    printf("Copying source directory: `%s`\n", source_path);
+                    printf("Into target:              `%s`\n", target_path);
+                    //test_directory_copy(source_directory, target_directory);
+                }
+                else if (is_a_file(s)) {
+                    char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+                    printf("Copying source file `%s`\n", source_path);
+                    printf("Into target:        `%s`\n", target_path);
+                    //file_copy(source_path, target_path);
+                }
+                s = s->fts_link;
+            }
+
+            break;
+        }
+        // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
+        // So, we delete the rest of the files in the current target directory
+        // Advance only `target_ptr`
+        if (s == NULL) {
+            t = skip_apple_files(t);
+            while (t != NULL) {
+                char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+                if (is_a_directory(t)) {
+                    printf("Deleting file `%s`\n", target_path);
+                    //directory_delete(target_path);
+                }
+                else if (is_a_file(t)) {
+                    printf("Deleting file `%s`\n", target_path);
+                    //file_delete(target_path);
+                }
+                t = t->fts_link;
+            }
+        }
+        break;
+    }
+
+    // Cleanup
+    printf("Arena after rewind: ");
+    print_arena_info(arena_scratch);
+    fts_close(source_handle);
+    fts_close(target_handle);
+    arena_rewind(arena_scratch, checkpoint);
+}
+```
+
+I believe that, in order to get the recursion working (ignoring the arena rewinding for now), that function needs to call itself in every logic branch. This is going to be relatively easy, but the hard part is getting the file names to pass to the next recursion without hitting a segmentation fault.
+
+The seg fault results from attempting to access `NULL` `fts_link`s. And I'm having trouble figuring out how to address this.
+
+The core logic that's here right now happens when either the source or target child list of the current directory depth is at its end.
+
+By extension, the problem I don't know how to address is passing whichever list is at its end (null) to the next recursion. So... what's the solution here?
 
 # DO NOT START UNTIL ERROR HANDLING IS DONE: Removing Apple Files within the recursion

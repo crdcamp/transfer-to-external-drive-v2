@@ -482,7 +482,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 s = s->fts_link;
             }
-
             break;
         }
         // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
