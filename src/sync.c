@@ -448,33 +448,60 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     FTSENT *t = target_children;
     while (s != NULL || t != NULL) {
         // DIRECTORY COPY TEST
-        char *source_directory = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-        char *target_directory = file_path_concatenate(arena_scratch, target_directory, "");
-        printf("Copying from `%s` to `%s`\n", source_directory, target_directory);
-        //directory_copy(source_directory, target_directory);
-
-        if (s->fts_link != NULL) {
-            s = s->fts_link;
+        // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
+        // So, we copy the rest of the files in the current source directory to the target directory
+        // Advance only `source_ptr
+        if (t == NULL) {
+            while (s != NULL) {
+                char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+                if (is_a_directory(s)) {
+                    char *target_path = file_path_concatenate(arena_scratch, target_directory, "");
+                    printf("Copying source DIRECTORY `%s`\ninto target `%s`\n", source_path, target_path);
+                    //test_directory_copy(source_directory, target_directory);
+                }
+                else if (is_a_file(s)) {
+                    char *target_path = file_path_concatenate(arena_scratch, t->fts_path, s->fts_name);
+                    printf("Copying source FILE `%s`\ninto target `%s`\n", source_path, target_path);
+                    //file_copy(source_path, target_path);
+                }
+                s = s->fts_link;
+            }
         }
-
-
-
-        // RECURSION TEST
-        // Display arena info to ensure we're not accumulating memory between calls
-        printf("ARENA BEFORE REWIND:\n");
-        print_arena_info(arena_scratch);
-
-        arena_rewind(arena_scratch, checkpoint);
-
-        printf("ARENA AFTER REWIND:\n");
-        print_arena_info(arena_scratch);
-
-        char *source_next = file_path_concatenate(arena_scratch, source_directory, "");
-        char *target_next = file_path_concatenate(arena_scratch, target_directory, "");
-        printf("NEXT SOURCE DIRECTORY: %s\n", source_next);
-        printf("NEXT TARGET DIRECTORY: %s\n", target_next);
-
-        test_directories_sync(arena_scratch, source_next, target_next);
-        printf("Copying directory `%s` to `%s`\n\n\n", source_directory, target_directory);
+        // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
+        // So, we delete the rest of the files in the current target directory
+        // Advance only `target_ptr`
+        if (s == NULL) {
+            while (t != NULL) {
+                char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+                if (is_a_directory(t)) {
+                    printf("Deleting file `%s`\n", target_path);
+                    //directory_delete(target_path);
+                }
+                else if (is_a_file(s)) {
+                    printf("Deleting file `%s`\n", target_path);
+                    //file_delete(target_path);
+                }
+            }
+        }
     }
+
+    // CLEANUP
+    // ARENA MEMORY IS PILING UP. FIX THAT!
+    printf("Arena before rewind: ");
+    print_arena_info(arena_scratch);
+
+    arena_rewind(arena_scratch, checkpoint);
+
+    printf("Arena after rewind: ");
+    print_arena_info(arena_scratch);
+
+    fts_close(source_handle);
+    fts_close(target_handle);
+
+    // NEXT RECURSION
+    char *source_next = file_path_concatenate(arena_scratch, source_directory, "");
+    char *target_next = file_path_concatenate(arena_scratch, target_directory, "");
+    printf("Next recursive source directory: %s\nNext recursive target directory: %s\n\n\n", source_directory, target_directory);
+
+    test_directories_sync(arena_scratch, source_next, target_next);
 }
