@@ -206,8 +206,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
     while (source_ptr != NULL || target_ptr != NULL) {
         // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the rest of the files in the current source directory to the target directory
-        // This is the first check since this is the most likely case when syncing directories
         // Advance only `source_ptr`
+        // This is the first check since this is the most likely case when syncing directories
         if (target_ptr == NULL) {
             while (source_ptr != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
@@ -289,10 +289,16 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 //file_copy(source_path, target_path);
             }
+            else {
+                fprintf(stderr,
+                        "sync_directories: cannot sync `%s`: unsupported file type (fts_info = %d). "
+                        "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
+                        source_path, source_ptr->fts_info);
+                exit(EXIT_FAILURE);
+            }
             source_ptr = source_ptr->fts_link;
             continue;
         }
-        // OTHERWISE, if they are not both directories or files...
 
         // If `string_comparison` < 0, and they're different file types, that means the file is in the source, and not the target
         // So, we copy the source to the target
@@ -308,6 +314,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             else if (is_a_file(source_ptr) && is_a_file(target_ptr)) {
                 //file_delete(target_path);
+            }
+            else {
+                fprintf(stderr,
+                        "sync_directories: cannot sync `%s`: unsupported file type (fts_info = %d). "
+                        "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
+                        target_path, target_ptr->fts_info);
+                exit(EXIT_FAILURE);
             }
             target_ptr = target_ptr->fts_link;
             continue;
