@@ -477,23 +477,24 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Copying source directory: `%s`\n", source_path);
                     printf("Into target:              `%s`\n", target_path);
                     //test_directory_copy(source_directory, target_directory);
+                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file `%s`\n", source_path);
                     printf("Into target:        `%s`\n", target_path);
                     //file_copy(source_path, target_path);
+                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
                 s = s->fts_link;
             }
 
-            printf("Arena before rewind: ");
+            printf("Arena before rewind (in while loop): ");
             arena_print_info(arena_scratch);
 
             // SO CLOSEEEEEE
-            test_directories_sync(arena_scratch, source_path, target_path);
             arena_rewind(arena_scratch, checkpoint);
 
-            printf("Arena after rewind: ");
+            printf("Arena after rewind (in while loop): ");
             arena_print_info(arena_scratch);
             printf("\n\n");
             break;
@@ -521,6 +522,16 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     }
 
     // Cleanup
+    printf("Arena before rewind (at end of function): ");
+    arena_print_info(arena_scratch);
+
     arena_rewind(arena_scratch, checkpoint);
+
+    printf("Arena after rewind (at end of function): ");
+    arena_print_info(arena_scratch);
+    printf("\n\n");
+
+    fts_close(source_handle);
+    fts_close(target_handle);
     //FTS *source_next
 }
