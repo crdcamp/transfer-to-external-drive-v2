@@ -127,6 +127,19 @@ void purge_junk(char *root) {
     fts_close(handle);
 }
 
+// TODO: Find a way to avoid redeclaring these every time the function is called
+// In other words, store them in an arena
+void skip_apple_files(FTSENT *entry) {
+    char *apple_files[] = {".DS_Store", ".Spotlight-V100", ".fseventsd", ".Trashes", "._"};
+    size_t apple_files_size = sizeof(apple_files) / sizeof(apple_files[0]);
+    for (size_t i = 0; i < apple_files_size; i++) {
+        if (strcmp(entry->fts_name, apple_files[i]) == 0) {
+            printf("Apple found. Moving from `%s` to `%s`\n", entry->fts_name, entry->fts_link->fts_name);
+            entry = entry->fts_link;
+        }
+    }
+}
+
 // Given an fts entry, determine if the file is a directory
 bool is_a_directory(FTSENT *entry) {
     if (entry->fts_info == FTS_D) {
@@ -430,9 +443,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     if (source_directory == NULL || target_directory == NULL) return;
     size_t checkpoint = arena_checkpoint(arena_scratch);
 
-    purge_junk(source_directory);
-    purge_junk(target_directory);
-
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
 
@@ -453,6 +463,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we copy the rest of the files in the current source directory to the target directory
         // Advance only `source_ptr
         if (t == NULL) {
+            // Skip apple file
+            skip_apple_files(s);
             while (s != NULL) {
                 char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 if (is_a_directory(s)) {
@@ -469,6 +481,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 s = s->fts_link;
             }
+
+            break;
         }
         // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
         // So, we delete the rest of the files in the current target directory
@@ -480,13 +494,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Deleting file `%s`\n", target_path);
                     //directory_delete(target_path);
                 }
-                else if (is_a_file(s)) {
+                else if (is_a_file(t)) {
                     printf("Deleting file `%s`\n", target_path);
                     //file_delete(target_path);
                 }
                 t = t->fts_link;
             }
         }
+        break;
     }
 
     // CLEANUP
@@ -501,19 +516,4 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 
     fts_close(source_handle);
     fts_close(target_handle);
-
-    // NEXT RECURSION
-    char *source_next;
-    if (s != NULL) {
-        source_next = file_path_concatenate(arena_scratch, source_directory, s->fts_name);
-    } else source_next = NULL;
-
-    char *target_next;
-    if (t != NULL) {
-        target_next = file_path_concatenate(arena_scratch, target_directory, t->fts_name);
-    } else target_next = NULL;
-
-    printf("Next recursive source directory: %s\nNext recursive target directory: %s\n\n\n", source_next, target_next);
-
-    test_directories_sync(arena_scratch, source_next, target_next);
 }
