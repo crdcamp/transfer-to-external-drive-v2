@@ -40,7 +40,7 @@ char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_na
 // Copy a single file
 void file_copy(const char *source, const char *target) {
     if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
-        perror("copyfile");
+        printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     return;
@@ -411,6 +411,16 @@ FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used pri
 // Copy a single file
 void test_file_copy(const char *source, const char *target) {
     if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
+        printf("Error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+
+void test_directory_copy(const char *source, const char *target) {
+    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
+
+    if (copyfile(source, target, NULL, flags) != 0) {
         perror("copyfile");
         exit(EXIT_FAILURE);
     }
@@ -430,10 +440,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     // Test print
     FTSENT *s = source_children;
     while (s != NULL) {
-        char *source_file = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-        char *target_file = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
-        printf("Copying file `%s`\ninto target  `%s`\n\n", source_file, target_file);
-        file_copy(source_file, target_file);
+
 
         s = s->fts_link;
     }

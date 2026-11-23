@@ -11,3 +11,9 @@ while (s != NULL) {
     s = s->fts_link;
 }
 ```
+
+# Copying a Directory
+
+```c
+
+```
