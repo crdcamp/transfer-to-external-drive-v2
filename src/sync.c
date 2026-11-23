@@ -283,6 +283,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
+            }
         }
 
         // cmp < 0: the source name comes earlier alphabetically
