@@ -61,3 +61,34 @@ Now, any time FTS_DNR, FTS_ERR or FTS_NS are found in the `fts_info` field, the 
 This also brings up the concern of file processing that fails part of the way through. We certainly shouldn't give this script `sudo` permissions to address the error of files that require permissions. That wouldn't address `FTS_DNR` (a file that cannot be read) or `FTS_NS` (a file with no stats - a highly unlikely instance).
 
 This could be resolved by creating sort of tree structure containing all the relevant commands, and recursing through that tree to execute all commands, but that doesn't fully resolve the issue. How about this? You can worry about cancelled operations in a project improvement. After all, that's not a huge concern at the moment.
+
+**Implementing source empty check**
+
+With this error handling now implemented into the main code, we now have to figure out how to address an empty source directory and **only** the source directory. It doesn not matter if the target is empty.
+
+We cannot check if the source is empty in `directories_sync`, since this function will be recursive. At some point, an empty source directory could be passed into this function.
+
+Therefore, the check has to happen somewhere outside of the function. I believe the only solution here is a second `fts_open` before the `fts_open` in `directories_sync()`. So, let's sort that out.
+
+**Or...** is this simply unnecessary? After some consideration, I do not believe this check is needed, given that if the source is empty simply nothing happens. However, a single additional `fts_open` would be incredibly minimal, since this wouldn't be within any loops or recursions.
+
+**Final conclusion:** This implementation could avoid dumb mistakes and future headaches, with an incredibly small, pretty insignificant performance hit. However, trying to implement it is annoying, and not quite worth the effort. Skipping for now.
+
+Let's move on to other instances of error handling that need addressing. The next function in order of how they're defined is [`file_copy()` in sync.c](../src/sync.c)
+
+## `file_copy()`
+
+While I'm pretty sure the error handling is fine here, it's worth double checking the docs.
+
+The function in its original form is as follows:
+
+```c
+// Copy a single file
+void file_copy(const char *source, const char *target) {
+    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
+        perror("copyfile");
+        exit(EXIT_FAILURE);
+    }
+    return;
+}
+```
