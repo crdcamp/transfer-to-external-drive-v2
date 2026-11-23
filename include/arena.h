@@ -17,7 +17,7 @@ typedef struct {
     size_t buffer_length;
 } Arena;
 
-void print_arena_info(Arena *arena);
+void arena_print_info(Arena *arena);
 
 // Initialization and allocation
 void arena_init(Arena *arena, void *buffer, size_t buffer_length);

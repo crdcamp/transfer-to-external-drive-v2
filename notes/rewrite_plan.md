@@ -230,7 +230,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 
     // Cleanup
     printf("Arena after rewind: ");
-    print_arena_info(arena_scratch);
+    arena_print_info(arena_scratch);
     fts_close(source_handle);
     fts_close(target_handle);
     arena_rewind(arena_scratch, checkpoint);
@@ -246,5 +246,19 @@ The seg fault results from attempting to access `NULL` `fts_link`s. And I'm havi
 The core logic that's here right now happens when either the source or target child list of the current directory depth is at its end.
 
 By extension, the problem I don't know how to address is passing whichever list is at its end (null) to the next recursion. **I think a big confusion is stemming from not thinking about the while loop as an iteration over the current depth**.
+
+You've also been getting confused over the current conditions of if `t == NULL` or if `s == NULL`:
+* If `t == NULL`, that means that the the rest of the files in the current source directory depth are not in the target directory. So, we copy over the rest of the directories in the current source directory depth.
+* If `s == NULL`, that means that the rest of the files in the current target directory depth are not in the source directory. So, we delete the rest of the target directories in the current depth.
+
+This may initially seem to imply that we're done, but that's incorrect. You still **need to check every depth** since just because one depth is all sorted, that doesn't mean that the rest are!
+
+SO, regardless, we need to recurse into the next depth and call the recursion in each of these logic branches.
+
+BUT, how do we call recursion when attempting to pass both file names into `directories_sync` results in one being NULL, thus making the recursion not work?
+
+Well, if the target directory is completely empty, them we just pass the target directory no matter what (I think).
+
+Wait a second.... WE NEED TO USE `fts_open` AGAIN!!!!!!
 
 # DO NOT START UNTIL ERROR HANDLING IS DONE: Removing Apple Files within the recursion

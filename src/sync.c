@@ -441,7 +441,10 @@ void test_directory_copy(const char *source, const char *target) {
 }
 
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
-    if (source_directory == NULL || target_directory == NULL) return;
+    if (source_directory == NULL || target_directory == NULL) {
+        printf("Source and target are null!\n");
+        return;
+    }
     size_t checkpoint = arena_checkpoint(arena_scratch);
 
     char *source_directory_fts[] = {source_directory, NULL};
@@ -460,34 +463,44 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     FTSENT *t = target_children;
     while (s != NULL || t != NULL) {
         // DIRECTORY COPY TEST
-        // If `target_ptr` is NULL, that means all the remaining source files are not in the target directory
+        // If `t` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the rest of the files in the current source directory to the target directory
-        // Advance only `source_ptr
+        // Advance only `s`
         if (t == NULL) {
             printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
             // Skip apple file
             s = skip_apple_files(s);
+            char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+            char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
             while (s != NULL) {
-                char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 if (is_a_directory(s)) {
-                    char *target_path = file_path_concatenate(arena_scratch, target_directory, "");
                     printf("Copying source directory: `%s`\n", source_path);
                     printf("Into target:              `%s`\n", target_path);
                     //test_directory_copy(source_directory, target_directory);
                 }
                 else if (is_a_file(s)) {
-                    char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
                     printf("Copying source file `%s`\n", source_path);
                     printf("Into target:        `%s`\n", target_path);
                     //file_copy(source_path, target_path);
                 }
                 s = s->fts_link;
             }
+
+            printf("Arena before rewind: ");
+            arena_print_info(arena_scratch);
+
+            // SO CLOSEEEEEE
+            test_directories_sync(arena_scratch, source_path, target_path);
+            arena_rewind(arena_scratch, checkpoint);
+
+            printf("Arena after rewind: ");
+            arena_print_info(arena_scratch);
+            printf("\n\n");
             break;
         }
-        // If `source_ptr` is NULL, that means all remaining target files are not in the source directory
+        // If `s` is NULL, that means all remaining target files are not in the source directory
         // So, we delete the rest of the files in the current target directory
-        // Advance only `target_ptr`
+        // Advance only `t`
         if (s == NULL) {
             printf("CURRENT TARGET DEPTH: %hd\n", t->fts_level);
             t = skip_apple_files(t);
@@ -508,9 +521,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     }
 
     // Cleanup
-    printf("Arena after rewind: ");
-    print_arena_info(arena_scratch);
-    fts_close(source_handle);
-    fts_close(target_handle);
     arena_rewind(arena_scratch, checkpoint);
+    //FTS *source_next
 }

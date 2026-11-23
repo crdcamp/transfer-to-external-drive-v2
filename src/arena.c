@@ -1,8 +1,8 @@
 #include "../include/arena.h"
 
 // Temporary function
-void print_arena_info(Arena *arena) {
-    printf("Arena memory used: %zu/%zu bytes (%.2f%%)\n",
+void arena_print_info(Arena *arena) {
+    printf("%zu/%zu bytes (%.2f%%)\n",
            arena->current_offset,
            arena->buffer_length,
            100.0 * (double)arena->current_offset / (double)arena->buffer_length);
