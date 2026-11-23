@@ -221,18 +221,18 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
-            // both are files, and they have the same last modification time, advance both pointers
-            if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
+            // both are files and they have the same last modification time, advance both pointers
+            if (is_a_file(source_ptr) && is_a_file(target_ptr) &&
                 (source_ptr->fts_statp->st_mtime == target_ptr->fts_statp->st_mtime)) {
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
-            // they are both files, and the source file was edited more recently than the target file,
+            // both are files and the source file was edited more recently than the target file,
             // or the target file was edited more recently than the source,
             // overwrite the source file to the target regardless if the target was edited more recently
             // advance both pointers
-            if (string_comparison == 0 && is_a_file(source_ptr) && is_a_file(target_ptr) &&
+            if (is_a_file(source_ptr) && is_a_file(target_ptr) &&
                 (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) ||
                 (source_ptr->fts_statp->st_mtime < target_ptr->fts_statp->st_mtime)) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
@@ -243,10 +243,12 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
                 target_ptr = target_ptr->fts_link;
                 continue;
             }
+            // the source is a file and the target is a directory, or the target is a file and the source is a directory,
+            //
+            if (is_a_file(source_ptr) && is_a_directory(target_ptr) ||
+                is_a_directory(source_ptr) && is_a_file(target_ptr)) {
 
-            // If the names match, they're both files, and the target file was edited more recently than the target file,
-            // overwrite the source file to the target
-            // Advance both pointers
+                }
         }
 
         // cmp < 0: the source name comes earlier alphabetically
