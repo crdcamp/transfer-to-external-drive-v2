@@ -147,12 +147,12 @@ A scratch arena must be provided for string operations.
 void sync_directories(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
     printf("Syncing source directory `%s` with target directory `%s`\n", source, target);
-    // DON`T FORGET TO ADD BASE CASE HERE WHEN IMPLEMENTING RECURSION
+
+
 
     // Delete unneeded Apple files
     purge_junk(source);
     purge_junk(target);
-
     // Open the source and target directories while sorting them `by_name`
     // TODO: Need more verbose error handling and messaging here
     char *source_fts[2] = {source, NULL};
@@ -249,13 +249,13 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
         // If the file names are the same and...
         if (string_comparison == 0) {
             // both are directories, advance both pointers (leave further edits to the next recursion)
+            // Both are directories: recurse into them
             if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
-                char *source_subdir = file_path_concatenate(arena_scratch, source, source_ptr->fts_name);
-                char *target_subdir = file_path_concatenate(arena_scratch, target, target_ptr->fts_name);
-                sync_directories(arena_scratch, source_subdir, target_subdir);
+                sync_directories(arena_scratch, source_ptr->fts_path, target_ptr->fts_path);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
+
                 continue;
             }
             // both are files and they have the same last modification time, advance both pointers
