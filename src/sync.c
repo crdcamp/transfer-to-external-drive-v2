@@ -265,8 +265,8 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             // or the target file was edited more recently than the source,
             // overwrite the source file to the target regardless if the target was edited more recently
             if (is_a_file(source_ptr) && is_a_file(target_ptr) &&
-                ((source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) ||
-                    (source_ptr->fts_statp->st_mtime < target_ptr->fts_statp->st_mtime))) { {
+                (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) ||
+                    (source_ptr->fts_statp->st_mtime < target_ptr->fts_statp->st_mtime)) {
                 char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
@@ -351,7 +351,7 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             if (is_a_directory(target_ptr)) {
                 //directory_delete(target_path);
             }
-            else if (is_a_file(target_ptr) && is_a_file(target_ptr)) {
+            else if (is_a_file(target_ptr)) {
                 //file_delete(target_path);
             }
             else {
@@ -363,7 +363,6 @@ void sync_directories(Arena *arena_scratch, char *source, char *target) {
             }
             target_ptr = target_ptr->fts_link;
             continue;
-            }
         }
     }
 
