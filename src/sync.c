@@ -469,10 +469,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         if (t == NULL) {
             // Skip apple file
             printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
-            s = skip_apple_files(s);
-            char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-            char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
             while (s != NULL) {
+                s = skip_apple_files(s);
+                char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+                char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
                 if (is_a_directory(s)) {
                     printf("Copying source directory: `%s`\n", source_path);
                     printf("Into target:              `%s`\n", target_path);
@@ -495,64 +495,44 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             printf("Arena after rewind (in while loop): ");
             arena_print_info(arena_scratch);
             printf("\n\n");
-            break;
+            //break;
         }
-        // If `s` is NULL, that means all remaining target files are not in the source directory
-        // So, we delete the rest of the files in the current target directory
-        // Advance only `t`
-        if (s == NULL) {
-            printf("CURRENT TARGET DEPTH: %hd\n", t->fts_level);
-            t = skip_apple_files(t);
-            while (t != NULL) {
-                char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
-                if (is_a_directory(t)) {
-                    printf("Deleting file `%s`\n", target_path);
-                    //directory_delete(target_path);
-                }
-                else if (is_a_file(t)) {
-                    printf("Deleting file `%s`\n", target_path);
-                    //file_delete(target_path);
-                }
-                t = t->fts_link;
-            }
-        }
-        break;
     }
 
     // Cleanup
-    printf("Arena before rewind (at end of function): ");
-    arena_print_info(arena_scratch);
+    // printf("Arena before rewind (at end of function): ");
+    // arena_print_info(arena_scratch);
 
-    arena_rewind(arena_scratch, checkpoint);
+    // arena_rewind(arena_scratch, checkpoint);
 
-    printf("Arena after rewind (at end of function): ");
-    arena_print_info(arena_scratch);
-    printf("\n\n");
+    // printf("Arena after rewind (at end of function): ");
+    // arena_print_info(arena_scratch);
+    // printf("\n\n");
 
-    fts_close(source_handle);
-    fts_close(target_handle);
+    // fts_close(source_handle);
+    // fts_close(target_handle);
 
 
     // IF THIS WORKS, CONVERT STRING PARAMETERS INTO THE FORM THAT FTS ACCEPT
-    // MAKE A FUNCTION FOR THIS TOO!!! The function should convert a string path to and fts format
-    char *source_next;
-    if (s != NULL) {
-        char *source_next = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-        char *source_next_fts[] = {source_next, NULL};
-        FTS *source_handle = fts_open(source_next_fts, FTS_PHYSICAL, by_name);
-        if (source_handle == NULL) {
-            perror("fts_open");
-            exit(EXIT_FAILURE);
-        }
+    // MAKE A FUNCTION FOR THIS
+    // char *source_next;
+    // if (s != NULL) {
+    //     char *source_next = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+    //     char *source_next_fts[] = {source_next, NULL};
+    //     FTS *source_handle = fts_open(source_next_fts, FTS_PHYSICAL, by_name);
+    //     if (source_handle == NULL) {
+    //         perror("fts_open");
+    //         exit(EXIT_FAILURE);
+    //     }
 
-    } else s = NULL;
+    // } else s = NULL;
 
-    char *target_next;
-    if (t != NULL) {
-        char *target_next = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
-    } else t = NULL;
+    // char *target_next;
+    // if (t != NULL) {
+    //     char *target_next = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+    // } else t = NULL;
 
-    printf("Recursive next source: %s\n", source_next);
-    printf("Recursive next target: %s\n\n\n", target_next);
-    test_directories_sync(arena_scratch, source_next, target_next);
+    // printf("Recursive next source: %s\n", source_next);
+    // printf("Recursive next target: %s\n\n\n", target_next);
+    // test_directories_sync(arena_scratch, source_next, target_next);
 }
