@@ -550,10 +550,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Are both directories and have the same name. Passing both file paths to next recursion\n\n");
                     test_directories_sync(arena_scratch, source_path, target_path);
                 }
-
                 // ... and both are files
                 if (is_a_file(s) && is_a_file(t)) {
-                    // .. and the source was edited more recently than the target, or the target was edited more recently than the source,
+                    // ... and the source was edited more recently than the target, or the target was edited more recently than the source,
                     // overwrite the source to the target
                     if ((s->fts_statp->st_mtime > t->fts_statp->st_mtime) ||
                         (s->fts_statp->st_mtime < t->fts_statp->st_mtime)) {
@@ -563,10 +562,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                             //file_copy(source_path, target_path);
                             test_directories_sync(arena_scratch, source_path, target_path);
                     }
+                    // ... and the source and target have the same last edit date,
+                    if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
+                        // skip both entries by moving both pointers forward
+                        s = s->fts_link;
+                        t = t->fts_link;
+                    }
                 }
-
-                s = s->fts_link;
-                t = t->fts_link;
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
             }
