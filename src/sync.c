@@ -552,6 +552,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Are both directories and have the same name. Passing both file paths to next recursion\n\n");
                     test_directories_sync(arena_scratch, source_path_skip, target_path_skip);
                 }
+                s = s->fts_link;
+                t = t->fts_link;
             }
         }
     }
