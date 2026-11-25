@@ -1,5 +1,6 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
+#include <fts.h>
 #include <string.h>
 
 // Pass to `fts_open()` to sort files alphabetically
@@ -440,6 +441,8 @@ void test_directory_copy(const char *source, const char *target) {
     return;
 }
 
+// TODO: Address issues with arena_rewind. Might be easiest to simply allocate a larger arena upfront
+// TODO: Determine if file handling (opening and closing) could be more efficient
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
         if (source_directory == NULL) {
@@ -473,67 +476,33 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         if (t == NULL) {
             // Skip apple file
             while (s != NULL) {
-                printf("Current depth: %hd\n", s->fts_level);
                 s = skip_apple_files(s);
                 char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
                 if (is_a_directory(s)) {
                     printf("Copying source directory: `%s`\n", source_path);
-                    printf("Into target:              `%s`\n", target_path);
+                    printf("Into target:              `%s`\n\n", target_path);
                     //test_directory_copy(source_directory, target_directory);
+
+                    // We only want to recurse into directories, not files
+                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file `%s`\n", source_path);
-                    printf("Into target:        `%s`\n", target_path);
+                    printf("Into target:        `%s`\n\n", target_path);
                     //file_copy(source_path, target_path);
                 }
-                // Don't forget to check the
-                test_directories_sync(arena_, char *source_directory, char *target_directory)
                 s = s->fts_link;
-
-                printf("Arena before rewind (in while loop): ");
-                arena_print_info(arena_scratch);
-                arena_rewind(arena_scratch, checkpoint);
-                printf("Arena after rewind (in while loop): ");
-                arena_print_info(arena_scratch);
-                printf("\n");
             }
-            // Now, we need to close the previous directory, since if all the remaining source files
-            // at this depths are not in the next directory, we don't need the open handles anymore
             fts_close(source_handle);
             fts_close(target_handle);
-
-            // Now, let's manually type out the directories that this should have printed out:
-            // Source:
-            // Source/Code
-            // Source/ML and AI Resources
-            // Source/Private Loan Research
-
-            // Target:
-            // Target:
-            // Target/Code
-            // Target/ML and AI Resources
-            // Target/Private Loan Research
-
-            // The print results confirm that every file in this depth is being visited!
-            // Next step, recurse into the next directory
-            // Where does this recursion take place? Likely right before `s = s->fts_link;`, since this
-            // is the last time we have access to both files paths before moving on
         }
     }
 
-
     // Cleanup
-    // printf("Arena before rewind (at end of function): ");
-    // arena_print_info(arena_scratch);
-
-    // arena_rewind(arena_scratch, checkpoint);
-
-    // printf("Arena after rewind (at end of function): ");
-    // arena_print_info(arena_scratch);
-    // printf("\n\n");
-
-    // fts_close(source_handle);
-    // fts_close(target_handle);
+    printf("Arena before rewind:\n");
+    arena_print_info(arena_scratch);
     arena_rewind(arena_scratch, checkpoint);
+    printf("Arena after rewind:\n");
+    arena_print_info(arena_scratch);
 }
