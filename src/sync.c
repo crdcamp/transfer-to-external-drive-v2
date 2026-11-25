@@ -582,8 +582,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
                 else {
-                    printf("UNHANDLED TYPE: %s (s info=%d, t info=%d)\n",
-                           source_path, s->fts_info, t->fts_info);
+                    printf("UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
+                           source_path,
+                           fts_info_name(s->fts_info),
+                           fts_info_name(t->fts_info));
                     exit(EXIT_FAILURE);
                 }
             }

@@ -32,6 +32,23 @@ bool is_a_file(FTSENT *entry);
 void directories_sync(Arena *arena_scratch, char *source, char *target);
 
 // TEMPORARY REWRITE FUNCTIONS
+static const char *fts_info_name(unsigned short info) {
+    switch (info) {
+        case FTS_D:       return "FTS_D";        // directory (preorder)
+        case FTS_DC:      return "FTS_DC";       // directory causing a cycle
+        case FTS_DEFAULT: return "FTS_DEFAULT";  // other file type
+        case FTS_DNR:     return "FTS_DNR";      // unreadable directory
+        case FTS_DOT:     return "FTS_DOT";      // . or ..
+        case FTS_DP:      return "FTS_DP";       // directory (postorder)
+        case FTS_ERR:     return "FTS_ERR";      // generic error
+        case FTS_F:       return "FTS_F";        // regular file
+        case FTS_NS:      return "FTS_NS";       // stat failed
+        case FTS_NSOK:    return "FTS_NSOK";     // stat not requested
+        case FTS_SL:      return "FTS_SL";       // symlink
+        case FTS_SLNONE:  return "FTS_SLNONE";   // dangling symlink
+        default:          return "UNKNOWN";
+    }
+}
 FTSENT *skip_apple_files(FTSENT *entry);
 FTSENT *test_children_get_list(FTS *handle);
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory);
