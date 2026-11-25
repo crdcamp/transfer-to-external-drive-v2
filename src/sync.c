@@ -511,6 +511,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Into target file:    %s\n\n", target_path_copy);
                     //file_copy(source_path_copy, target_path_copy);
                 }
+                // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;
             }
         }
@@ -535,6 +536,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Deleting target file:      %s\n\n", target_path_delete);
                     //file_delete(target_path_delete);
                 }
+                // ADD SYMLINK FILE HANDLING
                 t = t->fts_link;
             }
         }
@@ -581,10 +583,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                         t = t->fts_link;
                     }
                 }
+                // ADD SYMLINK FILE HANDLING
+                // ... looks like we need to implement symlinks after all due to C header files
+                // ... kinda anticipated this anyway
+                //else if ((s->fts_info == FTS_SL) && (t->fts_info == FTS_SL)) {}
+
+
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
-                // ... looks like we need to implement symlinks after all
-                //else if ((s->fts_info == FTS_SL) && (t->fts_info == FTS_SL)) {}
                 else {
                     printf("UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
                            source_path,
