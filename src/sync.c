@@ -131,13 +131,20 @@ void purge_junk(char *root) {
 // TODO: Find a way to avoid redeclaring these every time the function is called
 // In other words, store them in an arena
 FTSENT *skip_apple_files(FTSENT *entry) {
-    char *apple_files[] = {".DS_Store", ".Spotlight-V100", ".fseventsd", ".Trashes", "._"};
+    char *apple_files[] = {".DS_Store", ".Spotlight-V100", ".fseventsd", ".Trashes"};
     size_t apple_files_size = sizeof(apple_files) / sizeof(apple_files[0]);
-    for (size_t i = 0; i < apple_files_size; i++) {
-        if (strcmp(entry->fts_name, apple_files[i]) == 0) {
-            printf("Apple file `%s` found. Moving from `%s` to `%s`\n", apple_files[i], entry->fts_name, entry->fts_link->fts_name);
-            entry = entry->fts_link;
+
+    while (entry != NULL) {
+        bool is_apple = false;
+        for (size_t i = 0; i < apple_files_size; i++) {
+            if (strcmp(entry->fts_name, apple_files[i]) == 0) {
+                printf("Apple file `%s` found. Skipping\n\n", apple_files[i]);
+                is_apple = true;
+                break;
+            }
         }
+        if (!is_apple) break;
+        entry = entry->fts_link;
     }
     return entry;
 }
@@ -229,16 +236,16 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // Advance only `source_ptr`
         if (target_ptr == NULL) {
             while (source_ptr != NULL) {
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
+                char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
 
                 if (is_a_directory(source_ptr)) {
-                    printf("Copying source DIRECTORY '%s' to target '%s'\n", source_path, target_path);
-                    directory_copy(source_path, target_path);
+                    printf("Copying source DIRECTORY '%s' to target '%s'\n", source_path_copy, target_path_copy);
+                    directory_copy(source_path_copy, target_path_copy);
                 }
                 else if (is_a_file(source_ptr)) {
-                    printf("Copying source FILE '%s' to target '%s'\n", source_path, target_path);
-                    file_copy(source_path, target_path);
+                    printf("Copying source FILE '%s' to target '%s'\n", source_path_copy, target_path_copy);
+                    file_copy(source_path_copy, target_path_copy);
                 }
                 source_ptr = source_ptr->fts_link;
             }
@@ -249,14 +256,14 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // Advance only `target_ptr`
         if (source_ptr == NULL) {
             while (target_ptr != NULL) {
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 if (is_a_directory(target_ptr)) {
-                    printf("Deleting DIRECTORY `%s`\n", target_path);
-                    directory_delete(target_path);
+                    printf("Deleting DIRECTORY `%s`\n", target_path_copy);
+                    directory_delete(target_path_copy);
                 }
                 else if (is_a_file(target_ptr)) {
-                    printf("Deleting FILE `%s`\n", target_path);
-                    file_delete(target_path);
+                    printf("Deleting FILE `%s`\n", target_path_copy);
+                    file_delete(target_path_copy);
                 }
                 target_ptr = target_ptr->fts_link;
             }
@@ -291,10 +298,10 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             if (is_a_file(source_ptr) && is_a_file(target_ptr) &&
                 (source_ptr->fts_statp->st_mtime > target_ptr->fts_statp->st_mtime) ||
                     (source_ptr->fts_statp->st_mtime < target_ptr->fts_statp->st_mtime)) {
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
 
-                file_copy(source_path, target_path);
+                file_copy(source_path_copy, target_path_copy);
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
                 continue;
@@ -305,9 +312,9 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
                 char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 directory_delete(target_delete_path);
 
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
-                file_copy(source_path, target_path);
+                char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
+                file_copy(source_path_copy, target_path_copy);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
@@ -319,9 +326,9 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
                 char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 file_delete(target_delete_path);
 
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
-                directory_copy(source_path, target_path);
+                char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
+                directory_copy(source_path_copy, target_path_copy);
 
                 source_ptr = source_ptr->fts_link;
                 target_ptr = target_ptr->fts_link;
@@ -330,13 +337,13 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             // either file has an unsupported type
             if (!is_a_directory(source_ptr) || !is_a_directory(target_ptr) ||
                 !is_a_file(source_ptr) || !is_a_file(target_ptr)) {
-                char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 fprintf(stderr,
                         "directories_sync: cannot sync `%s` with `%s`: unsupported file type "
                         "(source fts_info = %d, target fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
-                        source_path, target_path, source_ptr->fts_info, target_ptr->fts_info);
+                        source_path_copy, target_path_copy, source_ptr->fts_info, target_ptr->fts_info);
                 exit(EXIT_FAILURE);
                 }
         }
@@ -347,20 +354,20 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // So, we copy the source to the target
         // Advance only `source_ptr`
         if (string_comparison < 0) {
-            char *source_path = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
+            char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
             if (is_a_directory(source_ptr)) {
-                char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
-                directory_copy(source_path, target_path);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
+                directory_copy(source_path_copy, target_path_copy);
             }
             else if (is_a_file(source_ptr)) {
-                char *target_path = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
-                file_copy(source_path, target_path);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
+                file_copy(source_path_copy, target_path_copy);
             }
             else {
                 fprintf(stderr,
                         "directories_sync: cannot sync `%s`: unsupported file type (fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
-                        source_path, source_ptr->fts_info);
+                        source_path_copy, source_ptr->fts_info);
                 exit(EXIT_FAILURE);
             }
             source_ptr = source_ptr->fts_link;
@@ -371,18 +378,18 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // So, we delete the target file
         // Advance only `target_ptr`
         if (string_comparison > 0) {
-            char *target_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+            char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
             if (is_a_directory(target_ptr)) {
-                directory_delete(target_path);
+                directory_delete(target_path_copy);
             }
             else if (is_a_file(target_ptr)) {
-                file_delete(target_path);
+                file_delete(target_path_copy);
             }
             else {
                 fprintf(stderr,
                         "directories_sync: cannot sync `%s`: unsupported file type (fts_info = %d). "
                         "Only regular files and directories are supported (symlinks, sockets, FIFOs, and devices are not).\n",
-                        target_path, target_ptr->fts_info);
+                        target_path_copy, target_ptr->fts_info);
                 exit(EXIT_FAILURE);
             }
             target_ptr = target_ptr->fts_link;
@@ -442,7 +449,7 @@ void test_directory_copy(const char *source, const char *target) {
 }
 
 // TODO: Address issues with arena_rewind. Might be easiest to simply allocate a larger arena upfront
-// TODO: Determine if file handling (opening and closing) could be more efficient
+// TODO: Make file handling (fts_open and fts_close calls) more efficient
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
         if (source_directory == NULL) {
@@ -470,32 +477,69 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     FTSENT *s = source_children;
     FTSENT *t = target_children;
     while (s != NULL || t != NULL) {
+        s = skip_apple_files(s);
+        t = skip_apple_files(t);
+        ///////////////////////////////////////////////////////
+        ///// IF TARGET/SOURCE IS AT END OF CHILDREN LIST /////
+        ///////////////////////////////////////////////////////
         // If `t` is NULL, that means all the remaining source files are not in the target directory
-        // So, we copy the rest of the files in the current source directory to the target directory
-        // Advance only `s`
+        // So, we copy the remaining files in the current source directory to the target directory, and advance only `s`
         if (t == NULL) {
-            // Skip apple file
             while (s != NULL) {
+                // Skip apple files
                 s = skip_apple_files(s);
-                char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-                char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
+                char *source_path_copy = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+                char *target_path_copy = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
                 if (is_a_directory(s)) {
-                    printf("Copying source directory: `%s`\n", source_path);
-                    printf("Into target:              `%s`\n\n", target_path);
+                    printf("Copying source directory: `%s`\n", source_path_copy);
+                    printf("Into target directory:    `%s`\n\n", target_path_copy);
                     //test_directory_copy(source_directory, target_directory);
 
                     // We only want to recurse into directories, not files
-                    test_directories_sync(arena_scratch, source_path, target_path);
+                    test_directories_sync(arena_scratch, source_path_copy, target_path_copy);
                 }
                 else if (is_a_file(s)) {
-                    printf("Copying source file `%s`\n", source_path);
-                    printf("Into target:        `%s`\n\n", target_path);
-                    //file_copy(source_path, target_path);
+                    printf("Copying source file: `%s`\n", source_path_copy);
+                    printf("Into target file:    `%s`\n\n", target_path_copy);
+                    //file_copy(source_path_copy, target_path_copy);
                 }
                 s = s->fts_link;
             }
             fts_close(source_handle);
             fts_close(target_handle);
+        }
+        // If `s` is NULL, that means all the remaining target files are not in the source directory
+        // So, we delete the remaining files in the current target directory, and advance only `t`
+        // Note that we don't want to skip apple files here
+        if (s == NULL) {
+            while (t != NULL) {
+                char *source_delete_path = file_path_concatenate(arena_scratch, source_directory, t->fts_path);
+                char *target_delete_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+                printf("Source delete path: %s\n", source_delete_path);
+                printf("Target delete path: %s\n", target_delete_path);
+                if (is_a_directory(t)) {
+                    printf("Deleting target file: `%s`\n\n", target_delete_path);
+                    //directory_delete(target_delete_path);
+
+                    // We only want to recurse into directories, not files
+                    test_directories_sync(arena_scratch, source_delete_path, target_delete_path);
+                }
+                else if (is_a_file(t)) {
+                    printf("Deleting target file: %s\n\n", target_delete_path);
+                    //file_delete(target_delete_path);
+                }
+                t = t->fts_link;
+            }
+            // fts_close(source_handle);
+            // fts_close(target_handle);
+
+            // It seems like there's and infinite loop or some recursive error somewhere in here
+            // Let's manually show what our directory file paths should be for the first directory depth:
+            // TestDirs/Target/Private Loan Research
+
+            // Now let's show what the next file path should look like:
+            // Target/Private Loan Research/Documents/
+            // Source/Private Loan Research/Documents
         }
     }
 
