@@ -311,8 +311,8 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             // the source file is a file and the target file is a directory,
             // delete the target directory and copy the source file
             if (is_a_file(source_ptr) && is_a_directory(target_ptr)) {
-                char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                directory_delete(target_delete_path);
+                char *target_path_delete = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                directory_delete(target_path_delete);
 
                 char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
@@ -325,8 +325,8 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             // the source file is a directory and the target file is a file,
             // delete the target file and copy the source directory
             if (is_a_directory(source_ptr) && is_a_file(target_ptr)) {
-                char *target_delete_path = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                file_delete(target_delete_path);
+                char *target_path_delete = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
+                file_delete(target_path_delete);
 
                 char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, source_ptr->fts_name);
@@ -515,20 +515,20 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         if (s == NULL) {
             while (t != NULL) {
                 t = skip_apple_files(t);
-                char *source_delete_path = file_path_concatenate(arena_scratch, source_directory, t->fts_name);
-                char *target_delete_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
-                printf("Source delete path:        %s\n", source_delete_path);
-                printf("Target delete path:        %s\n", target_delete_path);
+                char *source_path_delete = file_path_concatenate(arena_scratch, source_directory, t->fts_name);
+                char *target_path_delete = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+                printf("Source delete path:        %s\n", source_path_delete);
+                printf("Target delete path:        %s\n", target_path_delete);
                 if (is_a_directory(t)) {
-                printf("Deleting target directory: %s\n\n", target_delete_path);
-                    //directory_delete(target_delete_path);
+                printf("Deleting target directory: %s\n\n", target_path_delete);
+                    //directory_delete(target_path_delete);
 
                     // We only want to recurse into directories, not files
-                    test_directories_sync(arena_scratch, source_delete_path, target_delete_path);
+                    test_directories_sync(arena_scratch, source_path_delete, target_path_delete);
                 }
                 else if (is_a_file(t)) {
-                    printf("Deleting target file:      %s\n\n", target_delete_path);
-                    //file_delete(target_delete_path);
+                    printf("Deleting target file:      %s\n\n", target_path_delete);
+                    //file_delete(target_path_delete);
                 }
                 t = t->fts_link;
             }
@@ -568,7 +568,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                             t = t->fts_link;
                     }
                     // ... and the source and target have the same last edit date,
-                    if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
+                    else if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
                         printf("Source: %s\n", source_path);
                         printf("Target: %s\n", target_path);
                         printf("Are both files and have the same edit time. Moving both pointers forward\n\n");
@@ -579,6 +579,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
+                // else {
+
+                // }
             }
 
             // If `string_comparison` < 0, that means the file is in the source, and not the target
