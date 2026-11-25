@@ -539,11 +539,27 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             fts_close(source_handle);
             fts_close(target_handle);
         }
-        // If entry is NULL (at the end of its list), then we begin string comparisons
+        // Otherwise, `s` and `t` are not null and we can use string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
+            // If both files have the same name...
             if (string_comparison == 0) {
-
+                // And both files are directories and their links are not null..
+                if (is_a_directory(s) && is_a_directory(t) &&
+                    (s->fts_link != NULL) && (t->fts_link != NULL)) {
+                    // Skip to the next entry by moving both pointers forward
+                    printf("Source:                %s and ...\n", s->fts_name);
+                    printf("target:                %s\n", t->fts_name);
+                    printf("Are both directories and have the same name\n");
+                    char *source_path_skip = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+                    char *target_path_skip = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+                    printf("Source path for next recursion: `%s`\n", source_path_skip);
+                    printf("Target path for next recursion: `%s`\n\n", target_path_skip);
+                    s = s->fts_link;
+                    t = t->fts_link;
+                    test_directories_sync(arena_scratch, source_path_skip, target_path_skip);
+                    // Figure out how to close directories
+                }
             }
         }
     }
