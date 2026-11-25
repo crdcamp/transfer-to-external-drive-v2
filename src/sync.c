@@ -134,7 +134,7 @@ FTSENT *skip_apple_files(FTSENT *entry) {
     size_t apple_files_size = sizeof(apple_files) / sizeof(apple_files[0]);
     for (size_t i = 0; i < apple_files_size; i++) {
         if (strcmp(entry->fts_name, apple_files[i]) == 0) {
-            printf("Apple file found. Moving from `%s` to `%s`\n", entry->fts_name, entry->fts_link->fts_name);
+            printf("Apple file `%s` found. Moving from `%s` to `%s`\n", apple_files[i], entry->fts_name, entry->fts_link->fts_name);
             entry = entry->fts_link;
         }
     }
@@ -442,7 +442,12 @@ void test_directory_copy(const char *source, const char *target) {
 
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
-        printf("End of source or target!\n");
+        if (source_directory == NULL) {
+            printf("End of source directory found for current recursion\n");
+        }
+        if (target_directory == NULL) {
+            printf("End of target directory found for current recursion\n");
+        }
         return;
     }
     size_t checkpoint = arena_checkpoint(arena_scratch);
@@ -462,14 +467,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     FTSENT *s = source_children;
     FTSENT *t = target_children;
     while (s != NULL || t != NULL) {
-        // DIRECTORY COPY TEST
         // If `t` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the rest of the files in the current source directory to the target directory
         // Advance only `s`
         if (t == NULL) {
             // Skip apple file
-            printf("CURRENT SOURCE DEPTH: %hd\n", s->fts_level);
             while (s != NULL) {
+                printf("Current depth: %hd\n", s->fts_level);
                 s = skip_apple_files(s);
                 char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 char *target_path = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
@@ -483,21 +487,41 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Into target:        `%s`\n", target_path);
                     //file_copy(source_path, target_path);
                 }
+                // Don't forget to check the
+                test_directories_sync(arena_, char *source_directory, char *target_directory)
                 s = s->fts_link;
+
+                printf("Arena before rewind (in while loop): ");
+                arena_print_info(arena_scratch);
+                arena_rewind(arena_scratch, checkpoint);
+                printf("Arena after rewind (in while loop): ");
+                arena_print_info(arena_scratch);
+                printf("\n");
             }
+            // Now, we need to close the previous directory, since if all the remaining source files
+            // at this depths are not in the next directory, we don't need the open handles anymore
+            fts_close(source_handle);
+            fts_close(target_handle);
 
-            printf("Arena before rewind (in while loop): ");
-            arena_print_info(arena_scratch);
+            // Now, let's manually type out the directories that this should have printed out:
+            // Source:
+            // Source/Code
+            // Source/ML and AI Resources
+            // Source/Private Loan Research
 
-            // SO CLOSEEEEEE
-            arena_rewind(arena_scratch, checkpoint);
+            // Target:
+            // Target:
+            // Target/Code
+            // Target/ML and AI Resources
+            // Target/Private Loan Research
 
-            printf("Arena after rewind (in while loop): ");
-            arena_print_info(arena_scratch);
-            printf("\n\n");
-            //break;
+            // The print results confirm that every file in this depth is being visited!
+            // Next step, recurse into the next directory
+            // Where does this recursion take place? Likely right before `s = s->fts_link;`, since this
+            // is the last time we have access to both files paths before moving on
         }
     }
+
 
     // Cleanup
     // printf("Arena before rewind (at end of function): ");
@@ -511,28 +535,5 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
 
     // fts_close(source_handle);
     // fts_close(target_handle);
-
-
-    // IF THIS WORKS, CONVERT STRING PARAMETERS INTO THE FORM THAT FTS ACCEPT
-    // MAKE A FUNCTION FOR THIS
-    // char *source_next;
-    // if (s != NULL) {
-    //     char *source_next = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-    //     char *source_next_fts[] = {source_next, NULL};
-    //     FTS *source_handle = fts_open(source_next_fts, FTS_PHYSICAL, by_name);
-    //     if (source_handle == NULL) {
-    //         perror("fts_open");
-    //         exit(EXIT_FAILURE);
-    //     }
-
-    // } else s = NULL;
-
-    // char *target_next;
-    // if (t != NULL) {
-    //     char *target_next = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
-    // } else t = NULL;
-
-    // printf("Recursive next source: %s\n", source_next);
-    // printf("Recursive next target: %s\n\n\n", target_next);
-    // test_directories_sync(arena_scratch, source_next, target_next);
+    arena_rewind(arena_scratch, checkpoint);
 }
