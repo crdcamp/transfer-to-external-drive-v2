@@ -32,6 +32,7 @@ bool is_a_file(FTSENT *entry);
 void directories_sync(Arena *arena_scratch, char *source, char *target);
 
 // TEMPORARY REWRITE FUNCTIONS
+// For error printing
 static const char *fts_info_name(unsigned short info) {
     switch (info) {
         case FTS_D:       return "FTS_D";        // directory (preorder)
