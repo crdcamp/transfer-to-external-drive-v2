@@ -491,16 +491,16 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 char *source_path_copy = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
                 if (is_a_directory(s)) {
-                    printf("Copying source directory: `%s`\n", source_path_copy);
-                    printf("Into target directory:    `%s`\n\n", target_path_copy);
+                    printf("Source copy path:    %s\n", source_path_copy);
+                    printf("Target copy path:    %s\n\n", target_path_copy);
                     //test_directory_copy(source_directory, target_directory);
 
                     // We only want to recurse into directories, not files
                     test_directories_sync(arena_scratch, source_path_copy, target_path_copy);
                 }
                 else if (is_a_file(s)) {
-                    printf("Copying source file: `%s`\n", source_path_copy);
-                    printf("Into target file:    `%s`\n\n", target_path_copy);
+                    printf("Copying source file: %s\n", source_path_copy);
+                    printf("Into target file:    %s\n\n", target_path_copy);
                     //file_copy(source_path_copy, target_path_copy);
                 }
                 s = s->fts_link;
@@ -513,19 +513,19 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // Note that we don't want to skip apple files here
         if (s == NULL) {
             while (t != NULL) {
-                char *source_delete_path = file_path_concatenate(arena_scratch, source_directory, t->fts_path);
+                char *source_delete_path = file_path_concatenate(arena_scratch, source_directory, t->fts_name);
                 char *target_delete_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
-                printf("Source delete path: %s\n", source_delete_path);
-                printf("Target delete path: %s\n", target_delete_path);
+                printf("Source delete path:        %s\n", source_delete_path);
+                printf("Target delete path:        %s\n", target_delete_path);
                 if (is_a_directory(t)) {
-                    printf("Deleting target file: `%s`\n\n", target_delete_path);
+                printf("Deleting target directory: %s\n\n", target_delete_path);
                     //directory_delete(target_delete_path);
 
                     // We only want to recurse into directories, not files
                     test_directories_sync(arena_scratch, source_delete_path, target_delete_path);
                 }
                 else if (is_a_file(t)) {
-                    printf("Deleting target file: %s\n\n", target_delete_path);
+                    printf("Deleting target file:      %s\n\n", target_delete_path);
                     //file_delete(target_delete_path);
                 }
                 t = t->fts_link;
@@ -544,10 +544,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     }
 
     // Cleanup
-    printf("Arena before rewind:\n");
+    printf("Arena before rewind: ");
     arena_print_info(arena_scratch);
     // NOTE: Arena contents pile up here, but that's fine for now. Can optimize later.
     arena_rewind(arena_scratch, checkpoint);
-    printf("Arena after rewind:\n");
+    printf("Arena after rewind: ");
     arena_print_info(arena_scratch);
+    printf("\n\n");
 }
