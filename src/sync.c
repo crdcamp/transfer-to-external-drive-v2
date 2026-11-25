@@ -1,6 +1,7 @@
 #include "../include/sync.h"
 #include "../include/arena.h"
 #include <fts.h>
+#include <stdbool.h>
 #include <string.h>
 
 // Pass to `fts_open()` to sort files alphabetically
@@ -538,8 +539,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             fts_close(source_handle);
             fts_close(target_handle);
         }
+        // If entry is NULL (at the end of its list), then we begin string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
+            switch (string_comparison) {
+                case 0: {
+
+                }
+            }
         }
     }
 
