@@ -448,8 +448,11 @@ void test_directory_copy(const char *source, const char *target) {
     return;
 }
 
-// TODO: Address issues with arena_rewind. Might be easiest to simply allocate a larger arena upfront
-// TODO: Make file handling (fts_open and fts_close calls) more efficient
+// TODO: Change if statements to switch cases
+// TODO: Implement a directory skip after null checks
+// TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
+// TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
+// TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
         if (source_directory == NULL) {
@@ -535,7 +538,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             fts_close(source_handle);
             fts_close(target_handle);
         }
+        else {
+            int string_comparison = strcmp(s->fts_name, t->fts_name);
+        }
     }
+
 
     // Cleanup
     printf("Arena before rewind: ");
