@@ -456,13 +456,14 @@ void test_directory_copy(const char *source, const char *target) {
 // TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
 // TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
+    // TODO: When this function is fully functional, change this to "Sync is complete"
     if (source_directory == NULL || target_directory == NULL) {
-        // if (source_directory == NULL) {
-        //     printf("End of source directory found for current recursion\n");
-        // }
-        // if (target_directory == NULL) {
-        //     printf("End of target directory found for current recursion\n");
-        // }
+        if (source_directory == NULL) {
+            printf("End of source directory found for current recursion\n");
+        }
+        if (target_directory == NULL) {
+            printf("End of target directory found for current recursion\n");
+        }
         return;
     }
     size_t checkpoint = arena_checkpoint(arena_scratch);
@@ -517,7 +518,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         }
         // If `s` is NULL, that means all the remaining target files are not in the source directory
         // So, we delete the remaining files in the current target directory, and advance only `t`
-        // Note that we don't want to skip apple files here
         if (s == NULL) {
             while (t != NULL) {
                 t = skip_apple_files(t);
@@ -540,14 +540,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 t = t->fts_link;
             }
         }
-
-        // TODO: Ensure you close all files when needed
         // Otherwise, `s` and `t` are not NULL and we can use string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
-            // If both files have the same name...
             char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
             char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
+
+            // If both files have the same name...
             if (string_comparison == 0) {
                 // ... and both are directories
                 if (is_a_directory(s) && is_a_directory(t)) {
