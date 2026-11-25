@@ -450,6 +450,8 @@ void test_directory_copy(const char *source, const char *target) {
     return;
 }
 
+// TODO: Implement symlink handling
+// TODO: Check if `continue` implementation could save some additional processing
 // TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
 // TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
 // TODO: Find out if there's a better way to skip Apple files
@@ -581,6 +583,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
+                // ... looks like we need to implement symlinks after all
+                //else if ((s->fts_info == FTS_SL) && (t->fts_info == FTS_SL)) {}
                 else {
                     printf("UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
                            source_path,
