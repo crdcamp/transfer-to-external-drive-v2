@@ -555,6 +555,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 s = s->fts_link;
                 t = t->fts_link;
             }
+            // If `string_comparison` < 0, that means the file is in the source, and not the target
+            // So, we copy the source to the target and advance only `s`
+
+            // If `string_comparison` > 0 and they're the same file type, that means the file is in the target, and not the source
+            // So, we delete the target file and advance only `t`
         }
     }
 
