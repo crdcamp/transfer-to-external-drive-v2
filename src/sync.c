@@ -449,8 +449,6 @@ void test_directory_copy(const char *source, const char *target) {
     return;
 }
 
-// TODO: Change if statements to switch cases
-// TODO: Implement a directory skip after null checks
 // TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
 // TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
 // TODO: Find out if there's a better way to skip Apple files
@@ -541,33 +539,43 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
             // If both files have the same name...
+            char *source_path = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
+            char *target_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
             if (string_comparison == 0) {
                 // ... and both are directories
                 if (is_a_directory(s) && is_a_directory(t)) {
                     // Skip to the next entry by moving both pointers forward
-                    char *source_path_skip = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
-                    char *target_path_skip = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
-                    printf("Source: %s\nand\n", source_path_skip);
-                    printf("Target: %s\n", target_path_skip);
+                    printf("Source: %s\nand\n", source_path);
+                    printf("Target: %s\n", target_path);
                     printf("Are both directories and have the same name. Passing both file paths to next recursion\n\n");
-                    test_directories_sync(arena_scratch, source_path_skip, target_path_skip);
+                    test_directories_sync(arena_scratch, source_path, target_path);
                 }
-                s = s->fts_link;
-                t = t->fts_link;
 
                 // ... and both are files
                 if (is_a_file(s) && is_a_file(t)) {
-
+                    // .. and the source was edited more recently than the target, or the target was edited more recently than the source,
+                    // overwrite the source to the target
+                    if ((s->fts_statp->st_mtime > t->fts_statp->st_mtime) ||
+                        (s->fts_statp->st_mtime < t->fts_statp->st_mtime)) {
+                            printf("Source: %s\n", source_path);
+                            printf("Target: %s\n", target_path);
+                            printf("Are both files and one was edited more recently than the other. Overwriting source to target\n\n");
+                            //file_copy(source_path, target_path);
+                            test_directories_sync(arena_scratch, source_path, target_path);
+                    }
                 }
 
+                s = s->fts_link;
+                t = t->fts_link;
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
             }
+
             // If `string_comparison` < 0, that means the file is in the source, and not the target
             // So, we copy the source to the target and advance only `s`
-            if (string_comparison > 0) {
+            // if (string_comparison > 0) {
 
-            }
+            // }
 
             // If `string_comparison` > 0 and they're the same file type, that means the file is in the target, and not the source
             // So, we delete the target file and advance only `t`
