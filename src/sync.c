@@ -468,11 +468,16 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
 
-    // Not entirely sure if `fts_open` needs error handling here
     FTS *source_handle = fts_open(source_directory_fts, FTS_PHYSICAL, by_name);
-    if (source_handle == NULL) return;
+    if (source_handle == NULL) {
+        fts_close(source_handle);
+        return;
+    }
     FTS *target_handle = fts_open(target_directory_fts, FTS_PHYSICAL, by_name);
-    if (target_handle == NULL) return;
+    if (target_handle == NULL)  {
+        fts_close(target_handle);
+        return;
+    }
 
     FTSENT *source_children = test_children_get_list(source_handle);
     FTSENT *target_children = test_children_get_list(target_handle);
@@ -506,8 +511,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 s = s->fts_link;
             }
-            fts_close(source_handle);
-            fts_close(target_handle);
         }
         // If `s` is NULL, that means all the remaining target files are not in the source directory
         // So, we delete the remaining files in the current target directory, and advance only `t`
@@ -532,10 +535,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 t = t->fts_link;
             }
-            fts_close(source_handle);
-            fts_close(target_handle);
         }
 
+        // TODO: Ensure you close all files when needed
         // Otherwise, `s` and `t` are not NULL and we can use string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
@@ -595,10 +597,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         }
     }
 
+    // Cleanup
     fts_close(source_handle);
     fts_close(target_handle);
-
-    // Cleanup
     printf("Arena before rewind: ");
     arena_print_info(arena_scratch);
     // NOTE: Arena contents pile up here, but that's fine for now. Can optimize later.
