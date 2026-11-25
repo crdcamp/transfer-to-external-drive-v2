@@ -532,16 +532,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 t = t->fts_link;
             }
-            // fts_close(source_handle);
-            // fts_close(target_handle);
-
-            // It seems like there's and infinite loop or some recursive error somewhere in here
-            // Let's manually show what our directory file paths should be for the first directory depth:
-            // TestDirs/Target/Private Loan Research
-
-            // Now let's show what the next file path should look like:
-            // Target/Private Loan Research/Documents/
-            // Source/Private Loan Research/Documents
+            fts_close(source_handle);
+            fts_close(target_handle);
         }
     }
 
