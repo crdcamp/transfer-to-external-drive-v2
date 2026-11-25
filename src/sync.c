@@ -581,9 +581,11 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
                 // and this code an only handle directories and files
-                // else {
-
-                // }
+                else {
+                    printf("UNHANDLED TYPE: %s (s info=%d, t info=%d)\n",
+                           source_path, s->fts_info, t->fts_info);
+                    exit(EXIT_FAILURE);
+                }
             }
 
             // If `string_comparison` < 0, that means the file is in the source, and not the target
