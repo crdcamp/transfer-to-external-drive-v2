@@ -484,9 +484,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         s = skip_apple_files(s);
         t = skip_apple_files(t);
 
-        ////////////////////////////////////
-        ///// IF TARGET/SOURCE IS NULL /////
-        ////////////////////////////////////
         // If `t` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the remaining files in the current source directory to the target directory, and advance only `s`
         if (t == NULL) {
@@ -539,6 +536,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             fts_close(source_handle);
             fts_close(target_handle);
         }
+
         // Otherwise, `s` and `t` are not NULL and we can use string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
@@ -549,18 +547,14 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     // Skip to the next entry by moving both pointers forward
                     char *source_path_skip = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                     char *target_path_skip = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
-                    printf("Source:                %s\nand\n", source_path_skip);
-                    printf("target:                %s\n", target_path_skip);
-                    printf("Are both directories and have the same name. Passing these to the next recursion\n\n");
+                    printf("Source: %s\nand\n", source_path_skip);
+                    printf("Target: %s\n", target_path_skip);
+                    printf("Are both directories and have the same name. Passing both file paths to next recursion\n\n");
                     test_directories_sync(arena_scratch, source_path_skip, target_path_skip);
-                    s = s->fts_link;
-                    t = t->fts_link;
-                    // Figure out how to close directories properly
                 }
             }
         }
     }
-
 
     // Cleanup
     printf("Arena before rewind: ");
