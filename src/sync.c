@@ -159,7 +159,10 @@ bool is_a_directory(FTSENT *entry) {
 
 // Given an fts entry, determine if the file is a file
 bool is_a_file(FTSENT *entry) {
-    return entry != NULL && entry->fts_info == FTS_F;
+    if ((entry != NULL) && entry->fts_info == FTS_F) {
+        return true;
+    }
+    else return false;
 }
 
 /*
@@ -551,7 +554,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     t = t->fts_link;
                 }
                 // ... and both are files
-                if (is_a_file(s) && is_a_file(t)) {
+                else if (is_a_file(s) && is_a_file(t)) {
                     // ... and the source was edited more recently than the target, or the target was edited more recently than the source,
                     // overwrite the source to the target
                     if ((s->fts_statp->st_mtime > t->fts_statp->st_mtime) ||
