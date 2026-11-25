@@ -502,6 +502,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     // Cleanup
     printf("Arena before rewind:\n");
     arena_print_info(arena_scratch);
+    // NOTE: Arena contents pile up here, but that's fine for now. Can optimize later.
     arena_rewind(arena_scratch, checkpoint);
     printf("Arena after rewind:\n");
     arena_print_info(arena_scratch);
