@@ -542,10 +542,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // If entry is NULL (at the end of its list), then we begin string comparisons
         else {
             int string_comparison = strcmp(s->fts_name, t->fts_name);
-            switch (string_comparison) {
-                case 0: {
+            if (string_comparison == 0) {
 
-                }
             }
         }
     }
