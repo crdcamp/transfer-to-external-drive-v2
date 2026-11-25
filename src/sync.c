@@ -479,9 +479,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     while (s != NULL || t != NULL) {
         s = skip_apple_files(s);
         t = skip_apple_files(t);
-        ///////////////////////////////////////////////////////
-        ///// IF TARGET/SOURCE IS AT END OF CHILDREN LIST /////
-        ///////////////////////////////////////////////////////
+
+        ////////////////////////////////////
+        ///// IF TARGET/SOURCE IS NULL /////
+        ////////////////////////////////////
         // If `t` is NULL, that means all the remaining source files are not in the target directory
         // So, we copy the remaining files in the current source directory to the target directory, and advance only `s`
         if (t == NULL) {
@@ -513,6 +514,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // Note that we don't want to skip apple files here
         if (s == NULL) {
             while (t != NULL) {
+                t = skip_apple_files(t);
                 char *source_delete_path = file_path_concatenate(arena_scratch, source_directory, t->fts_name);
                 char *target_delete_path = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
                 printf("Source delete path:        %s\n", source_delete_path);
