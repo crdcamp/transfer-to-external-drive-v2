@@ -159,9 +159,7 @@ bool is_a_directory(FTSENT *entry) {
 
 // Given an fts entry, determine if the file is a file
 bool is_a_file(FTSENT *entry) {
-    if (entry->fts_info == FTS_F) {
-        return true;
-    } else return false;
+    return entry != NULL && entry->fts_info == FTS_F;
 }
 
 /*
@@ -454,12 +452,12 @@ void test_directory_copy(const char *source, const char *target) {
 // TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     if (source_directory == NULL || target_directory == NULL) {
-        if (source_directory == NULL) {
-            printf("End of source directory found for current recursion\n");
-        }
-        if (target_directory == NULL) {
-            printf("End of target directory found for current recursion\n");
-        }
+        // if (source_directory == NULL) {
+        //     printf("End of source directory found for current recursion\n");
+        // }
+        // if (target_directory == NULL) {
+        //     printf("End of target directory found for current recursion\n");
+        // }
         return;
     }
     size_t checkpoint = arena_checkpoint(arena_scratch);
@@ -549,6 +547,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Target: %s\n", target_path);
                     printf("Are both directories and have the same name. Passing both file paths to next recursion\n\n");
                     test_directories_sync(arena_scratch, source_path, target_path);
+                    s = s->fts_link;
+                    t = t->fts_link;
                 }
                 // ... and both are files
                 if (is_a_file(s) && is_a_file(t)) {
@@ -561,6 +561,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                             printf("Are both files and one was edited more recently than the other. Overwriting source to target\n\n");
                             //file_copy(source_path, target_path);
                             test_directories_sync(arena_scratch, source_path, target_path);
+                            s = s->fts_link;
+                            t = t->fts_link;
                     }
                     // ... and the source and target have the same last edit date,
                     if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
@@ -583,6 +585,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             // So, we delete the target file and advance only `t`
         }
     }
+
+    fts_close(source_handle);
+    fts_close(target_handle);
 
     // Cleanup
     printf("Arena before rewind: ");
