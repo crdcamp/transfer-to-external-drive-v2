@@ -569,9 +569,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     }
                     // ... and the source and target have the same last edit date,
                     if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
+                        printf("Source: %s\n", source_path);
+                        printf("Target: %s\n", target_path);
+                        printf("Are both files and have the same edit time. Moving both pointers forward\n\n");
                         // skip both entries by moving both pointers forward
                         s = s->fts_link;
                         t = t->fts_link;
+                        test_directories_sync(arena_scratch, source_path, target_path);
                     }
                 }
                 // Otherwise, throw an error and terminate the function, since neither is a directory or file,
