@@ -51,7 +51,7 @@ void file_copy(const char *source, const char *target) {
 // Delete a single file
 void file_delete(char *file_path) {
     if (remove(file_path) != 0) {
-        perror(file_path);
+        printf("`file_delete` error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     return;
@@ -60,7 +60,7 @@ void file_delete(char *file_path) {
 // Recursively copy a directory and all of its contents. Overwrites if names are the same
 void directory_copy(const char *source, const char *target) {
     if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE | COPYFILE_NOFOLLOW) != 0) {
-        printf("Error: %s\n", strerror(errno));
+        printf("`directory_copy` error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
     return;
@@ -71,7 +71,7 @@ void directory_delete(char *file_path) {
     char *paths[2] = {file_path, NULL};
     FTS *handle = fts_open(paths, FTS_PHYSICAL | FTS_NOCHDIR, NULL);
     if (handle == NULL) {
-        perror("directory_delete: fts_open");
+        printf("`directory_delete` error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -84,12 +84,12 @@ void directory_delete(char *file_path) {
         if (entry->fts_info == FTS_D) continue;
 
         if (entry->fts_info == FTS_DNR || entry->fts_info == FTS_ERR || entry->fts_info == FTS_NS) {
-            fprintf(stderr, "directory_delete: %s: %s\n", entry->fts_path, strerror(entry->fts_errno));
+            fprintf(stderr, "directory_delete error: %s: %s\n", entry->fts_path, strerror(entry->fts_errno));
             exit(EXIT_FAILURE);
         }
         // Deliberately didn`t call `file_delete` here to keep things separate. Ya neva know...
         if (remove(entry->fts_path) != 0) {
-            perror(entry->fts_path);
+            printf("`directory_delete` error: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
     }
