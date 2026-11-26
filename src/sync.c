@@ -452,6 +452,7 @@ void test_directory_copy(const char *source, const char *target) {
 
 // TODO: Implement symlink handling
 // TODO: Check if `continue` implementation could save some additional processing
+// TODO: Double check that all branches have an else condition for error handling
 // TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
 // TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
 // TODO: Find out if there's a better way to skip Apple files
