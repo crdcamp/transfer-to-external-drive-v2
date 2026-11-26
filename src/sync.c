@@ -146,7 +146,7 @@ FTSENT *skip_apple_files(FTSENT *entry) {
 
 // File type checks
 bool is_a_directory(FTSENT *entry) {
-    if ((entry != NULL) && (entry->fts_info == FTS_D)) return true;
+    if ((entry != NULL) && (entry->fts_info == FTS_D) && (entry->fts_statp->st_size > 0)) return true;
     else return false;
 }
 
