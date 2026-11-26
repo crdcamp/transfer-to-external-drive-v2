@@ -484,16 +484,16 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 printf("Target delete path:        %s\n", target_path_delete);
                 if (is_a_directory_populated(t)) {
                 printf("Deleting target directory: %s\n\n", target_path_delete);
-                    //directory_delete(target_path_delete);
+                    directory_delete(target_path_delete);
                     test_directories_sync(arena_scratch, source_path_delete, target_path_delete);
                 }
                 else if (is_a_file(t)) {
                     printf("Deleting target file:      %s\n\n", target_path_delete);
-                    //file_delete(target_path_delete);
+                    file_delete(target_path_delete);
                 }
                 else if (is_a_directory_empty(t)) {
                     printf("Empty target directory found: %s\nCopying to target\n\n", source_path_delete);
-                    file_copy(source_path_delete, target_path_delete);
+                    file_delete(target_path_delete);
                 }
                 // ADD SYMLINK FILE HANDLING
                 t = t->fts_link;
