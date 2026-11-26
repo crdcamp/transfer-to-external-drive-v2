@@ -465,13 +465,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 if (is_a_directory(s)) {
                     printf("Source copy path:    %s\n", source_path_copy);
                     printf("Target copy path:    %s\n\n", target_path_copy);
-                    //test_directory_copy(source_directory, target_directory);
+                    directory_copy(source_directory, target_directory);
                     test_directories_sync(arena_scratch, source_path_copy, target_path_copy); // We only want to recurse into directories, not files
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file: %s\n", source_path_copy);
                     printf("Into target file:    %s\n\n", target_path_copy);
-                    //file_copy(source_path_copy, target_path_copy);
+                    file_copy(source_path_copy, target_path_copy);
                 }
                 // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;

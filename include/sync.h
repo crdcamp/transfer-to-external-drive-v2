@@ -31,8 +31,8 @@ bool is_a_directory(FTSENT *entry);
 bool is_a_file(FTSENT *entry);
 void directories_sync(Arena *arena_scratch, char *source, char *target);
 
-// TEMPORARY REWRITE FUNCTIONS
-// For error printing
+// REWRITE SECTION
+// For error printing (this can almost certainly be done without defining this struct)
 static const char *FTS_INFO_NAME(unsigned short info) {
     switch (info) {
         case FTS_D:       return "FTS_D";        // directory (preorder)
@@ -51,9 +51,6 @@ static const char *FTS_INFO_NAME(unsigned short info) {
     }
 }
 FTSENT *skip_apple_files(FTSENT *entry);
-FTSENT *test_children_get_list(FTS *handle);
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory);
-void test_file_copy(const char *source, const char *target);
-void test_directory_copy(const char *source, const char *target);
 
 #endif
