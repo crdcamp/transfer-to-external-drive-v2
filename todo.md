@@ -1,0 +1,13 @@
+- [ ] Implement empty directory handling: An empty source directory not found in the target should be copied over, an empty target directory not found in the source should be deleted.
+- [ ] Implement symlink handling
+- [ ] Implement what happens if:
+  - Source if a file and target is directory
+  - Target is a file and source is a directory
+  - Source is a file and target is a symlink
+  - Source is a symlink and target is a file
+  - Source is... idk, maybe consider this a bit more carefully before just testing every case individually
+- [ ] Find a way to avoid redeclaring the apple files array every time `skip_apple_files()` is called (this should be easy - probably just an array defined in a header file or main).
+- [ ] Double check that all branches have an else condition for error handling
+- [ ] Check if `continue` implementation could save some additional processing
+- [ ] Make file handling (fts_open and fts_close calls) more efficient if needed. Test its placement in each branch
+- [ ] Determine if an arena rewind would be preferred to the arena reset (likely not)
