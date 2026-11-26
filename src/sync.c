@@ -454,7 +454,7 @@ void test_directory_copy(const char *source, const char *target) {
 // TODO: Check if `continue` implementation could save some additional processing
 // TODO: Double check that all branches have an else condition for error handling
 // TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
-// TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
+// TODO: Make file handling (fts_open and fts_close calls) more efficient if needed. Test its placement in each branch
 // TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     // TODO: When this function is fully functional, change this to "Sync complete"
@@ -497,7 +497,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         // So, we copy the remaining files in the current source directory to the target directory, and advance only `s`
         if (t == NULL) {
             while (s != NULL) {
-                // Skip apple files
                 s = skip_apple_files(s);
                 char *source_path_copy = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
@@ -505,9 +504,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Source copy path:    %s\n", source_path_copy);
                     printf("Target copy path:    %s\n\n", target_path_copy);
                     //test_directory_copy(source_directory, target_directory);
-
-                    // We only want to recurse into directories, not files
-                    test_directories_sync(arena_scratch, source_path_copy, target_path_copy);
+                    test_directories_sync(arena_scratch, source_path_copy, target_path_copy); // We only want to recurse into directories, not files
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file: %s\n", source_path_copy);
@@ -530,8 +527,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 if (is_a_directory(t)) {
                 printf("Deleting target directory: %s\n\n", target_path_delete);
                     //directory_delete(target_path_delete);
-
-                    // We only want to recurse into directories, not files
                     test_directories_sync(arena_scratch, source_path_delete, target_path_delete);
                 }
                 else if (is_a_file(t)) {
@@ -560,10 +555,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     s = s->fts_link;
                     t = t->fts_link;
                 }
-                // Otherwise, if both are files
+                // Otherwise, if both are regular files
                 else if (is_a_file(s) && is_a_file(t)) {
                     // ... and the source was edited more recently than the target, or the target was edited more recently than the source,
-                    // overwrite the source to the target
+                    // overwrite the source to the target, regardless if the target was edited more recently
                     if ((s->fts_statp->st_mtime > t->fts_statp->st_mtime) ||
                         (s->fts_statp->st_mtime < t->fts_statp->st_mtime)) {
                             printf("Source: %s\n", source_path);
@@ -574,7 +569,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                             s = s->fts_link;
                             t = t->fts_link;
                     }
-                    // ... and the source and target have the same last edit date,
+                    // ... or if the source and target have the same last edit date,
                     else if (s->fts_statp->st_mtime == t->fts_statp->st_mtime) {
                         printf("Source: %s\n", source_path);
                         printf("Target: %s\n", target_path);
