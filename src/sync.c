@@ -456,7 +456,7 @@ void test_directory_copy(const char *source, const char *target) {
 // TODO: Make file handling (fts_open and fts_close calls) more efficient if needed
 // TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
-    // TODO: When this function is fully functional, change this to "Sync is complete"
+    // TODO: When this function is fully functional, change this to "Sync complete"
     if (source_directory == NULL || target_directory == NULL) {
         if (source_directory == NULL) {
             printf("End of source directory found for current recursion\n");
@@ -466,6 +466,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         }
         return;
     }
+
     size_t checkpoint = arena_checkpoint(arena_scratch);
 
     char *source_directory_fts[] = {source_directory, NULL};
@@ -558,7 +559,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     s = s->fts_link;
                     t = t->fts_link;
                 }
-                // ... and both are files
+                // Otherwise, if both are files
                 else if (is_a_file(s) && is_a_file(t)) {
                     // ... and the source was edited more recently than the target, or the target was edited more recently than the source,
                     // overwrite the source to the target
@@ -582,14 +583,27 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                         t = t->fts_link;
                     }
                 }
+
+                //  NEXT STEPS
+                // TEST THE ABOVE FUNCTIONS with the deleting/copying uncommented.
+                // You should be sure that they work for the cases they are meant to handle
+
                 // ADD SYMLINK FILE HANDLING
-                // ... looks like we need to implement symlinks after all due to C header files
-                // ... kinda anticipated this anyway
+                // Looks like we need to implement symlinks after all due to C header files
+                // ...kinda anticipated this anyway
+
+                // You're gonna want to really study up on symbolic links before you do any of this.
+                // There's no point in just diving in when you barely understand what it is
+                // that you're working with here
+
+                // Then you're gonna want to make some sort of test function that works on a specific
+                // C project to figure this out and ensure it works
+
                 //else if ((s->fts_info == FTS_SL) && (t->fts_info == FTS_SL)) {}
 
 
-                // Otherwise, throw an error and terminate the function, since neither is a directory or file,
-                // and this code an only handle directories and files
+                // Otherwise, throw an error and terminate the function, since neither is a directory, file, or synmlink
+                // and the code isn't designed to handle files that are not that
                 else {
                     printf("UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
                            source_path,
