@@ -164,6 +164,10 @@ bool is_a_file(FTSENT *entry) {
     else return false;
 }
 
+// bool is_a_symlink(FTSENT *entry) {
+
+// }
+
 /*
 Visit each depth level of the source and target directory paths
 to ensure the target directory is synced with the source directory.
@@ -465,13 +469,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 if (is_a_directory(s)) {
                     printf("Source copy path:    %s\n", source_path_copy);
                     printf("Target copy path:    %s\n\n", target_path_copy);
-                    directory_copy(source_directory, target_directory);
+                    //directory_copy(source_directory, target_directory);
                     test_directories_sync(arena_scratch, source_path_copy, target_path_copy); // We only want to recurse into directories, not files
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file: %s\n", source_path_copy);
                     printf("Into target file:    %s\n\n", target_path_copy);
-                    file_copy(source_path_copy, target_path_copy);
+                    //file_copy(source_path_copy, target_path_copy);
                 }
                 // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;
@@ -488,12 +492,12 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 printf("Target delete path:        %s\n", target_path_delete);
                 if (is_a_directory(t)) {
                 printf("Deleting target directory: %s\n\n", target_path_delete);
-                    directory_delete(target_path_delete);
+                    //directory_delete(target_path_delete);
                     test_directories_sync(arena_scratch, source_path_delete, target_path_delete);
                 }
                 else if (is_a_file(t)) {
                     printf("Deleting target file:      %s\n\n", target_path_delete);
-                    file_delete(target_path_delete);
+                    //file_delete(target_path_delete);
                 }
                 // ADD SYMLINK FILE HANDLING
                 t = t->fts_link;
