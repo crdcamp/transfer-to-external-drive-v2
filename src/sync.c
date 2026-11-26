@@ -413,43 +413,6 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
 ///////////////////////////
 ///// REWRITE SECTION /////
 ///////////////////////////
-FTSENT *test_children_get_list(FTS *handle) { // Assumes `fts_open` was used prior
-    errno = 0; // Always set to 0 in a function, since errno can be edited by other operations
-    FTSENT *list_head = fts_read(handle); // Handle has the be read before being passed to `fts_children`
-    if (errno != 0) {
-        printf("Error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    FTSENT *children_list = fts_children(handle, 0);
-    // If `fts_info` returns as FTS_DNR, FTS_ERR or FTS_NS, that will set the external `errno`
-    if (errno != 0) {
-        printf("Error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    return children_list;
-}
-
-// Copy a single file
-void test_file_copy(const char *source, const char *target) {
-    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
-        printf("Error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-    return;
-}
-
-// Copy a directory
-void test_directory_copy(const char *source, const char *target) {
-    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
-    if (copyfile(source, target, NULL, flags) != 0) {
-        printf("Error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-    return;
-}
-
 // TODO: Implement symlink handling
 // TODO: Check if `continue` implementation could save some additional processing
 // TODO: Double check that all branches have an else condition for error handling
@@ -484,8 +447,8 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         return;
     }
 
-    FTSENT *source_children = test_children_get_list(source_handle);
-    FTSENT *target_children = test_children_get_list(target_handle);
+    FTSENT *source_children = children_get_list(source_handle);
+    FTSENT *target_children = children_get_list(target_handle);
 
     FTSENT *s = source_children;
     FTSENT *t = target_children;
@@ -631,6 +594,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     arena_print_info(arena_scratch);
     // NOTE: Arena contents pile up here, but that's fine for now. Can optimize later.
     // arena_rewind(arena_scratch, checkpoint);
+    // Arena reset instead of rewind
     arena_scratch->current_offset = 0; // Not sure if this will cause isssues, but seems to work fine for now
     printf("Arena after reset: ");
     arena_print_info(arena_scratch);
