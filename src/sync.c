@@ -41,7 +41,7 @@ char *file_path_concatenate(Arena *arena_scratch, char *base_path, char *file_na
 
 // Copy a single file
 void file_copy(const char *source, const char *target) {
-    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT) != 0) {
+    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT | COPYFILE_NOFOLLOW) != 0) {
         printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
@@ -59,8 +59,7 @@ void file_delete(char *file_path) {
 
 // Recursively copy a directory and all of its contents. Overwrites if names are the same
 void directory_copy(const char *source, const char *target) {
-    copyfile_flags_t flags = COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE;
-    if (copyfile(source, target, NULL, flags) != 0) {
+    if (copyfile(source, target, NULL, COPYFILE_DATA | COPYFILE_STAT | COPYFILE_RECURSIVE | COPYFILE_NOFOLLOW) != 0) {
         printf("Error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
