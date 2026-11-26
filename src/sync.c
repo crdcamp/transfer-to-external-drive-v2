@@ -468,7 +468,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         return;
     }
 
-    size_t checkpoint = arena_checkpoint(arena_scratch);
+    //size_t checkpoint = arena_checkpoint(arena_scratch);
 
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
@@ -583,6 +583,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 //  NEXT STEPS
                 // TEST THE ABOVE FUNCTIONS with the deleting/copying uncommented.
                 // You should be sure that they work for the cases they are meant to handle
+                // You can avoid a lot of headaches in general by doing this between each section
 
                 // ADD SYMLINK FILE HANDLING
                 // Looks like we need to implement symlinks after all due to C header files
@@ -591,6 +592,9 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 // You're gonna want to really study up on symbolic links before you do any of this.
                 // There's no point in just diving in when you barely understand what it is
                 // that you're working with here
+
+                // It's possible that this could be as simple as just adding an or statement to the file
+                // and directory checks, but I have a feeling it might not be that simple
 
                 // Then you're gonna want to make some sort of test function that works on a specific
                 // C project to figure this out and ensure it works
@@ -601,10 +605,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 // Otherwise, throw an error and terminate the function, since neither is a directory, file, or synmlink
                 // and the code isn't designed to handle files that are not that
                 else {
-                    printf("UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
+                    printf("ERROR: UNHANDLED TYPE: %s (s info=%s, t info=%s)\n",
                            source_path,
-                           fts_info_name(s->fts_info),
-                           fts_info_name(t->fts_info));
+                           FTS_INFO_NAME(s->fts_info),
+                           FTS_INFO_NAME(t->fts_info));
                     exit(EXIT_FAILURE);
                 }
             }
@@ -623,11 +627,12 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
     // Cleanup
     fts_close(source_handle);
     fts_close(target_handle);
-    printf("Arena before rewind: ");
+    printf("Arena before reset: ");
     arena_print_info(arena_scratch);
     // NOTE: Arena contents pile up here, but that's fine for now. Can optimize later.
-    arena_rewind(arena_scratch, checkpoint);
-    printf("Arena after rewind: ");
+    // arena_rewind(arena_scratch, checkpoint);
+    arena_scratch->current_offset = 0; // Not sure if this will cause isssues, but seems to work fine for now
+    printf("Arena after reset: ");
     arena_print_info(arena_scratch);
     printf("\n\n");
 }

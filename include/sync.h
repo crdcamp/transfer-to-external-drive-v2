@@ -33,7 +33,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target);
 
 // TEMPORARY REWRITE FUNCTIONS
 // For error printing
-static const char *fts_info_name(unsigned short info) {
+static const char *FTS_INFO_NAME(unsigned short info) {
     switch (info) {
         case FTS_D:       return "FTS_D";        // directory (preorder)
         case FTS_DC:      return "FTS_DC";       // directory causing a cycle
