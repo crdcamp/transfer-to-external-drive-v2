@@ -146,15 +146,15 @@ FTSENT *skip_apple_files(FTSENT *entry) {
 
 // File type checks
 bool is_a_directory(FTSENT *entry) {
-    if ((entry != NULL) && (entry->fts_info == FTS_D) && (entry->fts_statp->st_size > 0)) return true;
+    if ((entry != NULL) &&
+        (entry->fts_info == FTS_D) &&
+        (entry->fts_statp->st_size > 0)) return true;
     else return false;
 }
-
 bool is_a_directory_empty(FTSENT *entry) {
-    if ((entry != NULL) && (is_a_directory(entry)) && (entry->fts_statp->st_size == 0)) return true;
+    if ((entry != NULL) && (entry->fts_statp->st_size == 0)) return true;
     else return false;
 }
-
 bool is_a_file(FTSENT *entry) {
     if ((entry != NULL) && entry->fts_info == FTS_F) return true;
     else return false;
@@ -462,6 +462,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                     printf("Copying source file: %s\n", source_path_copy);
                     printf("Into target file:    %s\n\n", target_path_copy);
                     file_copy(source_path_copy, target_path_copy);
+                }
+                else if (is_a_directory_empty(s)) {
+                    printf("Empty source directory found: %s\nCopying to target\n\n", source_path_copy);
+                    file_copy(source_path_copy, target_path_copy)
                 }
                 // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;
