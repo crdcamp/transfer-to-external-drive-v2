@@ -50,7 +50,9 @@ static const char *FTS_INFO_NAME(unsigned short info) {
         default:          return "UNKNOWN";
     }
 }
+
 FTSENT *skip_apple_files(FTSENT *entry);
+bool is_a_directory_empty(FTSENT *entry);
 bool is_a_symlink(FTSENT *entry);
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory);
 

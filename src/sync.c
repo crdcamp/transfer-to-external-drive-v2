@@ -96,10 +96,6 @@ void directory_delete(char *file_path) {
     fts_close(handle);
 }
 
-// Delete all Apple files from the directories (Temporary AI generated "bandaid" solution)
-// TODO: Fully implement this into `directory_sync`. This should not be its own function.
-// Allow `directory_sync` to handle this as it recurses through the file levels, since
-// this approach adds an unnecessary extra recursion
 static int is_junk(const char *name) {
     return strcmp(name, ".DS_Store") == 0 ||
            strcmp(name, ".Spotlight-V100") == 0 ||
@@ -128,8 +124,7 @@ void purge_junk(char *root) {
     fts_close(handle);
 }
 
-// TODO: Find a way to avoid redeclaring these every time the function is called
-// In other words, store them in an arena
+// Skip Apple-specific files to avoid future compatability issues
 FTSENT *skip_apple_files(FTSENT *entry) {
     char *apple_files[] = {".DS_Store", ".Spotlight-V100", ".fseventsd", ".Trashes"};
     size_t apple_files_size = sizeof(apple_files) / sizeof(apple_files[0]);
@@ -149,18 +144,19 @@ FTSENT *skip_apple_files(FTSENT *entry) {
     return entry;
 }
 
-// Given an fts entry, determine if the file is a directory
+// File type checks
 bool is_a_directory(FTSENT *entry) {
-    if (entry->fts_info == FTS_D) {
-        return true;
-    } else return false;
+    if ((entry != NULL) && (entry->fts_info == FTS_D)) return true;
+    else return false;
 }
 
-// Given an fts entry, determine if the file is a file
+bool is_a_directory_empty(FTSENT *entry) {
+    if ((entry != NULL) && (is_a_directory(entry)) && (entry->fts_statp->st_size == 0)) return true;
+    else return false;
+}
+
 bool is_a_file(FTSENT *entry) {
-    if ((entry != NULL) && entry->fts_info == FTS_F) {
-        return true;
-    }
+    if ((entry != NULL) && entry->fts_info == FTS_F) return true;
     else return false;
 }
 
@@ -175,12 +171,10 @@ The target directory is edited in-place and deletes/updates
 files according to the source directory`s file hierarchy structure.
 A scratch arena must be provided for string operations.
 */
-// TODO: Double check all return statements for arena rewinds and file closes
+
 void directories_sync(Arena *arena_scratch, char *source, char *target) {
     size_t checkpoint = arena_checkpoint(arena_scratch); // Checkpoint for resetting arena between recursions
     printf("Syncing source directory `%s` with target directory `%s`\n", source, target);
-
-
 
     // Delete unneeded Apple files
     purge_junk(source);
@@ -416,12 +410,6 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
 ///////////////////////////
 ///// REWRITE SECTION /////
 ///////////////////////////
-// TODO: Implement symlink handling
-// TODO: Check if `continue` implementation could save some additional processing
-// TODO: Double check that all branches have an else condition for error handling
-// TODO: Address issues with arena_rewind. Call it at the relevant points to ensure it's always at 0 on each recursion
-// TODO: Make file handling (fts_open and fts_close calls) more efficient if needed. Test its placement in each branch
-// TODO: Find out if there's a better way to skip Apple files
 void test_directories_sync(Arena *arena_scratch, char *source_directory, char *target_directory) {
     // TODO: When this function is fully functional, change this to "Sync complete"
     if (source_directory == NULL || target_directory == NULL) {
@@ -433,8 +421,6 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
         }
         return;
     }
-
-    //size_t checkpoint = arena_checkpoint(arena_scratch);
 
     char *source_directory_fts[] = {source_directory, NULL};
     char *target_directory_fts[] = {target_directory, NULL};
@@ -469,13 +455,13 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 if (is_a_directory(s)) {
                     printf("Source copy path:    %s\n", source_path_copy);
                     printf("Target copy path:    %s\n\n", target_path_copy);
-                    //directory_copy(source_directory, target_directory);
-                    test_directories_sync(arena_scratch, source_path_copy, target_path_copy); // We only want to recurse into directories, not files
+                    directory_copy(source_directory, target_directory);
+                    test_directories_sync(arena_scratch, source_path_copy, target_path_copy);
                 }
                 else if (is_a_file(s)) {
                     printf("Copying source file: %s\n", source_path_copy);
                     printf("Into target file:    %s\n\n", target_path_copy);
-                    //file_copy(source_path_copy, target_path_copy);
+                    file_copy(source_path_copy, target_path_copy);
                 }
                 // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;
