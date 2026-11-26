@@ -3,7 +3,7 @@
 
 int main(void) {
     // Create a scratch arena
-    size_t arena_scratch_buffer_size = PATH_MAX*127; // Resets between recursive calls2
+    size_t arena_scratch_buffer_size = PATH_MAX*128;
     Arena arena_scratch = {0};
     _Alignas(DEFAULT_ALIGNMENT) unsigned char arena_scratch_buffer[arena_scratch_buffer_size];
     size_t arena_scratch_buffer_length = sizeof(arena_scratch_buffer) / sizeof(arena_scratch_buffer[0]);
