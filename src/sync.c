@@ -145,14 +145,16 @@ FTSENT *skip_apple_files(FTSENT *entry) {
 }
 
 // File type checks
-bool is_a_directory(FTSENT *entry) {
+bool is_a_directory_populated(FTSENT *entry) {
     if ((entry != NULL) &&
         (entry->fts_info == FTS_D) &&
         (entry->fts_statp->st_size > 0)) return true;
     else return false;
 }
 bool is_a_directory_empty(FTSENT *entry) {
-    if ((entry != NULL) && (entry->fts_statp->st_size == 0)) return true;
+    if ((entry != NULL) &&
+        (entry->fts_info == FTS_D) &&
+        (entry->fts_statp->st_size == 0)) return true;
     else return false;
 }
 bool is_a_file(FTSENT *entry) {
@@ -238,7 +240,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
                 char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
 
-                if (is_a_directory(source_ptr)) {
+                if (is_a_directory_populated(source_ptr)) {
                     printf("Copying source DIRECTORY '%s' to target '%s'\n", source_path_copy, target_path_copy);
                     directory_copy(source_path_copy, target_path_copy);
                 }
@@ -256,7 +258,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         if (source_ptr == NULL) {
             while (target_ptr != NULL) {
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-                if (is_a_directory(target_ptr)) {
+                if (is_a_directory_populated(target_ptr)) {
                     printf("Deleting DIRECTORY `%s`\n", target_path_copy);
                     directory_delete(target_path_copy);
                 }
@@ -276,7 +278,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         if (string_comparison == 0) {
             // both are directories, advance both pointers (leave further edits to the next recursion)
             // Both are directories: recurse into them
-            if (is_a_directory(source_ptr) && is_a_directory(target_ptr)) {
+            if (is_a_directory_populated(source_ptr) && is_a_directory_populated(target_ptr)) {
                 directories_sync(arena_scratch, source_ptr->fts_path, target_ptr->fts_path);
 
                 source_ptr = source_ptr->fts_link;
@@ -307,7 +309,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             }
             // the source file is a file and the target file is a directory,
             // delete the target directory and copy the source file
-            if (is_a_file(source_ptr) && is_a_directory(target_ptr)) {
+            if (is_a_file(source_ptr) && is_a_directory_populated(target_ptr)) {
                 char *target_path_delete = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 directory_delete(target_path_delete);
 
@@ -321,7 +323,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
             }
             // the source file is a directory and the target file is a file,
             // delete the target file and copy the source directory
-            if (is_a_directory(source_ptr) && is_a_file(target_ptr)) {
+            if (is_a_directory_populated(source_ptr) && is_a_file(target_ptr)) {
                 char *target_path_delete = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
                 file_delete(target_path_delete);
 
@@ -334,7 +336,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
                 continue;
             }
             // either file has an unsupported type
-            if (!is_a_directory(source_ptr) || !is_a_directory(target_ptr) ||
+            if (!is_a_directory_populated(source_ptr) || !is_a_directory_populated(target_ptr) ||
                 !is_a_file(source_ptr) || !is_a_file(target_ptr)) {
                 char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
@@ -354,7 +356,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // Advance only `source_ptr`
         if (string_comparison < 0) {
             char *source_path_copy = file_path_concatenate(arena_scratch, source_ptr->fts_path, source_ptr->fts_name);
-            if (is_a_directory(source_ptr)) {
+            if (is_a_directory_populated(source_ptr)) {
                 char *target_path_copy = file_path_concatenate(arena_scratch, target, source_ptr->fts_name);
                 directory_copy(source_path_copy, target_path_copy);
             }
@@ -378,7 +380,7 @@ void directories_sync(Arena *arena_scratch, char *source, char *target) {
         // Advance only `target_ptr`
         if (string_comparison > 0) {
             char *target_path_copy = file_path_concatenate(arena_scratch, target_ptr->fts_path, target_ptr->fts_name);
-            if (is_a_directory(target_ptr)) {
+            if (is_a_directory_populated(target_ptr)) {
                 directory_delete(target_path_copy);
             }
             else if (is_a_file(target_ptr)) {
@@ -452,7 +454,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 s = skip_apple_files(s);
                 char *source_path_copy = file_path_concatenate(arena_scratch, s->fts_path, s->fts_name);
                 char *target_path_copy = file_path_concatenate(arena_scratch, target_directory, s->fts_name);
-                if (is_a_directory(s)) {
+                if (is_a_directory_populated(s)) {
                     printf("Source copy path:    %s\n", source_path_copy);
                     printf("Target copy path:    %s\n\n", target_path_copy);
                     directory_copy(source_directory, target_directory);
@@ -465,7 +467,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 }
                 else if (is_a_directory_empty(s)) {
                     printf("Empty source directory found: %s\nCopying to target\n\n", source_path_copy);
-                    file_copy(source_path_copy, target_path_copy)
+                    file_copy(source_path_copy, target_path_copy);
                 }
                 // ADD SYMLINK FILE HANDLING
                 s = s->fts_link;
@@ -480,7 +482,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 char *target_path_delete = file_path_concatenate(arena_scratch, t->fts_path, t->fts_name);
                 printf("Source delete path:        %s\n", source_path_delete);
                 printf("Target delete path:        %s\n", target_path_delete);
-                if (is_a_directory(t)) {
+                if (is_a_directory_populated(t)) {
                 printf("Deleting target directory: %s\n\n", target_path_delete);
                     //directory_delete(target_path_delete);
                     test_directories_sync(arena_scratch, source_path_delete, target_path_delete);
@@ -488,6 +490,10 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
                 else if (is_a_file(t)) {
                     printf("Deleting target file:      %s\n\n", target_path_delete);
                     //file_delete(target_path_delete);
+                }
+                else if (is_a_directory_empty(t)) {
+                    printf("Empty target directory found: %s\nCopying to target\n\n", source_path_delete);
+                    file_copy(source_path_delete, target_path_delete);
                 }
                 // ADD SYMLINK FILE HANDLING
                 t = t->fts_link;
@@ -502,7 +508,7 @@ void test_directories_sync(Arena *arena_scratch, char *source_directory, char *t
             // If both files have the same name...
             if (string_comparison == 0) {
                 // ... and both are directories
-                if (is_a_directory(s) && is_a_directory(t)) {
+                if (is_a_directory_populated(s) && is_a_directory_populated(t)) {
                     // Skip to the next entry by moving both pointers forward
                     printf("Source: %s\nand\n", source_path);
                     printf("Target: %s\n", target_path);

@@ -12,10 +12,8 @@ int main(void) {
     // Define test directories and test the sync function
     char *source = "TestDirs/Source/";
     char *target = "TestDirs/Target/";
-    //test_directories_sync(&arena_scratch, source, target);
+    test_directories_sync(&arena_scratch, source, target);
     printf("Directories successfully synced\n");
-
-    empty_direcotry_test("Source/Zoink");
 
     return 0;
 }

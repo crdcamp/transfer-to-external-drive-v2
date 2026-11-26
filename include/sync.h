@@ -27,7 +27,7 @@ void file_delete(char *file_path);
 void directory_copy(const char *source, const char *target);
 void directory_delete(char *file_path);
 // Sync operations
-bool is_a_directory(FTSENT *entry);
+bool is_a_directory_populated(FTSENT *entry);
 bool is_a_file(FTSENT *entry);
 void directories_sync(Arena *arena_scratch, char *source, char *target);
 
